@@ -289,6 +289,10 @@ textarea.input{resize:vertical;min-height:60px}
 .res .rbadge.ko{background:var(--ko-bg);color:var(--ko)}
 .res .rbadge.en{background:var(--en-bg);color:var(--en)}
 .res .src{font-size:9.5px;color:#B7B2A5;font-weight:700;margin-left:4px}
+.res-group{font-size:10.5px;font-weight:800;color:#9A958A;letter-spacing:-.1px;padding:3px 4px 0}
+.res .rbadge.shelf{background:#E7E4F4;color:#4A4370}
+.res .rbadge.past{background:#EFE9DA;color:#7A6547}
+.res-online{display:flex;flex-direction:column;gap:8px}
 
 .cover-box{display:flex;gap:12px;align-items:flex-start}
 .cover-prev{
@@ -299,28 +303,6 @@ textarea.input{resize:vertical;min-height:60px}
 .cover-prev .ph{width:100%;height:100%;display:grid;place-items:center;color:#B9B4D2;font-size:22px}
 .cover-actions{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
 .cover-actions .btn{width:100%}
-
-.barcode-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.barcode-bar .btn{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;padding:11px 8px}
-.isbn-row{display:flex;gap:8px;margin-top:8px}
-.isbn-row .input{flex:1;min-width:0;letter-spacing:.4px}
-
-.scan-stage{position:relative;border-radius:18px;overflow:hidden;background:#141A24;aspect-ratio:3/4;max-height:56dvh;margin-bottom:12px}
-.scan-stage video{width:100%;height:100%;object-fit:cover}
-.scan-frame{position:absolute;inset:12% 10%;border-radius:14px;box-shadow:0 0 0 999px rgba(10,15,22,.42);border:2px solid rgba(255,255,255,.7)}
-.scan-line{position:absolute;left:10%;right:10%;height:2px;background:#8CE0B0;box-shadow:0 0 12px #8CE0B0;top:20%;animation:scanmove 2.4s ease-in-out infinite}
-@keyframes scanmove{0%,100%{top:18%}50%{top:80%}}
-.scan-hint{color:#fff;font-size:12px;text-align:center;position:absolute;left:0;right:0;bottom:10px;opacity:.85}
-.scan-status{font-size:13px;font-weight:700;color:#5B6270;text-align:center;margin:4px 0 12px;min-height:20px}
-.scan-status.err{color:#B4574A}
-.scan-tools{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;flex-wrap:wrap}
-.zoom-seg{display:inline-flex;background:#EDEAE1;border-radius:999px;padding:3px}
-.zoom-btn{font-size:13px;font-weight:800;color:#7C7768;padding:7px 15px;border-radius:999px;line-height:1;min-width:50px;transition:background .16s,color .16s}
-.zoom-btn.on{background:#1E293B;color:#fff;box-shadow:0 2px 6px rgba(30,41,59,.2)}
-.scan-tool{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:#495162;background:#F4F1E8;border:1px solid #EEEAE0;border-radius:999px;padding:8px 13px;line-height:1}
-.scan-tool.on{background:#FFF3CC;color:#8A6A12;border-color:#F0DFA6}
-.scan-tool[hidden]{display:none}
-.scan-zoom-note{font-size:11px;color:#9A958A;line-height:1.3;margin-left:auto;text-align:right;max-width:56%}
 
 .detail-head{display:flex;gap:16px;margin-bottom:18px}
 .detail-cover{width:110px;flex:0 0 auto;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--lav-soft);box-shadow:0 4px 14px rgba(30,41,59,.16)}
@@ -379,6 +361,8 @@ textarea.input{resize:vertical;min-height:60px}
 .sh-meta .tg.ko{background:var(--ko-bg);color:var(--ko)}
 .sh-meta .tg.en{background:var(--en-bg);color:var(--en)}
 .sh-meta .pub{font-size:11px;font-weight:700;color:#9A958A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sh-meta .auth{font-size:11px;font-weight:700;color:#7C8291;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sh-meta .sep{font-size:11px;font-weight:700;color:#C6C0B1;flex:0 0 auto}
 .sh-cnt{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:6px}
 .sh-cnt b{color:#5B6270;font-weight:800}
 .sh-acts{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
@@ -583,7 +567,7 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="field hidden" id="shelfPickField">
       <label>내 책장에서 고르기</label>
       <div class="shelf-chips" id="shelfPick"></div>
-      <div class="hint" id="shelfPickHint">전집을 한 번 누르면 제목·구분·표지가 채워져요. 다시 누르면 해제돼요.</div>
+      <div class="hint" id="shelfPickHint">전집을 한 번 누르면 제목·지은이·구분·표지가 채워져요. 다시 누르면 해제돼요.</div>
     </div>
 
     <div class="field row2">
@@ -607,27 +591,13 @@ textarea.input{resize:vertical;min-height:60px}
     </div>
 
     <div class="field">
-      <label for="fSearch">제목으로 찾기</label>
+      <label for="fSearch">제목·지은이로 찾기</label>
       <div class="search-row">
-        <input class="input" id="fSearch" placeholder="예: 구름빵, The Gruffalo" autocomplete="off" enterkeyhint="search">
+        <input class="input" id="fSearch" placeholder="예: 구름빵, 백희나, The Gruffalo" autocomplete="off" enterkeyhint="search">
         <button class="btn dark" id="btnSearch" type="button">검색</button>
       </div>
-      <div class="hint">Google Books · Apple Books · Open Library에서 표지와 지은이를 가져와요.</div>
+      <div class="hint">내 책장·지난 기록을 먼저 찾고, 없으면 온라인 서점(Google Books · Apple Books · Open Library)에서 가져와요.</div>
       <div class="results hidden" id="searchResults"></div>
-    </div>
-
-    <div class="field">
-      <label>바코드(ISBN)로 찾기</label>
-      <div class="barcode-bar">
-        <button class="btn line" id="btnLiveScan" type="button">📷 실시간 스캔</button>
-        <button class="btn line" id="btnPhotoScan" type="button">🖼 사진으로 인식</button>
-      </div>
-      <div class="isbn-row">
-        <input class="input" id="fIsbn" placeholder="ISBN 직접 입력 (13자리)" inputmode="numeric" autocomplete="off">
-        <button class="btn" id="btnIsbnLookup" type="button">조회</button>
-      </div>
-      <button class="linkish" id="btnGalleryScan" type="button">갤러리에 있는 사진으로 인식</button>
-      <div class="hint">실시간 스캔은 HTTPS(또는 localhost)에서만 열려요. 파일로 열었다면 ‘사진으로 인식’을 써 주세요.</div>
     </div>
 
     <div class="field">
@@ -676,6 +646,11 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="field">
       <label for="sfName">이름 <span style="color:#C98B77">*</span></label>
       <input class="input" id="sfName" placeholder="예: 그레이트북스 안녕 마음아" maxlength="60" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="sfAuthor">지은이 (선택)</label>
+      <input class="input" id="sfAuthor" placeholder="예: 백희나" maxlength="40" autocomplete="off">
     </div>
 
     <div class="field">
@@ -763,34 +738,6 @@ textarea.input{resize:vertical;min-height:60px}
   </div>
 </div>
 
-<!-- ===== 실시간 스캔 시트 ===== -->
-<div class="sheet-wrap" id="scanSheet" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
-  <div class="backdrop" data-close></div>
-  <div class="sheet">
-    <div class="grab"></div>
-    <div class="sheet-head">
-      <h2 id="scanTitle">바코드 스캔</h2>
-      <button class="x" data-close aria-label="닫기">✕</button>
-    </div>
-    <div class="scan-stage">
-      <video id="scanVideo" playsinline muted></video>
-      <div class="scan-frame" id="scanFrame"></div>
-      <div class="scan-line"></div>
-      <div class="scan-hint">책 뒤표지의 바코드를 네모 안에 맞춰 주세요</div>
-    </div>
-    <div class="scan-tools">
-      <div class="zoom-seg" id="zoomSeg" role="group" aria-label="줌 배율">
-        <button class="zoom-btn" id="btnZoom1" type="button" data-zoom="1" aria-pressed="false">1x</button>
-        <button class="zoom-btn" id="btnZoom2" type="button" data-zoom="2" aria-pressed="false">2x</button>
-      </div>
-      <button class="scan-tool" id="btnTorch" type="button" aria-pressed="false" hidden>🔦 조명</button>
-      <span class="scan-zoom-note" id="scanZoomNote"></span>
-    </div>
-    <div class="scan-status" id="scanStatus">카메라를 준비하는 중…</div>
-    <button class="btn line" id="btnScanToPhoto" type="button" style="width:100%">대신 사진으로 인식하기</button>
-  </div>
-</div>
-
 <!-- ===== 아이 관리 시트 ===== -->
 <div class="sheet-wrap" id="kidSheet" role="dialog" aria-modal="true" aria-labelledby="kidTitle">
   <div class="backdrop" data-close></div>
@@ -867,8 +814,6 @@ textarea.input{resize:vertical;min-height:60px}
 
 <input type="file" id="coverInput" accept="image/*" class="hidden">
 <input type="file" id="shelfCoverInput" accept="image/*" class="hidden">
-<input type="file" id="barcodeCamInput" accept="image/*" capture="environment" class="hidden">
-<input type="file" id="barcodeGalInput" accept="image/*" class="hidden">
 <input type="file" id="importInput" accept="application/json,.json" class="hidden">
 
 <script>
@@ -896,13 +841,6 @@ let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: 
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
-let scanState = {
-  stream: null, running: false, detector: null, raf: 0, last: 0,
-  cand: '', hits: 0, candTs: 0, frame: 0,
-  zoom: 1, zoomCap: null, zoomSupported: false, zoomFallback: false,
-  torch: false, torchSupported: false
-};
-
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
 const DEFAULT_KID_NAME = '우리 아이';
@@ -965,6 +903,7 @@ function sanitizeShelf(s){
   return {
     id: s.id ? String(s.id) : uidS(),
     name: name,
+    author: String(s.author || '').trim().slice(0, 40),
     lang: s.lang === 'en' ? 'en' : 'ko',
     publisher: String(s.publisher || '').trim().slice(0, 40),
     cover: typeof s.cover === 'string' ? s.cover : '',
@@ -1047,7 +986,6 @@ function closeSheet(el){
   const w = el || $('.sheet-wrap.open');
   if(!w) return;
   w.classList.remove('open');
-  if(w.id === 'scanSheet') stopLiveScan();
   if(!$('.sheet-wrap.open')) document.body.style.overflow = '';
 }
 $$('.sheet-wrap').forEach(w => {
@@ -1702,7 +1640,21 @@ function renderShelf(){
     tg.className = 'tg ' + s.lang;
     tg.textContent = s.lang === 'ko' ? '한글' : '영어';
     meta.appendChild(tg);
+    const sep = () => {
+      const d = document.createElement('span');
+      d.className = 'sep';
+      d.textContent = '·';
+      meta.appendChild(d);
+    };
+    if(s.author){
+      sep();
+      const au = document.createElement('span');
+      au.className = 'auth';
+      au.textContent = s.author;
+      meta.appendChild(au);
+    }
     if(s.publisher){
+      sep();
       const pb = document.createElement('span');
       pb.className = 'pub';
       pb.textContent = s.publisher;
@@ -1767,6 +1719,7 @@ function openShelfForm(id, preset){
     shelfDraft = {
       id: '',
       name: preset ? String(preset.name || '') : '',
+      author: preset ? String(preset.author || '') : '',
       lang: preset ? (preset.lang === 'en' ? 'en' : 'ko') : '',
       publisher: preset ? String(preset.publisher || '') : '',
       cover: '', coverData: ''
@@ -1774,6 +1727,7 @@ function openShelfForm(id, preset){
   }
   $('#shelfFormTitle').textContent = cur ? '책장 항목 수정' : '전집/책 등록';
   $('#sfName').value = shelfDraft.name || '';
+  $('#sfAuthor').value = shelfDraft.author || '';
   $('#sfPublisher').value = shelfDraft.publisher || '';
   const del = $('#btnShelfDelete');
   del.classList.toggle('hidden', !cur);
@@ -1789,12 +1743,14 @@ function saveShelf(){
   const name = $('#sfName').value.trim();
   if(!name){ toast('이름을 입력해 주세요'); $('#sfName').focus(); return; }
   if(!shelfDraft.lang){ toast('한글책 / 영어책을 골라 주세요'); return; }
+  const author = $('#sfAuthor').value.trim();
   const publisher = $('#sfPublisher').value.trim();
   const dup = db.shelf.find(s => s.id !== shelfDraft.id && s.name === name && s.lang === shelfDraft.lang);
   if(dup){ toast('이미 책장에 있는 이름이에요'); return; }
   const item = sanitizeShelf({
     id: shelfDraft.id || uidS(),
     name: name,
+    author: author,
     lang: shelfDraft.lang,
     publisher: publisher,
     cover: shelfDraft.cover,
@@ -1882,7 +1838,7 @@ function renderQuickHero(s){
   nm.textContent = s.name;
   const mt = document.createElement('div');
   mt.className = 'q-meta';
-  mt.textContent = (s.lang === 'ko' ? '한글책' : '영어책') + (s.publisher ? ' · ' + s.publisher : '');
+  mt.textContent = (s.lang === 'ko' ? '한글책' : '영어책') + (s.author ? ' · ' + s.author : '') + (s.publisher ? ' · ' + s.publisher : '');
   info.appendChild(nm); info.appendChild(mt);
   box.appendChild(cov); box.appendChild(info);
 }
@@ -1969,7 +1925,7 @@ function saveQuick(){
     id: uid(),
     date: date,
     title: title,
-    author: '',
+    author: s.author || '',
     lang: s.lang,
     isbn: '',
     cover: s.cover || shelfCoverFallback(s.name),
@@ -2185,6 +2141,7 @@ $('#shelfPick').addEventListener('click', e => {
   draft.cover = s.cover || shelfCoverFallback(s.name);
   draft.coverData = s.coverData;
   $('#fTitle').value = s.name;
+  $('#fAuthor').value = s.author || '';
   $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', x.dataset.lang === s.lang));
   updateCoverPreview();
   renderShelfPick();
@@ -2204,7 +2161,13 @@ function openForm(dateStr, book){
   $('#fDate').value = draft.date;
   $('#fTitle').value = draft.title || '';
   $('#fAuthor').value = draft.author || '';
-  $('#fIsbn').value = draft.isbn || '';
+  draft.isbn = draft.isbn || '';
+  /* 앞선 검색이 늦게 도착해 새 시트를 덮지 않도록 무효화한다 */
+  searchSeq += 1;
+  searching = false;
+  clearTimeout(localTimer);
+  $('#btnSearch').disabled = false;
+  $('#btnSearch').textContent = '검색';
   $('#fSearch').value = '';
   $('#searchResults').innerHTML = '';
   $('#searchResults').classList.add('hidden');
@@ -2237,7 +2200,7 @@ $('#btnSave').onclick = () => {
     title: title,
     author: $('#fAuthor').value.trim(),
     lang: draft.lang,
-    isbn: $('#fIsbn').value.trim(),
+    isbn: draft.isbn || '',
     cover: draft.cover,
     coverData: draft.coverData,
     childIds: kids,
@@ -2255,7 +2218,7 @@ $('#btnSave').onclick = () => {
   if(chk && chk.checked && !rec.shelfId && !draft.id){
     if(!db.shelf.some(s => s.name === rec.title && s.lang === rec.lang)){
       const item = sanitizeShelf({
-        id: uidS(), name: rec.title, lang: rec.lang, publisher: '',
+        id: uidS(), name: rec.title, author: rec.author, lang: rec.lang, publisher: '',
         cover: rec.cover, coverData: rec.coverData, createdAt: Date.now()
       });
       if(item){ db.shelf.push(item); shelfAdded = true; }
@@ -2574,19 +2537,239 @@ function dedupeRank(list, q, lang){
   return scored.slice(0, 24).map(x => x.r);
 }
 
+/* ---------- 내 책장·지난 기록에서 먼저 찾기 (v1.6) ---------- */
+function normText(v){
+  return String(v == null ? '' : v).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+/* 이름이 검색어와 얼마나 맞는지: 완전 일치 4 > 앞부분 3.2 > 포함 2.6 */
+function matchScore(qn, text){
+  const t = normText(text);
+  if(!qn || !t) return 0;
+  if(t === qn) return 4;
+  if(t.indexOf(qn) === 0) return 3.2;
+  if(t.indexOf(qn) >= 0) return 2.6;
+  return 0;
+}
+/* 제목·지은이·출판사 부분 일치. 지난 기록은 내 책장과 겹치지 않는 것만. */
+function localSearch(q){
+  const qn = normText(q);
+  const out = { shelf: [], past: [] };
+  if(!qn) return out;
+
+  db.shelf.forEach(s => {
+    const sc = Math.max(
+      matchScore(qn, s.name),
+      matchScore(qn, s.author) * 0.98,
+      matchScore(qn, s.publisher) * 0.9
+    );
+    if(!sc) return;
+    out.shelf.push({
+      kind: 'shelf', id: s.id, title: s.name, author: s.author || '', lang: s.lang,
+      cover: shelfCoverSrc(s) || shelfCoverFallback(s.name), publisher: s.publisher || '', score: sc
+    });
+  });
+  out.shelf.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'ko'));
+
+  const seen = new Set(out.shelf.map(r => normText(r.title) + '|' + r.lang));
+  db.books.slice()
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .forEach(b => {
+      const sc = Math.max(matchScore(qn, b.title), matchScore(qn, b.author) * 0.98);
+      if(!sc) return;
+      const key = normText(b.title) + '|' + b.lang;
+      if(seen.has(key)) return;
+      seen.add(key);
+      out.past.push({
+        kind: 'past', id: b.id, title: b.title, author: b.author || '', lang: b.lang,
+        cover: coverSrcOf(b), date: b.date, score: sc
+      });
+    });
+  out.past.sort((a, b) => b.score - a.score || String(b.date).localeCompare(String(a.date)));
+  return out;
+}
+function localCount(l){ return l ? l.shelf.length + l.past.length : 0; }
+function localSub(r){
+  const bits = [r.author || '지은이 정보 없음'];
+  if(r.kind === 'shelf'){
+    if(r.publisher) bits.push(r.publisher);
+    bits.push(r.lang === 'ko' ? '한글책' : '영어책');
+    const n = shelfRecs(r.id).length;
+    if(n) bits.push('기록 ' + n + '권');
+  }else{
+    const d = parseISO(r.date);
+    bits.push((d.getMonth() + 1) + '월 ' + d.getDate() + '일');
+  }
+  return bits.join(' · ');
+}
+function makeResRow(r){
+  const row = document.createElement('button');
+  row.type = 'button';
+  row.className = 'res';
+  row.dataset.kind = r.kind || '';
+  row.dataset.id = r.id || '';
+  const src = r.cover || '';
+  if(src){
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.referrerPolicy = 'no-referrer';
+    img.onerror = () => {
+      const ph = document.createElement('div');
+      ph.className = 'cov-ph';
+      ph.textContent = '📘';
+      img.replaceWith(ph);
+    };
+    row.appendChild(img);
+  }else{
+    const ph = document.createElement('div');
+    ph.className = 'cov-ph';
+    ph.textContent = '📘';
+    row.appendChild(ph);
+  }
+  const rt = document.createElement('div');
+  rt.className = 'rt';
+  const t = document.createElement('b');
+  t.textContent = r.title;
+  const au = document.createElement('span');
+  if(r.kind === 'shelf' || r.kind === 'past'){
+    au.textContent = localSub(r);
+  }else{
+    au.textContent = (r.author || '지은이 정보 없음') + ' · ' + r.src;
+  }
+  rt.appendChild(t); rt.appendChild(au);
+  row.appendChild(rt);
+  if(r.kind === 'shelf' || r.kind === 'past'){
+    const badge = document.createElement('span');
+    badge.className = 'rbadge ' + r.kind;
+    badge.textContent = r.kind === 'shelf' ? '내 책장' : '지난 기록';
+    row.appendChild(badge);
+  }else if(r.lang){
+    const tag = document.createElement('span');
+    tag.className = 'rbadge ' + r.lang;
+    tag.textContent = r.lang === 'ko' ? '한글' : '영어';
+    row.appendChild(tag);
+  }
+  return row;
+}
+/* 내 책장·지난 기록 항목을 눌렀을 때 제목·지은이·구분·표지를 채운다 */
+function applyLocalResult(r){
+  if(!draft) return;
+  $('#fTitle').value = r.title;
+  $('#fAuthor').value = r.author || '';
+  draft.isbn = '';
+  if(r.kind === 'shelf'){
+    const s = shelfById(r.id);
+    if(s){
+      draft.shelfId = s.id;
+      draft.lang = s.lang;
+      draft.cover = s.cover || shelfCoverFallback(s.name);
+      draft.coverData = s.coverData || '';
+    }
+  }else{
+    const b = db.books.find(x => x.id === r.id);
+    if(b){
+      draft.lang = b.lang;
+      draft.cover = b.cover || '';
+      draft.coverData = b.coverData || '';
+      draft.isbn = b.isbn || '';
+    }
+  }
+  $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', !!draft.lang && x.dataset.lang === draft.lang));
+  updateCoverPreview();
+  renderShelfPick();
+  $('#searchResults').innerHTML = '';
+  $('#searchResults').classList.add('hidden');
+  toast('\u2018' + r.title.slice(0, 18) + (r.title.length > 18 ? '\u2026' : '') + '\u2019 정보를 채웠어요');
+}
+function addResGroup(box, text){
+  const d = document.createElement('div');
+  d.className = 'res-group';
+  d.textContent = text;
+  box.appendChild(d);
+}
+function addResNote(box, text, color){
+  const d = document.createElement('div');
+  d.className = 'hint';
+  d.style.cssText = 'padding:8px 4px 2px;line-height:1.6' + (color ? ';color:' + color : '');
+  d.textContent = text;
+  box.appendChild(d);
+}
+/* 내 책장 → 지난 기록 순서로 결과 상자에 그린다 */
+function renderLocalResults(box, local){
+  const n = localCount(local);
+  if(!n) return 0;
+  addResGroup(box, '내 책장 · 지난 기록');
+  local.shelf.forEach(r => {
+    const row = makeResRow(r);
+    row.onclick = () => applyLocalResult(r);
+    box.appendChild(row);
+  });
+  local.past.forEach(r => {
+    const row = makeResRow(r);
+    row.onclick = () => applyLocalResult(r);
+    box.appendChild(row);
+  });
+  return n;
+}
+
 let searching = false;
+let searchSeq = 0;
+let localTimer = 0;
+
+function setSearchBusy(on){
+  const btn = $('#btnSearch');
+  if(!btn) return;
+  btn.disabled = !!on;
+  btn.textContent = on ? '\u2026' : '검색';
+}
+
+/* 입력하는 동안 내 책장·지난 기록 일치 항목을 바로 보여 준다 */
+function liveLocalSearch(q){
+  if(!draft || searching) return;
+  const box = $('#searchResults');
+  if(!box) return;
+  const local = q ? localSearch(q) : { shelf: [], past: [] };
+  if(!localCount(local)){
+    box.innerHTML = '';
+    box.classList.add('hidden');
+    return;
+  }
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  renderLocalResults(box, local);
+  addResNote(box, '검색을 누르면 온라인 서점에서도 찾아요.');
+}
+
 async function doSearch(){
   const q = $('#fSearch').value.trim();
   if(!q){ $('#fSearch').focus(); return; }
   if(searching) return;
   searching = true;
-  const btn = $('#btnSearch');
-  btn.disabled = true;
-  btn.textContent = '…';
-  const box = $('#searchResults');
-  box.classList.remove('hidden');
-  box.innerHTML = '<div class="hint" style="padding:10px 4px">찾는 중…</div>';
+  const seq = ++searchSeq;
+  clearTimeout(localTimer);
+  setSearchBusy(true);
   sourceState.gbQuota = false;
+
+  /* 1~2) 내 책장 → 지난 기록은 기다리지 않고 바로 보여 준다 */
+  const local = localSearch(q);
+  const box = $('#searchResults');
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  renderLocalResults(box, local);
+  const onlineWrap = document.createElement('div');
+  onlineWrap.className = 'res-online';
+  box.appendChild(onlineWrap);
+  const loading = document.createElement('div');
+  loading.className = 'hint';
+  loading.style.cssText = 'padding:10px 4px';
+  loading.textContent = '온라인에서 찾는 중\u2026';
+  onlineWrap.appendChild(loading);
+
+  const finish = () => {
+    if(seq === searchSeq) searching = false;
+    setSearchBusy(false);
+  };
 
   let all = [];
   let notes = [];
@@ -2622,100 +2805,68 @@ async function doSearch(){
     }catch(e){ /* 무시 */ }
   }
 
-  const res = dedupeRank(all, q, draft && draft.lang);
-  box.innerHTML = '';
+  if(seq !== searchSeq){ finish(); return; }
+
+  // 이미 내 책장·지난 기록에서 찾은 책과 같은 제목은 온라인 목록에서 뺀다
+  const localTitles = new Set(local.shelf.concat(local.past).map(r => normText(r.title)));
+  const res = dedupeRank(all, q, draft && draft.lang).filter(r => !localTitles.has(normText(r.title)));
+
+  onlineWrap.innerHTML = '';
 
   if(!res.length){
-    box.innerHTML = '';
-    const msg = document.createElement('div');
-    msg.className = 'hint';
-    msg.style.cssText = 'padding:12px 4px 2px;line-height:1.6';
-    msg.innerHTML = '검색 결과가 없어요.<br>제목을 직접 입력하고 표지 사진을 올려 주세요.' +
-      (notes.length ? '<br><span style="color:#B4574A">' + notes.join(' · ') + '</span>' : '');
-    box.appendChild(msg);
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;padding:10px 4px 4px';
-    if(sourceState.gbQuota){
-      const kb = document.createElement('button');
-      kb.className = 'btn sm line';
-      kb.textContent = 'Google Books API 키 넣기';
-      kb.onclick = () => { closeSheet($('#formSheet')); openMenu(); };
-      row.appendChild(kb);
+    /* 내 책장·지난 기록에서 이미 찾았다면 빈 안내나 오류 문구를 띄우지 않는다 */
+    if(!localCount(local)){
+      addResNote(box, '검색 결과가 없어요. 제목을 직접 입력하고 표지 사진을 올려 주세요.' + (notes.length ? ' ' + notes.join(' · ') : ''), notes.length ? '#B4574A' : '');
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;padding:10px 4px 4px';
+      if(sourceState.gbQuota){
+        const kb = document.createElement('button');
+        kb.type = 'button';
+        kb.className = 'btn sm line';
+        kb.textContent = 'Google Books API 키 넣기';
+        kb.onclick = () => { closeSheet($('#formSheet')); openMenu(); };
+        row.appendChild(kb);
+      }
+      const mb = document.createElement('button');
+      mb.type = 'button';
+      mb.className = 'btn sm line';
+      mb.textContent = '직접 입력할게요';
+      mb.onclick = () => { $('#fTitle').focus(); };
+      row.appendChild(mb);
+      box.appendChild(row);
     }
-    const mb = document.createElement('button');
-    mb.className = 'btn sm line';
-    mb.textContent = '직접 입력할게요';
-    mb.onclick = () => { $('#fTitle').focus(); };
-    row.appendChild(mb);
-    box.appendChild(row);
-    searching = false; btn.disabled = false; btn.textContent = '검색';
+    finish();
     return;
   }
 
+  addResGroup(onlineWrap, '온라인 검색 결과');
   res.forEach(r => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'res';
-    if(r.cover){
-      const img = document.createElement('img');
-      img.src = r.cover;
-      img.alt = '';
-      img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
-      img.onerror = () => {
-        const ph = document.createElement('div');
-        ph.className = 'cov-ph';
-        ph.textContent = '📘';
-        img.replaceWith(ph);
-      };
-      b.appendChild(img);
-    }else{
-      const ph = document.createElement('div');
-      ph.className = 'cov-ph';
-      ph.textContent = '📘';
-      b.appendChild(ph);
-    }
-    const rt = document.createElement('div');
-    rt.className = 'rt';
-    const t = document.createElement('b');
-    t.textContent = r.title;
-    const au = document.createElement('span');
-    au.textContent = (r.author || '지은이 정보 없음') + ' · ' + r.src;
-    rt.appendChild(t); rt.appendChild(au);
-    b.appendChild(rt);
-    if(r.lang){
-      const tag = document.createElement('span');
-      tag.className = 'rbadge ' + r.lang;
-      tag.textContent = r.lang === 'ko' ? '한글' : '영어';
-      b.appendChild(tag);
-    }
-    b.onclick = () => {
+    const row = makeResRow(r);
+    row.onclick = () => {
       $('#fTitle').value = r.title;
       $('#fAuthor').value = r.author || '';
-      if(r.isbn) $('#fIsbn').value = r.isbn;
+      draft.isbn = r.isbn || '';
       if(r.cover){ draft.cover = r.cover; draft.coverData = ''; }
       if(r.lang) setLang(r.lang);
       updateCoverPreview();
+      box.innerHTML = '';
       box.classList.add('hidden');
       toast('책 정보를 채웠어요');
     };
-    box.appendChild(b);
+    onlineWrap.appendChild(row);
   });
 
-  if(notes.length){
-    const n = document.createElement('div');
-    n.className = 'hint';
-    n.style.padding = '6px 4px 2px';
-    n.style.color = '#B4574A';
-    n.textContent = notes.join(' · ');
-    box.appendChild(n);
-  }
-
-  searching = false; btn.disabled = false; btn.textContent = '검색';
+  if(notes.length) addResNote(onlineWrap, notes.join(' · '), '#B4574A');
+  finish();
 }
 $('#btnSearch').onclick = doSearch;
 $('#fSearch').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); doSearch(); }
+});
+$('#fSearch').addEventListener('input', () => {
+  const q = $('#fSearch').value.trim();
+  clearTimeout(localTimer);
+  localTimer = setTimeout(() => liveLocalSearch(q), 130);
 });
 
 /* ---------- ISBN ---------- */
@@ -2739,576 +2890,6 @@ function isbn10to13(s){
   for(let i = 0; i < 12; i++) sum += Number(core[i]) * (i % 2 ? 3 : 1);
   return core + ((10 - (sum % 10)) % 10);
 }
-function isbn13to10(s){
-  if(!/^978\d{10}$/.test(s)) return '';
-  const core = s.slice(3, 12);
-  let sum = 0;
-  for(let i = 0; i < 9; i++) sum += Number(core[i]) * (10 - i);
-  const chk = (11 - (sum % 11)) % 11;
-  return core + (chk === 10 ? 'X' : String(chk));
-}
-function isbnCandidates(raw){
-  const c = cleanIsbn(raw);
-  const out = [];
-  if(c.length === 13){ out.push(c); const t = isbn13to10(c); if(t) out.push(t); }
-  else if(c.length === 10){ const t = isbn10to13(c); if(t) out.push(t); out.push(c); }
-  return out;
-}
-
-async function lookupIsbn(raw){
-  const cands = isbnCandidates(raw);
-  if(!cands.length) return null;
-  // Google Books
-  for(const isbn of (Date.now() < sourceState.gbCooldown ? [] : cands)){
-    try{
-      const data = await fetchJson(gbUrl({ q: 'isbn:' + isbn, maxResults: '5' }));
-      const items = data.items || [];
-      if(items.length){
-        const r = fromGB(items[0]);
-        if(r) return r;
-      }
-    }catch(err){
-      if(err && err.status === 429){
-        sourceState.gbQuota = true;
-        sourceState.gbCooldown = Date.now() + 10 * 60 * 1000;
-      }
-      break;
-    }
-  }
-  // Google Books GData(JSONP) — v1이 429여도 이 경로는 살아 있다
-  for(const isbn of cands){
-    try{
-      const r = await gdataByIsbn(isbn);
-      if(r && r.title) return r;
-    }catch(e){ /* 다음 */ }
-  }
-  // Open Library
-  for(const isbn of cands){
-    try{
-      const data = await fetchJson('https://openlibrary.org/search.json?q=isbn:' + isbn + '&limit=3', 9000);
-      const docs = data.docs || [];
-      if(docs.length){
-        const r = fromOL(docs[0]);
-        if(r){
-          if(!r.cover) r.cover = coverByIsbn(isbn);
-          if(!r.isbn) r.isbn = isbn;
-          return r;
-        }
-      }
-    }catch(e){ /* 다음 */ }
-    try{
-      const ed = await fetchJson('https://openlibrary.org/isbn/' + isbn + '.json', 9000);
-      if(ed && ed.title){
-        return {
-          title: ed.title,
-          author: '',
-          lang: '',
-          cover: 'https://covers.openlibrary.org/b/isbn/' + isbn + '-L.jpg',
-          isbn: isbn,
-          src: 'OpenLibrary'
-        };
-      }
-    }catch(e){ /* 다음 */ }
-  }
-  return null;
-}
-
-function applyLookup(r, isbn){
-  if(!r){
-    toast('책 정보를 찾지 못했어요. 제목을 직접 입력해 주세요.');
-    if(isbn) $('#fIsbn').value = isbn;
-    return;
-  }
-  if(!$('#fTitle').value.trim()) $('#fTitle').value = r.title;
-  if(!$('#fAuthor').value.trim()) $('#fAuthor').value = r.author || '';
-  if(r.cover){ draft.cover = r.cover; draft.coverData = ''; }
-  if(r.lang) setLang(r.lang);
-  $('#fIsbn').value = isbn || r.isbn || '';
-  updateCoverPreview();
-  toast('‘' + r.title.slice(0, 18) + (r.title.length > 18 ? '…' : '') + '’ 정보를 채웠어요');
-}
-
-async function runIsbnLookup(raw){
-  const clean = cleanIsbn(raw);
-  if(!clean || (clean.length !== 10 && clean.length !== 13)){
-    toast('ISBN은 10자리 또는 13자리예요');
-    return;
-  }
-  if(clean.length === 13 && !isbn13Valid(clean)){
-    toast('ISBN 숫자를 다시 확인해 주세요');
-    return;
-  }
-  const btn = $('#btnIsbnLookup');
-  btn.disabled = true; btn.textContent = '조회 중';
-  try{
-    const r = await lookupIsbn(clean);
-    applyLookup(r, clean);
-  }finally{
-    btn.disabled = false; btn.textContent = '조회';
-  }
-}
-$('#btnIsbnLookup').onclick = () => {
-  const v = $('#fIsbn').value.trim();
-  if(!v){ $('#fIsbn').focus(); return; }
-  runIsbnLookup(v);
-};
-$('#fIsbn').addEventListener('keydown', e => {
-  if(e.key === 'Enter'){ e.preventDefault(); runIsbnLookup($('#fIsbn').value); }
-});
-
-/* ---------- 바코드 디코딩 ---------- */
-let zxingPromise = null;
-function loadZXing(){
-  if(window.ZXing) return Promise.resolve(window.ZXing);
-  if(zxingPromise) return zxingPromise;
-  zxingPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
-    s.async = true;
-    s.onload = () => window.ZXing ? resolve(window.ZXing) : reject(new Error('ZXing 없음'));
-    s.onerror = () => reject(new Error('ZXing 로드 실패'));
-    document.head.appendChild(s);
-  });
-  return zxingPromise;
-}
-
-async function nativeDetector(){
-  if(typeof window.BarcodeDetector === 'undefined') return null;
-  try{
-    if(window.BarcodeDetector.getSupportedFormats){
-      const formats = await window.BarcodeDetector.getSupportedFormats();
-      if(formats.indexOf('ean_13') < 0) return null;
-    }
-    return new window.BarcodeDetector({
-      formats: ['ean_13']
-    });
-  }catch(e){ return null; }
-}
-
-/* 책 바코드는 모두 EAN-13(978·979) — 체크섬까지 통과한 값만 후보로 인정 */
-function pickIsbn(codes){
-  for(const c of codes){
-    const digits = String((c && c.rawValue) || '').replace(/[^0-9]/g, '');
-    if(isValidIsbn13(digits)) return digits;
-  }
-  return '';
-}
-
-async function zxingDecodeCanvas(canvas){
-  const ZX = await loadZXing();
-  const reader = new ZX.MultiFormatReader();
-  const hints = new Map();
-  hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, [ZX.BarcodeFormat.EAN_13]);
-  hints.set(ZX.DecodeHintType.TRY_HARDER, true);
-  reader.setHints(hints);
-  const lum = new ZX.HTMLCanvasElementLuminanceSource(canvas);
-  const bitmap = new ZX.BinaryBitmap(new ZX.HybridBinarizer(lum));
-  const result = reader.decode(bitmap, hints);
-  const digits = result ? String(result.getText() || '').replace(/[^0-9]/g, '') : '';
-  return isValidIsbn13(digits) ? digits : '';
-}
-
-function rotateCanvas(src, deg){
-  const c = document.createElement('canvas');
-  const swap = deg === 90 || deg === 270;
-  c.width = swap ? src.height : src.width;
-  c.height = swap ? src.width : src.height;
-  const ctx = c.getContext('2d');
-  ctx.translate(c.width / 2, c.height / 2);
-  ctx.rotate(deg * Math.PI / 180);
-  ctx.drawImage(src, -src.width / 2, -src.height / 2);
-  return c;
-}
-
-function drawToCanvas(source, maxSide){
-  const sw = source.width || source.videoWidth;
-  const sh = source.height || source.videoHeight;
-  const scale = Math.min(1, (maxSide || 1280) / Math.max(sw, sh));
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(sw * scale));
-  c.height = Math.max(1, Math.round(sh * scale));
-  c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
-  return c;
-}
-
-async function decodeCanvasDeep(canvas, detector){
-  const rotations = [0, 90, 270, 180];
-  for(const deg of rotations){
-    const c = deg ? rotateCanvas(canvas, deg) : canvas;
-    if(detector){
-      try{
-        const codes = await detector.detect(c);
-        if(codes && codes.length){
-          const v = pickIsbn(codes);
-          if(v) return v;
-        }
-      }catch(e){ /* 다음 방법 */ }
-    }
-    try{
-      const v = await zxingDecodeCanvas(c);
-      if(v) return v;
-    }catch(e){ /* 회전/포맷 실패 */ }
-  }
-  return '';
-}
-
-async function decodeImageFile(file){
-  if(!('createImageBitmap' in window)) throw new Error('no bitmap');
-  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(file));
-  const canvas = drawToCanvas(bmp, 1400);
-  if(bmp.close) bmp.close();
-  const detector = await nativeDetector();
-  return await decodeCanvasDeep(canvas, detector);
-}
-
-/* 사진으로 인식 */
-async function handleBarcodePhoto(file){
-  if(!file) return;
-  toast('사진에서 바코드를 찾는 중…');
-  try{
-    const isbn = await decodeImageFile(file);
-    if(isbn){
-      if(navigator.vibrate) navigator.vibrate(60);
-      closeSheet($('#scanSheet'));
-      $('#fIsbn').value = isbn;
-      const r = await lookupIsbn(isbn);
-      applyLookup(r, isbn);
-    }else{
-      toast('책 바코드(ISBN)를 찾지 못했어요. 바코드가 크게 보이게 다시 찍어 주세요.');
-    }
-  }catch(err){
-    console.warn(err);
-    toast('사진을 읽지 못했어요. 다시 시도해 주세요.');
-  }
-}
-$('#btnPhotoScan').onclick = () => $('#barcodeCamInput').click();
-$('#btnGalleryScan').onclick = () => $('#barcodeGalInput').click();
-$('#btnScanToPhoto').onclick = () => { stopLiveScan(); $('#barcodeCamInput').click(); };
-$('#barcodeCamInput').addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0];
-  e.target.value = '';
-  handleBarcodePhoto(f);
-});
-$('#barcodeGalInput').addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0];
-  e.target.value = '';
-  handleBarcodePhoto(f);
-});
-
-/* 실시간 스캔 */
-function setScanStatus(msg, isErr){
-  const el = $('#scanStatus');
-  el.textContent = msg;
-  el.classList.toggle('err', !!isErr);
-}
-
-/* ---------- v1.4: 2배 줌 · 가이드 영역(ROI) 크롭 · 손전등 ---------- */
-const SCAN_ZOOM_DEFAULT = 2;   // 기본 배율(지원 기기)
-const SCAN_ROI_PAD = 0.08;     // 가이드 박스 바깥 여유(주변 그림·부가기호 배제)
-
-function scanTrack(){
-  return (scanState.stream && scanState.stream.getVideoTracks) ? scanState.stream.getVideoTracks()[0] : null;
-}
-
-function scanCamCaps(){
-  const t = scanTrack();
-  try{ return (t && t.getCapabilities) ? (t.getCapabilities() || {}) : {}; }catch(e){ return {}; }
-}
-
-function updateScanZoomUI(){
-  const z = String(scanState.zoom);
-  ['1', '2'].forEach(k => {
-    const b = $('#btnZoom' + k);
-    if(!b) return;
-    const on = z === k;
-    b.classList.toggle('on', on);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  const note = $('#scanZoomNote');
-  if(note){
-    if(scanState.zoom === 2 && scanState.zoomFallback) note.textContent = '이 기기는 2x를 화면 확대로 대신해요';
-    else if(scanState.zoom === 2) note.textContent = '2배로 당겨서 작은 바코드도 크게';
-    else note.textContent = '';
-  }
-}
-
-function updateScanTorchUI(){
-  const b = $('#btnTorch');
-  if(!b) return;
-  b.hidden = !scanState.torchSupported;
-  b.classList.toggle('on', !!scanState.torch);
-  b.setAttribute('aria-pressed', scanState.torch ? 'true' : 'false');
-  b.textContent = scanState.torch ? '🔦 조명 끄기' : '🔦 조명';
-}
-
-/* 하드웨어 줌을 못 쓸 때의 대안: 화면만 확대(크롭 매핑이 배율을 반영) */
-function setScanDigitalZoom(z){
-  const v = $('#scanVideo');
-  scanState.zoomFallback = z > 1;
-  if(!v) return;
-  v.style.transformOrigin = '50% 50%';
-  v.style.transform = z > 1 ? ('scale(' + z + ')') : 'none';
-}
-
-/* 배율 적용: 기기 하드웨어 줌 우선, 불가하면 디지털(화면) 줌 폴백 */
-async function applyScanZoom(z){
-  z = Number(z) === 2 ? 2 : 1;
-  const track = scanTrack();
-  const cap = scanState.zoomCap || { min: 1, max: 1 };
-  let hw = false;
-  if(track && scanState.zoomSupported && (z === 1 || (cap.max || 1) >= 2)){
-    const target = Math.min(Math.max(z, cap.min || 1), cap.max || 1);
-    try{
-      await track.applyConstraints({ advanced: [{ zoom: target }] });
-      let got = null;
-      try{
-        const s = track.getSettings ? track.getSettings() : null;
-        got = (s && typeof s.zoom === 'number') ? s.zoom : null;
-      }catch(e){ got = null; }
-      hw = (got === null) ? true : Math.abs(got - target) < 0.05;
-    }catch(e){ hw = false; }
-  }
-  if(z === 2 && hw){ scanState.zoom = 2; setScanDigitalZoom(1); }
-  else if(z === 2){ scanState.zoom = 2; setScanDigitalZoom(2); }
-  else { scanState.zoom = 1; setScanDigitalZoom(1); }
-  updateScanZoomUI();
-  return hw;
-}
-
-async function setScanTorch(on){
-  const track = scanTrack();
-  if(!track || !scanState.torchSupported) return false;
-  try{
-    await track.applyConstraints({ advanced: [{ torch: !!on }] });
-    scanState.torch = !!on;
-    updateScanTorchUI();
-    return true;
-  }catch(e){ return false; }
-}
-
-/* 화면의 가이드 박스를 카메라 원본 픽셀 좌표로 환산 (object-fit:cover + 디지털 줌 반영) */
-function scanRoiBox(){
-  const video = $('#scanVideo');
-  const frame = $('#scanFrame');
-  if(!video || !frame) return null;
-  const vw = video.videoWidth, vh = video.videoHeight;
-  const stage = video.parentElement;
-  if(!vw || !vh || !stage) return null;
-  const s = stage.getBoundingClientRect();
-  const f = frame.getBoundingClientRect();
-  if(!s.width || !s.height) return null;
-  const cover = Math.max(s.width / vw, s.height / vh);
-  const dx = (s.width - vw * cover) / 2, dy = (s.height - vh * cover) / 2;
-  const z = scanState.zoomFallback ? (scanState.zoom || 1) : 1;
-  const cx = s.width / 2, cy = s.height / 2;
-  const toVideo = (x, y) => [ (cx + (x - cx) / z - dx) / cover, (cy + (y - cy) / z - dy) / cover ];
-  const a = toVideo(f.left - s.left, f.top - s.top);
-  const b = toVideo(f.right - s.left, f.bottom - s.top);
-  const padX = (b[0] - a[0]) * SCAN_ROI_PAD, padY = (b[1] - a[1]) * SCAN_ROI_PAD;
-  const sx = Math.max(0, Math.floor(a[0] - padX)), sy = Math.max(0, Math.floor(a[1] - padY));
-  const ex = Math.min(vw, Math.ceil(b[0] + padX)), ey = Math.min(vh, Math.ceil(b[1] + padY));
-  if(ex - sx < 24 || ey - sy < 24) return null;
-  return { sx: sx, sy: sy, sw: ex - sx, sh: ey - sy, vw: vw, vh: vh };
-}
-
-/* 가이드 영역만 잘라 디코딩용 캔버스로 (고대비 흑백 패스 옵션) */
-function scanRoiCanvas(box, highContrast){
-  const video = $('#scanVideo');
-  const b = box || scanRoiBox();
-  if(!video || !b) return null;
-  const gain = Math.min(3, Math.max(1, 1100 / Math.max(b.sw, b.sh)));
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(b.sw * gain));
-  c.height = Math.max(1, Math.round(b.sh * gain));
-  const ctx = c.getContext('2d');
-  const canFilter = ('filter' in ctx);
-  if(highContrast && canFilter) ctx.filter = 'grayscale(1) contrast(1.8)';
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  try{ ctx.drawImage(video, b.sx, b.sy, b.sw, b.sh, 0, 0, c.width, c.height); }catch(e){ return null; }
-  if(highContrast){
-    if(canFilter) ctx.filter = 'none';
-    else grayscaleContrast(c, 1.8);
-  }
-  return c;
-}
-
-/* filter 미지원 브라우저용 수동 흑백·대비 강조 */
-function grayscaleContrast(canvas, contrast){
-  try{
-    const ctx = canvas.getContext('2d');
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = img.data, k = contrast == null ? 1.8 : contrast;
-    for(let i = 0; i < d.length; i += 4){
-      const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-      const v = Math.max(0, Math.min(255, (g - 128) * k + 128));
-      d[i] = d[i + 1] = d[i + 2] = v;
-    }
-    ctx.putImageData(img, 0, 0);
-  }catch(e){ /* 캔버스 접근 불가 시 원본 유지 */ }
-}
-
-async function startLiveScan(){
-  openSheet('scanSheet');
-  setScanStatus('카메라를 준비하는 중…', false);
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    setScanStatus('이 환경에서는 실시간 카메라를 쓸 수 없어요. ‘사진으로 인식’을 이용해 주세요.', true);
-    return;
-  }
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      },
-      audio: false
-    });
-    scanState.stream = stream;
-    const track = scanTrack();
-    const caps = scanCamCaps();
-    // 가까이 댄 바코드가 흐리게 잡히지 않도록 연속 자동초점을 요청 (지원 기기만)
-    try{
-      if(caps && Array.isArray(caps.focusMode) && caps.focusMode.indexOf('continuous') >= 0){
-        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-      }
-    }catch(e){ /* 초점 제어를 지원하지 않는 기기 */ }
-    // v1.4: 줌·손전등 지원 여부 확인 후 기본 2배 적용
-    scanState.zoomCap = null;
-    scanState.zoomSupported = false;
-    if(caps && caps.zoom && typeof caps.zoom.max === 'number' && caps.zoom.max > 1){
-      scanState.zoomSupported = true;
-      scanState.zoomCap = {
-        min: (typeof caps.zoom.min === 'number') ? caps.zoom.min : 1,
-        max: caps.zoom.max,
-        step: caps.zoom.step || 0.1
-      };
-    }
-    scanState.torchSupported = !!(caps && caps.torch);
-    scanState.torch = false;
-    scanState.zoom = 1;
-    setScanDigitalZoom(1);
-    updateScanTorchUI();
-    updateScanZoomUI();
-    if(scanState.zoomSupported && scanState.zoomCap.max >= SCAN_ZOOM_DEFAULT){
-      await applyScanZoom(SCAN_ZOOM_DEFAULT);
-    }
-    const video = $('#scanVideo');
-    video.srcObject = stream;
-    await video.play();
-    scanState.detector = await nativeDetector();
-    scanState.running = true;
-    scanState.last = 0;
-    scanState.cand = '';
-    scanState.hits = 0;
-    scanState.frame = 0;
-    setScanStatus(scanState.detector ? '바코드를 비춰 주세요' : '바코드를 비춰 주세요 (호환 모드)');
-    requestAnimationFrame(tickScan);
-  }catch(err){
-    const name = err && err.name;
-    let msg = '카메라를 열지 못했어요. ‘사진으로 인식’을 이용해 주세요.';
-    if(name === 'NotAllowedError') msg = '카메라 권한이 거부됐어요. 브라우저 설정에서 허용하거나 ‘사진으로 인식’을 써 주세요.';
-    else if(name === 'NotFoundError') msg = '카메라를 찾지 못했어요. ‘사진으로 인식’을 이용해 주세요.';
-    setScanStatus(msg, true);
-  }
-}
-
-/* 단발성 프레임 오인식을 막기 위한 2회 연속 일치(consensus) 확인.
-   유효한 ISBN-13이 연속 두 번 같은 값으로 읽혀야만 인정한다. */
-function confirmScanRead(value){
-  if(!isValidIsbn13(value)) return false;
-  const now = (window.performance && performance.now) ? performance.now() : Date.now();
-  if(scanState.cand === value && now - scanState.candTs <= 2600){
-    scanState.hits += 1;
-  }else{
-    scanState.cand = value;
-    scanState.hits = 1;
-  }
-  scanState.candTs = now;
-  return scanState.hits >= 2;
-}
-
-async function tickScan(ts){
-  if(!scanState.running) return;
-  const video = $('#scanVideo');
-  if(video.readyState >= 2 && ts - scanState.last > 220){
-    scanState.last = ts;
-    scanState.frame += 1;
-    let found = '';
-    // v1.4: 전체 화면 대신 가이드 박스(ROI) 안쪽만 잘라 디코딩 — 주변 일러스트·부가기호 배제
-    const box = scanRoiBox();
-    if(box){
-      const contrastPass = scanState.frame % 2 === 0;   // 격프레임마다 고대비 흑백 패스
-      const canvas = scanRoiCanvas(box, contrastPass);
-      // 1) 내장 감지기 (매 프레임)
-      if(scanState.detector && canvas){
-        try{
-          const codes = await scanState.detector.detect(canvas);
-          if(codes && codes.length) found = pickIsbn(codes);
-        }catch(e){ /* 무시 */ }
-      }
-      // 2) ZXing (원본/고대비 캔버스 교대)
-      if(!found && canvas){
-        try{ found = await zxingDecodeCanvas(canvas); }catch(e){ /* 무시 */ }
-      }
-      // 3) 가로등·반사·색 배경 대비: 반대 캔버스로 한 번 더 (부하를 줄여 3프레임마다)
-      if(!found && scanState.frame % 3 === 0){
-        try{
-          const alt = scanRoiCanvas(box, !contrastPass);
-          if(alt) found = await zxingDecodeCanvas(alt);
-        }catch(e){ /* 무시 */ }
-      }
-    }
-    if(found){
-      if(confirmScanRead(found)){
-        scanState.running = false;
-        if(navigator.vibrate) navigator.vibrate(70);
-        setScanStatus('인식했어요 · ' + found);
-        stopLiveScan();
-        closeSheet($('#scanSheet'));
-        $('#fIsbn').value = found;
-        const r = await lookupIsbn(found);
-        applyLookup(r, found);
-        return;
-      }
-      setScanStatus('인식 확인 중… 바코드를 그대로 비춰 주세요 (1/2)');
-    }else if(scanState.cand){
-      const now = (window.performance && performance.now) ? performance.now() : Date.now();
-      if(now - scanState.candTs > 2600){
-        scanState.cand = '';
-        scanState.hits = 0;
-        setScanStatus(scanState.detector ? '바코드를 비춰 주세요' : '바코드를 비춰 주세요 (호환 모드)');
-      }
-    }
-  }
-  scanState.raf = requestAnimationFrame(tickScan);
-}
-
-function stopLiveScan(){
-  scanState.running = false;
-  if(scanState.raf){ cancelAnimationFrame(scanState.raf); scanState.raf = 0; }
-  if(scanState.stream){
-    scanState.stream.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
-    scanState.stream = null;
-  }
-  const v = $('#scanVideo');
-  if(v){ v.srcObject = null; try{ v.pause(); }catch(e){} }
-  // v1.4: 줌·조명 상태 초기화 (다음 스캔은 다시 기본값으로 시작)
-  scanState.torch = false;
-  scanState.zoom = 1;
-  scanState.zoomSupported = false;
-  scanState.zoomCap = null;
-  setScanDigitalZoom(1);
-  updateScanZoomUI();
-  updateScanTorchUI();
-}
-$('#btnLiveScan').onclick = startLiveScan;
-$('#btnZoom1').onclick = () => { if(scanState.running) applyScanZoom(1); };
-$('#btnZoom2').onclick = () => { if(scanState.running) applyScanZoom(2); };
-$('#btnTorch').onclick = () => { if(scanState.running) setScanTorch(!scanState.torch); };
-updateScanZoomUI();
-updateScanTorchUI();
-
 /* ---------- 상세 ---------- */
 let detailId = null;
 let confirmDelete = false;
@@ -3990,7 +3571,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.5',
+  version: '1.6',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -4013,15 +3594,15 @@ window.__rc = {
   openDetail: openDetail,
   payload: exportPayload,
   importJson: importJson,
-  /* v1.5 내 책장 확인용 */
+  /* 내 책장 확인용 */
   shelfApi: {
     list: () => db.shelf.map(s => ({
-      id: s.id, name: s.name, lang: s.lang, publisher: s.publisher,
+      id: s.id, name: s.name, author: s.author, lang: s.lang, publisher: s.publisher,
       cover: s.coverData ? 'data' : (s.cover ? 'url' : 'auto'),
       recs: shelfRecs(s.id).length
     })),
-    add: (name, lang, publisher) => {
-      const s = sanitizeShelf({ id: uidS(), name: name, lang: lang || 'ko', publisher: publisher || '', createdAt: Date.now() });
+    add: (name, lang, publisher, author) => {
+      const s = sanitizeShelf({ id: uidS(), name: name, author: author || '', lang: lang || 'ko', publisher: publisher || '', createdAt: Date.now() });
       if(!s) return null;
       db.shelf.push(s); save(); render();
       return s.id;
@@ -4038,34 +3619,13 @@ window.__rc = {
     books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
     covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
   },
-  decodeFile: decodeImageFile,
-  lookupIsbn: lookupIsbn,
-  barcode: {
-    valid: (s) => isValidIsbn13(s),
-    reset: () => { scanState.cand = ''; scanState.hits = 0; scanState.candTs = 0; },
-    feed: (v) => confirmScanRead(v),
-    pick: (list) => pickIsbn(list.map(x => ({ rawValue: x }))),
-    state: () => ({ cand: scanState.cand, hits: scanState.hits })
-  },
-  /* v1.4 스캔 화면(줌·손전등·ROI 크롭) 확인용 */
-  scan: {
-    state: () => ({
-      running: scanState.running,
-      zoom: scanState.zoom,
-      zoomSupported: scanState.zoomSupported,
-      zoomCap: scanState.zoomCap,
-      zoomFallback: !!scanState.zoomFallback,
-      torch: scanState.torch,
-      torchSupported: scanState.torchSupported,
-      frame: scanState.frame
-    }),
-    roi: () => scanRoiBox(),
-    setZoom: (z) => applyScanZoom(z),
-    setTorch: (on) => setScanTorch(on),
-    crop: (opts) => {
-      const c = scanRoiCanvas(null, !!(opts && opts.contrast));
-      return c ? c.toDataURL('image/png') : '';
-    }
+  /* v1.6 내 책장·지난 기록 통합 검색 확인용 */
+  searchLocal: (q) => {
+    const l = localSearch(q);
+    return {
+      shelf: l.shelf.map(r => ({ id: r.id, title: r.title, author: r.author, lang: r.lang, publisher: r.publisher })),
+      past: l.past.map(r => ({ id: r.id, title: r.title, author: r.author, lang: r.lang, date: r.date }))
+    };
   },
   sources: {
     google: (q, lang) => googleSearch(q, lang || ''),
