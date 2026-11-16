@@ -336,11 +336,16 @@ textarea.input{resize:vertical;min-height:60px}
 .stat b{display:block;font-size:17px;font-weight:800}
 .stat span{font-size:11px;color:#9A958A;font-weight:700}
 
-/* ---------- 보기 전환 (월간 / 연간 / 내 책장) ---------- */
+/* ---------- 보기 전환 (월간 / 연간 / 내 책장 / 책 추천) ---------- */
 .seg.mode{background:#E5E0D0;margin:0 2px 11px}
-.seg.mode button{padding:10px 3px;font-size:13px;color:#7B7567;letter-spacing:-.3px}
+.seg.mode button{padding:10px 2px;font-size:12.5px;color:#7B7567;letter-spacing:-.35px}
 .seg.mode button.on{background:var(--ink);color:#fff;box-shadow:0 2px 9px rgba(30,41,59,.22)}
-@media(max-width:400px){.seg.mode button{font-size:12px;padding:10px 1px;letter-spacing:-.45px}}
+.vw-short{display:none}
+@media(max-width:400px){
+  .seg.mode button{font-size:12px;padding:9px 1px;letter-spacing:-.4px}
+  .vw-full{display:none}
+  .vw-short{display:inline}
+}
 
 /* ---------- 내 책장 ---------- */
 .shelf-card{margin-top:16px;padding-bottom:16px}
@@ -430,6 +435,60 @@ textarea.input{resize:vertical;min-height:60px}
 .year-sum .stat b{font-size:15px;letter-spacing:-.4px}
 .year-sum .empty{margin-top:13px}
 
+/* ---------- 책 추천 (v1.8) ---------- */
+.rec-card{margin-top:16px;padding-bottom:16px}
+.rec-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rec-title{display:flex;align-items:center;gap:8px;min-width:0}
+.rec-title h2{font-size:18px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.seg.sub{background:#EDE9DD;margin:13px 0 0}
+.seg.sub button{padding:9px 4px;font-size:13px}
+.seg.lang{margin-top:10px}
+.rec-ages{display:flex;gap:6px;overflow-x:auto;margin:12px 0 0;padding:1px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rec-ages::-webkit-scrollbar{display:none}
+.age-chip{
+  flex:0 0 auto;border-radius:999px;padding:8px 12px;font-size:12.5px;font-weight:800;
+  background:#fff;border:1.4px solid #E8E3D7;color:#6C7280;white-space:nowrap;
+}
+.age-chip.on{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 2px 7px rgba(30,41,59,.18)}
+.age-chip:active{transform:scale(.985)}
+.rec-note{display:flex;justify-content:space-between;gap:8px;margin:12px 2px 0;font-size:12px;font-weight:700;color:#9A958A}
+.rec-note b{color:#5B6270}
+.rec-list,.wish-list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.rec-item,.wish-item{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
+.rec-cov{position:relative;width:54px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13)}
+.rec-cov img{width:100%;height:100%;object-fit:cover}
+.rec-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
+.rec-body{flex:1;min-width:0;padding-top:1px}
+.rec-nm{display:block;font-size:14px;font-weight:800;line-height:1.36;color:#2C3444;letter-spacing:-.2px;word-break:keep-all}
+.rec-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;min-width:0}
+.rec-meta .tg{ font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;flex:0 0 auto}
+.rec-meta .tg.ko{background:var(--ko-bg);color:var(--ko)}
+.rec-meta .tg.en{background:var(--en-bg);color:var(--en)}
+.rec-meta .age{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#F1EDF7;color:#6B5C82;flex:0 0 auto}
+.rec-auth{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-reason{font-size:11.5px;font-weight:600;color:#6C7280;line-height:1.5;margin-top:5px;word-break:keep-all}
+.rec-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.rec-btn{
+  font-size:12px;font-weight:800;line-height:1.1;border-radius:999px;padding:9px 12px;
+  background:#fff;border:1.4px solid #E2DED2;color:#6C7280;
+}
+.rec-btn.on{background:#EFEAF7;border-color:#D9CFEC;color:#5B4B7A}
+.rec-btn.dark{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 2px 7px rgba(30,41,59,.16)}
+.rec-btn:active{transform:translateY(1px)}
+.rec-btn.del{background:#FBEAE7;border-color:#F3D9D3;color:#B4574A}
+.wish-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
+.wish-top p{font-size:12px;font-weight:700;color:#9A958A;line-height:1.5;min-width:0}
+.wish-add{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--ink);background:#F4F1E8;border-radius:999px;padding:9px 12px;white-space:nowrap}
+.wish-src{font-size:10.5px;font-weight:800;color:#A8A294;margin-top:5px}
+.rec-empty{text-align:center;padding:24px 12px 20px;border-radius:16px;background:#FBFAF5;border:1px dashed #E5E0D2;margin-top:12px}
+.rec-empty .em{font-size:26px;margin-bottom:8px}
+.rec-empty p{font-size:13px;color:#8E897C;font-weight:600;line-height:1.55}
+.rec-empty .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:13px}
+.rec-hero{display:flex;gap:13px;align-items:center;padding:2px 0 16px}
+.rec-hero .rec-cov{width:62px}
+.wish-toggle{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:#5B6270;background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:11px 13px;margin-bottom:12px}
+.wish-toggle input{width:19px;height:19px;accent-color:#1E293B;margin:0;flex:0 0 auto}
+
 #toast{
   position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
   bottom:104px;background:var(--ink);color:#fff;padding:11px 16px;border-radius:999px;
@@ -438,6 +497,7 @@ textarea.input{resize:vertical;min-height:60px}
   display:flex;align-items:center;gap:10px;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast span{min-width:0;word-break:keep-all}
 #toast button{
   pointer-events:auto;color:#9CE3B8;font-weight:800;font-size:13px;
   padding:2px 4px;flex:0 0 auto;text-decoration:underline;
@@ -464,9 +524,10 @@ textarea.input{resize:vertical;min-height:60px}
       </button>
     </div>
     <div class="seg mode" id="viewSeg" role="tablist" aria-label="보기 전환">
-      <button data-view="month" class="on" role="tab" aria-selected="true">월간 캘린더</button>
-      <button data-view="year" role="tab" aria-selected="false">연간 통계</button>
-      <button data-view="shelf" role="tab" aria-selected="false">내 책장</button>
+      <button data-view="month" class="on" role="tab" aria-selected="true" aria-label="월간 캘린더"><span class="vw-full">월간 캘린더</span><span class="vw-short">월간</span></button>
+      <button data-view="year" role="tab" aria-selected="false" aria-label="연간 통계"><span class="vw-full">연간 통계</span><span class="vw-short">연간</span></button>
+      <button data-view="shelf" role="tab" aria-selected="false" aria-label="내 책장">내 책장</button>
+      <button data-view="rec" role="tab" aria-selected="false" aria-label="책 추천"><span class="vw-full">책 추천</span><span class="vw-short">추천</span></button>
     </div>
     <div class="kids-row" id="kidBar" role="tablist" aria-label="아이 선택"></div>
     <div class="seg" id="filterSeg" role="tablist" aria-label="언어 필터">
@@ -537,6 +598,39 @@ textarea.input{resize:vertical;min-height:60px}
       </div>
       <p class="shelf-note">전집이나 자주 읽는 책을 담아 두면, 읽을 때마다 <b>+ 기록하기</b> 한 번으로 바로 남길 수 있어요.</p>
       <div class="shelf-list" id="shelfList"></div>
+    </section>
+
+    <!-- ===== 책 추천 (v1.8) ===== -->
+    <section class="card rec-card hidden" id="recCard" aria-label="책 추천">
+      <div class="rec-head">
+        <div class="rec-title">
+          <h2>책 추천</h2>
+          <span class="badge" id="recBadge">0권</span>
+        </div>
+      </div>
+      <div class="seg sub" id="recSeg" role="tablist" aria-label="추천 보기 전환">
+        <button data-rec="age" class="on" role="tab" aria-selected="true">연령별 추천</button>
+        <button data-rec="wish" role="tab" aria-selected="false">읽을 목록</button>
+      </div>
+
+      <div id="recAgePane">
+        <div class="rec-ages" id="ageChips" role="tablist" aria-label="연령대"></div>
+        <div class="seg lang" id="recLang" role="tablist" aria-label="언어 필터">
+          <button data-filter="all" class="on" role="tab" aria-selected="true">전체</button>
+          <button data-filter="ko" role="tab" aria-selected="false">한글책</button>
+          <button data-filter="en" role="tab" aria-selected="false">영어책</button>
+        </div>
+        <div class="rec-note" id="recNote"></div>
+        <div class="rec-list" id="recList"></div>
+      </div>
+
+      <div id="recWishPane" class="hidden">
+        <div class="wish-top">
+          <p>담아 둔 책은 <b>읽었어요</b> 한 번으로 달력에 기록돼요.</p>
+          <button class="wish-add" id="btnWishAddNew" type="button">+ 직접 추가</button>
+        </div>
+        <div class="wish-list" id="wishList"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -710,6 +804,74 @@ textarea.input{resize:vertical;min-height:60px}
   </div>
 </div>
 
+<!-- ===== 읽을 목록 기록 시트 ===== -->
+<div class="sheet-wrap" id="wishSheet" role="dialog" aria-modal="true" aria-labelledby="wishTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="wishTitle">책 기록하기</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+
+    <div class="rec-hero" id="wishHero"></div>
+
+    <div class="field">
+      <label for="wDate">날짜</label>
+      <input class="input" type="date" id="wDate">
+    </div>
+
+    <div class="field" id="wKidField">
+      <label>누가 읽었나요? <span style="color:#C98B77">*</span></label>
+      <div class="kid-pick" id="wKidPick"></div>
+    </div>
+
+    <label class="wish-toggle" id="wRemoveRow" for="wRemove">
+      <input type="checkbox" id="wRemove" checked>
+      <span>기록하면 읽을 목록에서 빼기</span>
+    </label>
+
+    <div class="save-bar">
+      <button class="btn dark" id="btnWishSave" type="button" style="width:100%;padding:15px;border-radius:16px">기록하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 읽을 책 직접 추가 시트 ===== -->
+<div class="sheet-wrap" id="wishAddSheet" role="dialog" aria-modal="true" aria-labelledby="wishAddTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="wishAddTitle">읽을 책 직접 추가</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <p class="sheet-note" style="margin:0 0 12px">읽고 싶은 책을 적어 두면, 나중에 누르기만 해서 바로 읽은 날을 남길 수 있어요.</p>
+
+    <div class="field">
+      <label for="waTitle">책 제목 <span style="color:#C98B77">*</span></label>
+      <input class="input" id="waTitle" placeholder="예: 이상한 엄마" maxlength="80" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="waAuthor">지은이 (선택)</label>
+      <input class="input" id="waAuthor" placeholder="예: 백희나" maxlength="60" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>구분 <span style="color:#C98B77">*</span></label>
+      <div class="lang-toggle" id="waLang">
+        <button class="lang-btn on" data-lang="ko" type="button">한글책</button>
+        <button class="lang-btn" data-lang="en" type="button">영어책</button>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn dark" id="btnWishAdd" type="button" style="width:100%;padding:15px;border-radius:16px">읽을 목록에 담기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 책 상세 시트 ===== -->
 <div class="sheet-wrap" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
   <div class="backdrop" data-close></div>
@@ -821,8 +983,8 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], settings: { gbKey: '' } };
-let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month' };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '' } };
+let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', rec: { age: '0-2', sub: 'age' } };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
@@ -842,7 +1004,8 @@ function load(){
         db.settings = Object.assign({ gbKey: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
-        if(Number(p.version) > 1) db.version = 2;
+        if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
+        if(Number(p.version) > 1) db.version = Math.max(db.version, 3);
       }
     }
   }catch(e){ console.warn('저장된 기록을 읽지 못했어요', e); }
@@ -1042,19 +1205,22 @@ function matchChild(b){
 function render(){
   const isYear = view.ymode === 'year';
   const isShelf = view.ymode === 'shelf';
+  const isRec = view.ymode === 'rec';
   // 첫 실행(기록 0권)에는 빈 상태 안내의 버튼을 가리지 않도록 하단 고정 버튼을 숨긴다
   const cta = document.querySelector('.cta-wrap');
-  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear || isShelf);
-  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard'), sc = $('#shelfCard');
-  if(mc) mc.classList.toggle('hidden', isYear || isShelf);
-  if(dc) dc.classList.toggle('hidden', isYear || isShelf);
+  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear || isShelf || isRec);
+  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard'), sc = $('#shelfCard'), rc = $('#recCard');
+  if(mc) mc.classList.toggle('hidden', isYear || isShelf || isRec);
+  if(dc) dc.classList.toggle('hidden', isYear || isShelf || isRec);
   if(yc) yc.classList.toggle('hidden', !isYear);
   if(sc) sc.classList.toggle('hidden', !isShelf);
+  if(rc) rc.classList.toggle('hidden', !isRec);
   const fs = $('#filterSeg'), kb = $('#kidBar');
-  if(fs) fs.classList.toggle('hidden', isShelf);
-  if(kb) kb.classList.toggle('hidden', isShelf);
+  if(fs) fs.classList.toggle('hidden', isShelf || isRec);
+  if(kb) kb.classList.toggle('hidden', isShelf || isRec);
   applyViewSeg();
   renderKidBar();
+  if(isRec){ renderRec(); return; }
   if(isShelf){ renderShelf(); return; }
   if(isYear){ renderYear(); return; }
   renderMonth();
@@ -1188,7 +1354,9 @@ function renderMonth(){
 
 /* ---------- 연간 통계 ---------- */
 function applyViewSeg(){
-  const mode = view.ymode === 'year' ? 'year' : (view.ymode === 'shelf' ? 'shelf' : 'month');
+  const mode = view.ymode === 'year' ? 'year'
+    : (view.ymode === 'shelf' ? 'shelf'
+    : (view.ymode === 'rec' ? 'rec' : 'month'));
   $$('#viewSeg button').forEach(b => {
     const on = b.dataset.view === mode;
     b.classList.toggle('on', on);
@@ -1196,7 +1364,9 @@ function applyViewSeg(){
   });
 }
 function setViewMode(mode){
-  const next = mode === 'year' ? 'year' : (mode === 'shelf' ? 'shelf' : 'month');
+  const next = mode === 'year' ? 'year'
+    : (mode === 'shelf' ? 'shelf'
+    : (mode === 'rec' ? 'rec' : 'month'));
   if(view.ymode === next) return;
   view.ymode = next;
   if(next === 'month' && String(view.sel).slice(0, 7) !== view.year + '-' + pad(view.month + 1)){
@@ -1428,7 +1598,7 @@ function renderDay(){
         img.src = src;
         img.alt = '';
         img.loading = 'lazy';
-        img.onerror = () => { cov.innerHTML = '<div class="ph">📕</div>'; };
+        img.onerror = () => { img.onerror = null; img.src = coverFromTitle(b.title, shelfSeed(b.title)); };
         cov.appendChild(img);
       }else{
         cov.innerHTML = '<div class="ph">📕</div>';
@@ -1960,10 +2130,639 @@ $('#btnQuickFull').onclick = () => {
   syncShelfSaveToggle();
 };
 
+/* ---------- 책 추천 (v1.8) ---------- */
+const AGES = [
+  { k: '0-2', label: '0~2세' },
+  { k: '3-4', label: '3~4세' },
+  { k: '5-6', label: '5~6세' },
+  { k: '7-8', label: '7~8세' },
+  { k: '9-10', label: '9~10세+' }
+];
+const AGE_LABEL = {};
+AGES.forEach(a => { AGE_LABEL[a.k] = a.label; });
+function ageLabel(k){ return AGE_LABEL[k] || ''; }
+function recFallback(b){ return coverFromTitle(b.title, shelfSeed(b.title)); }
+
+/* 연령대별 한글책·영어책 큐레이션 (각 6권, 60권) */
+const CURATED = [
+  { id: "r01", age: "0-2", lang: "ko", title: "달님 안녕", author: "하야시 아키코", isbn: "9788970940564", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788970940564.jpg",
+    reason: "구름 뒤로 숨는 달님과 까꿍 놀이를 하며 첫 책을 친근하게 만나요." },
+  { id: "r02", age: "0-2", lang: "ko", title: "사과가 쿵!", author: "다다 히로시", isbn: "9788943306090", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788943306090.jpg",
+    reason: "쿵 떨어진 사과를 동물들이 나눠 먹는 단순한 이야기로 수와 동물을 익혀요." },
+  { id: "r03", age: "0-2", lang: "ko", title: "사랑해 사랑해 사랑해", author: "버나뎃 로제티 슈스탁", isbn: "9788961708531", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788961708531.jpg",
+    reason: "머리부터 발끝까지 사랑한다고 말해 주는 책이라 잠자리 전에 좋아요." },
+  { id: "r04", age: "0-2", lang: "ko", title: "엄마랑 뽀뽀", author: "김동수", isbn: "9788943307219", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788943307219.jpg",
+    reason: "엄마와 뽀뽀하는 장면이 반복되어 아이가 몸으로 애정을 배워요." },
+  { id: "r05", age: "0-2", lang: "ko", title: "아빠한테 찰딱", author: "최정선", isbn: "9788943308193", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788943308193.jpg",
+    reason: "아빠 품에 찰딱 붙는 놀이를 책으로 하며 아빠와 가까워져요." },
+  { id: "r06", age: "0-2", lang: "ko", title: "두드려 보아요", author: "안나클라라 티돌름", isbn: "9788958282136", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788958282136.jpg",
+    reason: "문을 똑똑 두드리면 다음 장이 열려 손으로 놀며 책을 좋아하게 돼요." },
+  { id: "r07", age: "3-4", lang: "ko", title: "구름빵", author: "백희나", isbn: "9791170283836", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791170283836.jpg",
+    reason: "구름으로 만든 빵을 먹고 하늘을 나는 상상을 그림으로 생생하게 보여 줘요." },
+  { id: "r08", age: "3-4", lang: "ko", title: "누가 내 머리에 똥 쌌어?", author: "베르너 홀츠바르트", isbn: "9788971968413", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788971968413.jpg",
+    reason: "두더지가 범인을 찾아 나서는 이야기라 웃음과 추리 놀이를 함께 즐겨요." },
+  { id: "r09", age: "3-4", lang: "ko", title: "무지개 물고기", author: "마르쿠스 피스터", isbn: "9788972590637", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788972590637.jpg",
+    reason: "반짝이는 비늘을 나눠 주며 친구를 사귀는 마음을 배워요." },
+  { id: "r10", age: "3-4", lang: "ko", title: "돼지책", author: "앤서니 브라운", isbn: "9788901033518", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788901033518.jpg",
+    reason: "엄마의 하루를 아이 눈으로 보게 하는 책이라 가족 역할 이야기를 나누기 좋아요." },
+  { id: "r11", age: "3-4", lang: "ko", title: "치과의사 드소토 선생님", author: "윌리엄 스타이그", isbn: "9788949110097", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788949110097.jpg",
+    reason: "여우의 이빨을 고쳐 주는 생쥐 의사의 지혜가 유쾌하게 펼쳐져요." },
+  { id: "r12", age: "3-4", lang: "ko", title: "커다란 순무", author: "알렉세이 톨스토이", isbn: "9791188283866", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791188283866.jpg",
+    reason: "\"영차영차\" 힘을 모으는 반복 말놀이로 함께하는 힘을 배워요." },
+  { id: "r13", age: "5-6", lang: "ko", title: "알사탕", author: "백희나", isbn: "9791198610614", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791198610614.jpg",
+    reason: "알사탕을 먹으면 마음의 소리가 들린다는 설정이 아이의 상상을 활짝 열어요." },
+  { id: "r14", age: "5-6", lang: "ko", title: "강아지똥", author: "권정생", isbn: "9788986621136", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788986621136.jpg",
+    reason: "보잘것없어 보이는 강아지똥이 꽃을 피우는 결말로 자기 가치를 생각하게 해요." },
+  { id: "r15", age: "5-6", lang: "ko", title: "엄마 까투리", author: "권정생", isbn: "9788989646488", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788989646488.jpg",
+    reason: "알을 품는 엄마의 마음을 담은 이야기라 생명과 사랑을 조용히 느껴요." },
+  { id: "r16", age: "5-6", lang: "ko", title: "책 먹는 여우", author: "프란치스카 비어만", isbn: "9788934908067", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788934908067.jpg",
+    reason: "책을 먹으며 지식을 삼키는 여우 이야기로 책 읽기의 즐거움을 알려 줘요." },
+  { id: "r17", age: "5-6", lang: "ko", title: "프레드릭", author: "레오 리오니", isbn: "9788952783103", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788952783103.jpg",
+    reason: "겨울을 위해 시와 색을 모은 생쥐 이야기로 저마다 다른 재능을 응원해요." },
+  { id: "r18", age: "5-6", lang: "ko", title: "지각대장 존", author: "존 버닝햄", isbn: "9788949110073", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788949110073.jpg",
+    reason: "지각할 때마다 펼쳐지는 엉뚱한 상상이 웃음을 터뜨려요." },
+  { id: "r19", age: "7-8", lang: "ko", title: "장수탕 선녀님", author: "백희나", isbn: "9791198610621", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791198610621.jpg",
+    reason: "목욕탕에서 만난 선녀님과의 하룻밤이 한국적 상상력으로 살아 있어요." },
+  { id: "r20", age: "7-8", lang: "ko", title: "수박 수영장", author: "안녕달", isbn: "9788936446819", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788936446819.jpg",
+    reason: "수박 속에 뛰어든 아이들의 여름이 시원하게 펼쳐지는 그림책이에요." },
+  { id: "r21", age: "7-8", lang: "ko", title: "마당을 나온 암탉", author: "황선미", isbn: "9788971968710", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788971968710.jpg",
+    reason: "자유를 꿈꾸는 암탉 잎싹의 긴 여정을 따라가며 용기를 배워요." },
+  { id: "r22", age: "7-8", lang: "ko", title: "100만 번 산 고양이", author: "사노 요코", isbn: "9788949110851", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788949110851.jpg",
+    reason: "백만 번 살아난 고양이가 진짜 사랑을 찾는 이야기로 삶과 사랑을 생각해요." },
+  { id: "r23", age: "7-8", lang: "ko", title: "내 이름은 삐삐 롱스타킹", author: "아스트리드 린드그렌", isbn: "9788952785404", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788952785404.jpg",
+    reason: "말썽꾸러기 삐삐의 씩씩한 모험으로 자유로운 상상을 즐겨요." },
+  { id: "r24", age: "7-8", lang: "ko", title: "긴긴밤", author: "루리", isbn: "9788954677158", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788954677158.jpg",
+    reason: "마지막 흰코뿔소와 펭귄의 동행을 통해 우정과 이별을 담담히 만나요." },
+  { id: "r25", age: "9-10", lang: "ko", title: "푸른 사자 와니니", author: "이현", isbn: "9788936442804", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788936442804.jpg",
+    reason: "무리에서 자란 사자 와니니가 자기만의 길을 찾아가는 성장 이야기예요." },
+  { id: "r26", age: "9-10", lang: "ko", title: "몽실 언니", author: "권정생", isbn: "9788936433895", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788936433895.jpg",
+    reason: "어려운 시대를 견디는 몽실이의 삶을 통해 책임과 사랑을 배워요." },
+  { id: "r27", age: "9-10", lang: "ko", title: "5번 레인", author: "은소홀", isbn: "9788954674638", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788954674638.jpg",
+    reason: "수영을 좋아하는 아이의 마음을 섬세하게 그려 자기만의 속도를 알려 줘요." },
+  { id: "r28", age: "9-10", lang: "ko", title: "시간을 파는 상점", author: "김선영", isbn: "9788954427173", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9788954427173.jpg",
+    reason: "시간을 사고파는 상점에서 벌어지는 일들로 선택과 책임을 생각해요." },
+  { id: "r29", age: "9-10", lang: "ko", title: "해리 포터와 마법사의 돌", author: "J.K. 롤링", isbn: "9791193790656", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791193790656.jpg",
+    reason: "마법 학교에 간 소년의 모험으로 긴 이야기를 읽는 힘을 길러요." },
+  { id: "r30", age: "9-10", lang: "ko", title: "나와 조금 다를 뿐이야", author: "이금이", isbn: "9791191826098", cover: "https://contents.kyobobook.co.kr/sih/fit-in/300x0/pdt/9791191826098.jpg",
+    reason: "서로 다른 점을 이해하는 마음을 배우는 이야기예요." },
+  { id: "r31", age: "0-2", lang: "en", title: "Brown Bear, Brown Bear, What Do You See?", author: "Bill Martin Jr. · Eric Carle", isbn: "9780805047905", cover: "https://covers.openlibrary.org/b/isbn/9780805047905-L.jpg",
+    reason: "\"What do you see?\"가 반복되어 색깔과 동물 이름을 영어로 익혀요." },
+  { id: "r32", age: "0-2", lang: "en", title: "Goodnight Moon", author: "Margaret Wise Brown", isbn: "9780064430173", cover: "https://covers.openlibrary.org/b/isbn/9780064430173-L.jpg",
+    reason: "방 안의 물건에 잘 자라고 인사하며 잠자리 영어 표현을 배워요." },
+  { id: "r33", age: "0-2", lang: "en", title: "Where's Spot?", author: "Eric Hill", isbn: "9780399218224", cover: "https://covers.openlibrary.org/b/isbn/9780399218224-L.jpg",
+    reason: "플랩을 열며 \"Where's Spot?\"을 따라 말하는 놀이책이에요." },
+  { id: "r34", age: "0-2", lang: "en", title: "Dear Zoo", author: "Rod Campbell", isbn: "9781416947370", cover: "https://covers.openlibrary.org/b/isbn/9781416947370-L.jpg",
+    reason: "동물원이 보낸 동물들을 만나며 크기와 형용사를 영어로 익혀요." },
+  { id: "r35", age: "0-2", lang: "en", title: "Pat the Bunny", author: "Dorothy Kunhardt", isbn: "9780307120007", cover: "https://covers.openlibrary.org/b/isbn/9780307120007-L.jpg",
+    reason: "만지고 냄새 맡는 촉감책이라 \"pat\", \"smell\" 같은 동사를 몸으로 배워요." },
+  { id: "r36", age: "0-2", lang: "en", title: "Guess How Much I Love You", author: "Sam McBratney", isbn: "9780763602048", cover: "https://covers.openlibrary.org/b/isbn/9780763602048-L.jpg",
+    reason: "\"I love you\" 표현을 반복하며 사랑을 말하는 영어 문장에 익숙해져요." },
+  { id: "r37", age: "3-4", lang: "en", title: "The Very Hungry Caterpillar", author: "Eric Carle", isbn: "9781524739553", cover: "https://covers.openlibrary.org/b/isbn/9781524739553-L.jpg",
+    reason: "배고픈 애벌레가 먹는 과일로 요일과 수를 영어로 익혀요." },
+  { id: "r38", age: "3-4", lang: "en", title: "The Gruffalo", author: "Julia Donaldson", isbn: "9781509845323", cover: "https://covers.openlibrary.org/b/isbn/9781509845323-L.jpg",
+    reason: "라임이 살아 있는 문장이라 영어 소리를 즐기며 읽기 좋아요." },
+  { id: "r39", age: "3-4", lang: "en", title: "Press Here", author: "Hervé Tullet", isbn: "9780811879545", cover: "https://covers.openlibrary.org/b/isbn/9780811879545-L.jpg",
+    reason: "점을 누르고 흔들면 그림이 바뀌는 책이라 영어 지시문을 몸으로 따라 해요." },
+  { id: "r40", age: "3-4", lang: "en", title: "We're Going on a Bear Hunt", author: "Michael Rosen", isbn: "9781416987123", cover: "https://covers.openlibrary.org/b/isbn/9781416987123-L.jpg",
+    reason: "\"We're going on a bear hunt\"의 리듬이 반복되어 함께 읽기 좋아요." },
+  { id: "r41", age: "3-4", lang: "en", title: "The Tiger Who Came to Tea", author: "Judith Kerr", isbn: "9780060517809", cover: "https://covers.openlibrary.org/b/isbn/9780060517809-L.jpg",
+    reason: "호랑이가 찾아온 날의 이야기로 초대와 식사 영어 표현을 만나요." },
+  { id: "r42", age: "3-4", lang: "en", title: "Each Peach Pear Plum", author: "Janet & Allan Ahlberg", isbn: "9780141973654", cover: "https://covers.openlibrary.org/b/isbn/9780141973654-L.jpg",
+    reason: "동요 속 인물을 찾는 그림 속 숨은그림찾기로 영어 라임을 익혀요." },
+  { id: "r43", age: "5-6", lang: "en", title: "Where the Wild Things Are", author: "Maurice Sendak", isbn: "9780060254926", cover: "https://covers.openlibrary.org/b/isbn/9780060254926-L.jpg",
+    reason: "괴물들의 왕이 된 맥스 이야기로 \"rumpus\" 같은 생생한 영어를 만나요." },
+  { id: "r44", age: "5-6", lang: "en", title: "Don't Let the Pigeon Drive the Bus!", author: "Mo Willems", isbn: "9780786819881", cover: "https://covers.openlibrary.org/b/isbn/9780786819881-L.jpg",
+    reason: "비둘기의 말대꾸를 따라 읽으며 \"Don't\"와 \"No\" 표현을 익혀요." },
+  { id: "r45", age: "5-6", lang: "en", title: "The Cat in the Hat", author: "Dr. Seuss", isbn: "9780394800011", cover: "https://covers.openlibrary.org/b/isbn/9780394800011-L.jpg",
+    reason: "운율이 강한 문장이라 영어 소리와 리듬을 자연스럽게 익혀요." },
+  { id: "r46", age: "5-6", lang: "en", title: "Olivia", author: "Ian Falconer", isbn: "9780689829536", cover: "https://covers.openlibrary.org/b/isbn/9780689829536-L.jpg",
+    reason: "꼬마 돼지 올리비아의 하루로 \"I love you anyway\" 같은 문장을 만나요." },
+  { id: "r47", age: "5-6", lang: "en", title: "Room on the Broom", author: "Julia Donaldson", isbn: "9780142501122", cover: "https://covers.openlibrary.org/b/isbn/9780142501122-L.jpg",
+    reason: "마녀와 동물들의 라임 이야기로 반복되는 영어 문장을 즐겨요." },
+  { id: "r48", age: "5-6", lang: "en", title: "Knuffle Bunny", author: "Mo Willems", isbn: "9780786818709", cover: "https://covers.openlibrary.org/b/isbn/9780786818709-L.jpg",
+    reason: "토끼 인형을 잃어버린 날의 이야기로 아이의 마음을 영어로 읽어요." },
+  { id: "r49", age: "7-8", lang: "en", title: "Magic Tree House #1: Dinosaurs Before Dark", author: "Mary Pope Osborne", isbn: "9780375869884", cover: "https://covers.openlibrary.org/b/isbn/9780375869884-L.jpg",
+    reason: "짧은 장으로 이루어진 첫 챕터북이라 영어 읽기를 시작하기 좋아요." },
+  { id: "r50", age: "7-8", lang: "en", title: "Frog and Toad Are Friends", author: "Arnold Lobel", isbn: "9780060239572", cover: "https://covers.openlibrary.org/b/isbn/9780060239572-L.jpg",
+    reason: "짧고 따뜻한 다섯 편의 이야기로 영어 문장 읽기에 자신이 붙어요." },
+  { id: "r51", age: "7-8", lang: "en", title: "Ramona the Pest", author: "Beverly Cleary", isbn: "9780380709540", cover: "https://covers.openlibrary.org/b/isbn/9780380709540-L.jpg",
+    reason: "유치원에 다니는 라모나의 좌충우돌 하루를 영어로 읽어요." },
+  { id: "r52", age: "7-8", lang: "en", title: "Nate the Great", author: "Marjorie Weinman Sharmat", isbn: "9781439549056", cover: "https://covers.openlibrary.org/b/id/282888-L.jpg",
+    reason: "짧은 추리 이야기라 단서를 찾으며 끝까지 읽는 힘을 길러요." },
+  { id: "r53", age: "7-8", lang: "en", title: "The Tale of Peter Rabbit", author: "Beatrix Potter", isbn: "9780723247708", cover: "https://covers.openlibrary.org/b/isbn/9780723247708-L.jpg",
+    reason: "짧은 문장과 고전적인 그림으로 영어 그림책의 원전을 만나요." },
+  { id: "r54", age: "7-8", lang: "en", title: "The Enormous Crocodile", author: "Roald Dahl", isbn: "9780451480002", cover: "https://covers.openlibrary.org/b/isbn/9780451480002-L.jpg",
+    reason: "커다란 악어의 계획을 따라가며 재미있는 영어 표현을 익혀요." },
+  { id: "r55", age: "9-10", lang: "en", title: "Charlotte's Web", author: "E.B. White", isbn: "9780064400558", cover: "https://covers.openlibrary.org/b/isbn/9780064400558-L.jpg",
+    reason: "돼지와 거미의 우정을 담은 장편으로 영어 읽기의 즐거움을 키워요." },
+  { id: "r56", age: "9-10", lang: "en", title: "Matilda", author: "Roald Dahl", isbn: "9780142410370", cover: "https://covers.openlibrary.org/b/isbn/9780142410370-L.jpg",
+    reason: "책을 좋아하는 소녀의 통쾌한 이야기로 긴 영어 문장에 익숙해져요." },
+  { id: "r57", age: "9-10", lang: "en", title: "Harry Potter and the Philosopher's Stone", author: "J.K. Rowling", isbn: "9780747542988", cover: "https://covers.openlibrary.org/b/isbn/9780747542988-L.jpg",
+    reason: "마법 세계의 영어 어휘를 넓히며 장편 읽기에 도전해요." },
+  { id: "r58", age: "9-10", lang: "en", title: "The Lion, the Witch and the Wardrobe", author: "C.S. Lewis", isbn: "9780064471046", cover: "https://covers.openlibrary.org/b/isbn/9780064471046-L.jpg",
+    reason: "옷장 너머 나니아로 가는 모험을 통해 영어 서사 문장을 읽어요." },
+  { id: "r59", age: "9-10", lang: "en", title: "Wonder", author: "R.J. Palacio", isbn: "9780375869020", cover: "https://covers.openlibrary.org/b/isbn/9780375869020-L.jpg",
+    reason: "여러 시점으로 쓰인 이야기라 다양한 영어 문체를 접할 수 있어요." },
+  { id: "r60", age: "9-10", lang: "en", title: "Holes", author: "Louis Sachar", isbn: "9780440414803", cover: "https://covers.openlibrary.org/b/isbn/9780440414803-L.jpg",
+    reason: "예상하지 못한 전개가 이어져 영어로 끝까지 읽는 힘을 길러요." },
+];
+
+function recById(id){ return CURATED.find(r => r.id === id) || null; }
+function recsFor(age, filter){
+  return CURATED.filter(r => r.age === age && (filter === 'all' || r.lang === filter));
+}
+
+/* ---------- 읽을 목록 데이터 ---------- */
+function uidW(){ return 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function sanitizeWish(w){
+  if(!w || typeof w !== 'object') return null;
+  const title = String(w.title || '').trim().slice(0, 80);
+  if(!title) return null;
+  return {
+    id: w.id ? String(w.id) : uidW(),
+    title: title,
+    author: String(w.author || '').trim().slice(0, 60),
+    lang: w.lang === 'en' ? 'en' : 'ko',
+    isbn: String(w.isbn || '').replace(/[^0-9Xx]/g, '').slice(0, 14),
+    cover: typeof w.cover === 'string' ? w.cover.slice(0, 500) : '',
+    age: AGE_LABEL[w.age] ? String(w.age) : '',
+    recId: w.recId ? String(w.recId).slice(0, 20) : '',
+    reason: String(w.reason || '').trim().slice(0, 160),
+    createdAt: Number(w.createdAt) || Date.now()
+  };
+}
+function wishFind(o){
+  if(!o) return null;
+  const t = String(o.title || '').trim().toLowerCase();
+  if(!t) return null;
+  return db.wishlist.find(w =>
+    (o.recId && w.recId === o.recId) ||
+    (w.title.trim().toLowerCase() === t && w.lang === (o.lang === 'en' ? 'en' : 'ko'))
+  ) || null;
+}
+function addToWish(o){
+  if(!Array.isArray(db.wishlist)) db.wishlist = [];
+  if(wishFind(o)) return null;
+  const w = sanitizeWish({
+    id: uidW(), title: o.title, author: o.author, lang: o.lang, isbn: o.isbn,
+    cover: o.cover, age: o.age, recId: o.recId || o.id || '', reason: o.reason, createdAt: Date.now()
+  });
+  if(!w) return null;
+  db.wishlist.push(w);
+  save();
+  return w;
+}
+function removeFromWish(id){
+  const i = db.wishlist.findIndex(w => w.id === id);
+  if(i < 0) return null;
+  const item = db.wishlist.splice(i, 1)[0];
+  save();
+  return { item: item, index: i };
+}
+function toggleWish(o){
+  const hit = wishFind(o);
+  if(hit){
+    const back = removeFromWish(hit.id);
+    renderRec();
+    toast('읽을 목록에서 뺐어요', '되돌리기', () => {
+      if(back) db.wishlist.splice(Math.min(back.index, db.wishlist.length), 0, back.item);
+      save(); renderRec();
+    });
+  }else{
+    const w = addToWish(o);
+    if(!w) return;
+    renderRec();
+    toast('읽을 목록에 담았어요', '되돌리기', () => {
+      removeFromWish(w.id); renderRec();
+    });
+  }
+}
+
+/* ---------- 추천 화면 ---------- */
+function renderRec(){
+  if(!Array.isArray(db.wishlist)) db.wishlist = [];
+  const isWish = view.rec.sub === 'wish';
+  $$('#recSeg button').forEach(b => {
+    const on = b.dataset.rec === view.rec.sub;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  $('#recAgePane').classList.toggle('hidden', isWish);
+  $('#recWishPane').classList.toggle('hidden', !isWish);
+  if(isWish){
+    $('#recBadge').textContent = db.wishlist.length + '권';
+    renderWishList();
+    return;
+  }
+  renderAgeChips();
+  renderRecList();
+}
+
+function renderAgeChips(){
+  const box = $('#ageChips');
+  if(!box) return;
+  box.innerHTML = '';
+  AGES.forEach(a => {
+    const n = recsFor(a.k, view.filter).length;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'age-chip' + (view.rec.age === a.k ? ' on' : '');
+    b.dataset.age = a.k;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', view.rec.age === a.k ? 'true' : 'false');
+    b.textContent = a.label + ' ' + n;
+    box.appendChild(b);
+  });
+  // 선택한 연령대가 보이도록 가로 스크롤 위치를 맞춘다
+  const act = box.querySelector('.age-chip.on');
+  if(act && box.scrollWidth > box.clientWidth){
+    const first = box.firstElementChild;
+    const left = act.offsetLeft - (first ? first.offsetLeft : 0);
+    const min = left - 6;
+    const max = left + act.offsetWidth - box.clientWidth + 6;
+    if(box.scrollLeft > min) box.scrollLeft = Math.max(0, min);
+    if(box.scrollLeft < max) box.scrollLeft = max;
+  }
+}
+
+function buildRecCover(b, cls){
+  const cov = document.createElement('div');
+  cov.className = cls || 'rec-cov';
+  const src = b && b.cover ? String(b.cover) : '';
+  if(src){
+    const img = document.createElement('img');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.src = src;
+    img.onerror = () => { img.onerror = null; img.src = recFallback(b); };
+    cov.appendChild(img);
+  }else{
+    cov.innerHTML = '<div class="ph">📕</div>';
+  }
+  return cov;
+}
+
+function renderRecList(){
+  const list = $('#recList');
+  const note = $('#recNote');
+  if(!list) return;
+  const shown = recsFor(view.rec.age, view.filter);
+  const all = recsFor(view.rec.age, 'all');
+  const koN = all.filter(r => r.lang === 'ko').length;
+  const enN = all.filter(r => r.lang === 'en').length;
+  $('#recBadge').textContent = shown.length + '권';
+  note.innerHTML = '<span><b>' + ageLabel(view.rec.age) + '</b> · 한글 ' + koN + '권 · 영어 ' + enN + '권</span>' +
+    '<span>' + (view.filter === 'all' ? '전체' : (view.filter === 'ko' ? '한글책' : '영어책')) + '</span>';
+  list.innerHTML = '';
+  if(!shown.length){
+    const box = document.createElement('div');
+    box.className = 'rec-empty';
+    box.innerHTML = '<div class="em">🍃</div><p>' + ageLabel(view.rec.age) + ' ' +
+      (view.filter === 'ko' ? '한글책' : '영어책') + ' 추천은 아직 없어요.</p>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill';
+    b.textContent = '전체 언어 보기';
+    b.onclick = () => setFilter('all');
+    row.appendChild(b);
+    box.appendChild(row);
+    list.appendChild(box);
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  shown.forEach(r => frag.appendChild(buildRecItem(r)));
+  list.appendChild(frag);
+}
+
+function buildRecItem(r){
+  const item = document.createElement('div');
+  item.className = 'rec-item';
+  item.dataset.rid = r.id;
+  item.appendChild(buildRecCover(r));
+
+  const body = document.createElement('div');
+  body.className = 'rec-body';
+  const nm = document.createElement('div');
+  nm.className = 'rec-nm';
+  nm.textContent = r.title;
+  const meta = document.createElement('div');
+  meta.className = 'rec-meta';
+  const tg = document.createElement('span');
+  tg.className = 'tg ' + r.lang;
+  tg.textContent = r.lang === 'ko' ? '한글' : '영어';
+  const ag = document.createElement('span');
+  ag.className = 'age';
+  ag.textContent = ageLabel(r.age);
+  meta.appendChild(tg); meta.appendChild(ag);
+  const au = document.createElement('div');
+  au.className = 'rec-auth';
+  au.textContent = r.author;
+  const rs = document.createElement('div');
+  rs.className = 'rec-reason';
+  rs.textContent = r.reason;
+  const acts = document.createElement('div');
+  acts.className = 'rec-acts';
+
+  const inWish = !!wishFind(r);
+  const wb = document.createElement('button');
+  wb.type = 'button';
+  wb.className = 'rec-btn' + (inWish ? ' on' : '');
+  wb.dataset.act = 'wish';
+  wb.setAttribute('aria-pressed', inWish ? 'true' : 'false');
+  wb.textContent = inWish ? '✓ 읽을 목록에 있음' : '+ 읽을 목록';
+
+  const rb = document.createElement('button');
+  rb.type = 'button';
+  rb.className = 'rec-btn dark';
+  rb.dataset.act = 'record';
+  rb.textContent = '바로 기록';
+
+  acts.appendChild(wb); acts.appendChild(rb);
+  body.appendChild(nm); body.appendChild(meta); body.appendChild(au); body.appendChild(rs); body.appendChild(acts);
+  item.appendChild(body);
+  return item;
+}
+
+function renderWishList(){
+  const list = $('#wishList');
+  if(!list) return;
+  list.innerHTML = '';
+  if(!db.wishlist.length){
+    const box = document.createElement('div');
+    box.className = 'rec-empty';
+    box.innerHTML = '<div class="em">🔖</div><p>아직 담아 둔 책이 없어요.</p>' +
+      '<p>연령별 추천에서 <b>+ 읽을 목록</b>을 누르거나<br>직접 읽을 책을 추가해 보세요.</p>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill dark';
+    b.textContent = '연령별 추천 보기';
+    b.onclick = () => { view.rec.sub = 'age'; renderRec(); };
+    row.appendChild(b);
+    box.appendChild(row);
+    list.appendChild(box);
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  db.wishlist.forEach(w => {
+    const item = document.createElement('div');
+    item.className = 'wish-item';
+    item.dataset.wid = w.id;
+    item.appendChild(buildRecCover(w));
+
+    const body = document.createElement('div');
+    body.className = 'rec-body';
+    const nm = document.createElement('div');
+    nm.className = 'rec-nm';
+    nm.textContent = w.title;
+    const meta = document.createElement('div');
+    meta.className = 'rec-meta';
+    const tg = document.createElement('span');
+    tg.className = 'tg ' + w.lang;
+    tg.textContent = w.lang === 'ko' ? '한글' : '영어';
+    meta.appendChild(tg);
+    if(w.age){
+      const ag = document.createElement('span');
+      ag.className = 'age';
+      ag.textContent = ageLabel(w.age);
+      meta.appendChild(ag);
+    }
+    const au = document.createElement('div');
+    au.className = 'rec-auth';
+    au.textContent = w.author || '지은이 정보 없음';
+    const src = document.createElement('div');
+    src.className = 'wish-src';
+    src.textContent = w.recId ? '연령별 추천에서 담음' : '직접 추가';
+    const acts = document.createElement('div');
+    acts.className = 'rec-acts';
+    const done = document.createElement('button');
+    done.type = 'button';
+    done.className = 'rec-btn dark';
+    done.dataset.act = 'record';
+    done.textContent = '읽었어요';
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'rec-btn del';
+    del.dataset.act = 'del';
+    del.textContent = '삭제';
+    acts.appendChild(done); acts.appendChild(del);
+    body.appendChild(nm); body.appendChild(meta); body.appendChild(au); body.appendChild(src); body.appendChild(acts);
+    item.appendChild(body);
+    frag.appendChild(item);
+  });
+  list.appendChild(frag);
+}
+
+/* ---------- 읽을 목록 → 기록 시트 ---------- */
+let wishDraft = null;
+let wishKids = [];
+
+function renderWishHero(){
+  const box = $('#wishHero');
+  if(!box || !wishDraft) return;
+  box.innerHTML = '';
+  box.appendChild(buildRecCover(wishDraft, 'rec-cov'));
+  const info = document.createElement('div');
+  info.className = 'q-info';
+  const h = document.createElement('h3');
+  h.textContent = wishDraft.title;
+  const mt = document.createElement('div');
+  mt.className = 'q-meta';
+  mt.textContent = (wishDraft.lang === 'ko' ? '한글책' : '영어책') +
+    (wishDraft.author ? ' · ' + wishDraft.author : '') +
+    (wishDraft.age ? ' · ' + ageLabel(wishDraft.age) : '');
+  info.appendChild(h); info.appendChild(mt);
+  box.appendChild(info);
+}
+
+function renderWishKidPick(){
+  const wrap = $('#wKidPick');
+  const field = $('#wKidField');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  if(db.children.length < 2){ field.classList.add('hidden'); return; }
+  field.classList.remove('hidden');
+  db.children.forEach(c => {
+    const on = wishKids.indexOf(c.id) >= 0;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kp' + (on ? ' on' : '');
+    b.dataset.kid = c.id;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.style.color = on ? c.color : '#6C7280';
+    b.style.borderColor = on ? c.color : '#E8E3D7';
+    b.style.background = on ? c.color + '1F' : '#FBFAF6';
+    b.textContent = (on ? '✓ ' : '') + c.emoji + ' ' + c.name;
+    wrap.appendChild(b);
+  });
+}
+$('#wKidPick').addEventListener('click', e => {
+  const b = e.target.closest('.kp');
+  if(!b) return;
+  const id = b.dataset.kid;
+  const i = wishKids.indexOf(id);
+  if(i >= 0){
+    if(wishKids.length === 1){ toast('아이는 한 명 이상 골라 주세요'); return; }
+    wishKids.splice(i, 1);
+  }else{
+    wishKids.push(id);
+  }
+  renderWishKidPick();
+});
+
+function openBookRecord(src){
+  const hit = src.wishId ? db.wishlist.find(x => x.id === src.wishId) : wishFind(src);
+  wishDraft = {
+    title: String(src.title || (hit && hit.title) || ''),
+    author: String(src.author || (hit && hit.author) || ''),
+    lang: (src.lang === 'en' || (hit && hit.lang === 'en')) ? 'en' : 'ko',
+    isbn: String(src.isbn || (hit && hit.isbn) || ''),
+    cover: String(src.cover || (hit && hit.cover) || ''),
+    age: String(src.age || (hit && hit.age) || ''),
+    recId: String(src.recId || (hit && hit.recId) || ''),
+    wishId: hit ? hit.id : ''
+  };
+  if(!wishDraft.title) return;
+  const fallbackKid = db.children[0] ? db.children[0].id : '';
+  wishKids = (view.child !== 'all' && kidById(view.child)) ? [view.child] : (fallbackKid ? [fallbackKid] : []);
+  $('#wDate').value = /^\d{4}-\d{2}-\d{2}$/.test(view.sel) ? view.sel : todayISO;
+  $('#wRemoveRow').classList.toggle('hidden', !wishDraft.wishId);
+  $('#wRemove').checked = true;
+  renderWishHero();
+  renderWishKidPick();
+  openSheet('wishSheet');
+}
+
+function saveBookRecord(){
+  if(!wishDraft) return;
+  const date = $('#wDate').value || todayISO;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(parseISO(date).getTime())){ toast('날짜를 확인해 주세요'); return; }
+  const kids = db.children.length < 2
+    ? (db.children[0] ? [db.children[0].id] : [])
+    : wishKids.slice();
+  if(!kids.length){ toast('누가 읽었는지 골라 주세요'); return; }
+  const rec = sanitize({
+    id: uid(),
+    date: date,
+    title: wishDraft.title,
+    author: wishDraft.author,
+    lang: wishDraft.lang,
+    isbn: wishDraft.isbn,
+    cover: wishDraft.cover || recFallback(wishDraft),
+    coverData: '',
+    childIds: kids,
+    shelfId: '',
+    createdAt: Date.now()
+  });
+  if(!rec){ toast('기록하지 못했어요'); return; }
+  db.books.push(rec);
+  let removed = null;
+  if(wishDraft.wishId && $('#wRemove').checked) removed = removeFromWish(wishDraft.wishId);
+  save();
+  view.sel = date;
+  const d = parseISO(date);
+  view.year = d.getFullYear();
+  view.month = d.getMonth();
+  if(view.filter !== 'all' && rec.lang !== view.filter) applyFilter('all');
+  if(view.child !== 'all' && kids.indexOf(view.child) < 0) view.child = 'all';
+  render();
+  closeSheet($('#wishSheet'));
+  const stay = view.ymode === 'rec';
+  toast('기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일' + (removed ? ' · 읽을 목록에서 뺐어요' : ''), '되돌리기', () => {
+    const i = db.books.findIndex(b => b.id === rec.id);
+    if(i >= 0) db.books.splice(i, 1);
+    if(removed) db.wishlist.splice(Math.min(removed.index, db.wishlist.length), 0, removed.item);
+    save();
+    render();
+    toast('되돌렸어요');
+  });
+  if(stay){ /* 기록 후에도 추천 탭에 머문다 */ }
+}
+
+/* ---------- 추천 탭 이벤트 ---------- */
+$('#recSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-rec]');
+  if(!b) return;
+  view.rec.sub = b.dataset.rec === 'wish' ? 'wish' : 'age';
+  renderRec();
+});
+$('#ageChips').addEventListener('click', e => {
+  const b = e.target.closest('.age-chip[data-age]');
+  if(!b) return;
+  view.rec.age = b.dataset.age;
+  renderRec();
+});
+$('#recLang').addEventListener('click', e => {
+  const b = e.target.closest('button[data-filter]');
+  if(b) setFilter(b.dataset.filter);
+});
+$('#recList').addEventListener('click', e => {
+  const btn = e.target.closest('.rec-btn');
+  if(!btn) return;
+  const item = e.target.closest('.rec-item');
+  const r = item ? recById(item.dataset.rid) : null;
+  if(!r) return;
+  if(btn.dataset.act === 'wish') toggleWish(r);
+  else if(btn.dataset.act === 'record') openBookRecord(r);
+});
+$('#wishList').addEventListener('click', e => {
+  const btn = e.target.closest('.rec-btn');
+  if(!btn) return;
+  const item = e.target.closest('.wish-item');
+  if(!item) return;
+  const wid = item.dataset.wid;
+  const w = db.wishlist.find(x => x.id === wid);
+  if(!w) return;
+  if(btn.dataset.act === 'record') openBookRecord({ wishId: wid });
+  else if(btn.dataset.act === 'del'){
+    const back = removeFromWish(wid);
+    renderRec();
+    if(!back) return;
+    toast('읽을 목록에서 지웠어요', '되돌리기', () => {
+      db.wishlist.splice(Math.min(back.index, db.wishlist.length), 0, back.item);
+      save(); renderRec();
+    });
+  }
+});
+$('#btnWishSave').onclick = saveBookRecord;
+
+/* 직접 추가 */
+let waLang = 'ko';
+function renderWishAddLang(){
+  $$('#waLang .lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === waLang));
+}
+$('#waLang').addEventListener('click', e => {
+  const b = e.target.closest('.lang-btn');
+  if(!b) return;
+  waLang = b.dataset.lang === 'en' ? 'en' : 'ko';
+  renderWishAddLang();
+});
+$('#btnWishAddNew').onclick = () => {
+  $('#waTitle').value = '';
+  $('#waAuthor').value = '';
+  waLang = 'ko';
+  renderWishAddLang();
+  openSheet('wishAddSheet');
+  setTimeout(() => { $('#waTitle').focus(); }, 260);
+};
+$('#btnWishAdd').onclick = () => {
+  const title = $('#waTitle').value.trim();
+  if(!title){ toast('책 제목을 입력해 주세요'); $('#waTitle').focus(); return; }
+  const w = addToWish({ title: title, author: $('#waAuthor').value.trim(), lang: waLang });
+  if(!w){ toast('이미 읽을 목록에 있는 책이에요'); return; }
+  view.rec.sub = 'wish';
+  renderRec();
+  closeSheet($('#wishAddSheet'));
+  toast('읽을 목록에 담았어요', '되돌리기', () => { removeFromWish(w.id); renderRec(); });
+};
+
 /* ---------- 이벤트: 필터·월 이동·날짜 ---------- */
 function applyFilter(f){
   view.filter = f;
-  $$('#filterSeg button').forEach(b => {
+  $$('#filterSeg button, #recLang button').forEach(b => {
     const on = b.dataset.filter === f;
     b.classList.toggle('on', on);
     b.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -3304,11 +4103,12 @@ function addSamples(){
 function exportPayload(){
   return {
     app: 'reading-calendar',
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     settings: db.settings,
     children: db.children,
     shelf: db.shelf,
+    wishlist: db.wishlist,
     books: db.books
   };
 }
@@ -3398,6 +4198,20 @@ function importJson(text){
       shelfAdded++;
     });
   }
+  // 읽을 목록 합치기 — v1.8 이전 백업에는 없는 항목이라 있을 때만
+  const inWish = (!Array.isArray(parsed) && parsed && Array.isArray(parsed.wishlist)) ? parsed.wishlist : [];
+  let wishAdded = 0;
+  if(inWish.length){
+    if(!Array.isArray(db.wishlist)) db.wishlist = [];
+    inWish.forEach(raw => {
+      const w = sanitizeWish(raw);
+      if(!w) return;
+      const hit = db.wishlist.find(x => x.id === w.id || (x.title.trim().toLowerCase() === w.title.trim().toLowerCase() && x.lang === w.lang));
+      if(hit) return;
+      db.wishlist.push(w);
+      wishAdded++;
+    });
+  }
   const keyOf = b => b.date + '|' + b.title.trim().toLowerCase() + '|' + b.lang + '|' + (b.childIds || []).slice().sort().join(',');
   const ids = new Set(db.books.map(b => b.id));
   const keys = new Set(db.books.map(keyOf));
@@ -3418,7 +4232,8 @@ function importJson(text){
   render();
   const kidNote = kidsAdded ? ' · 아이 ' + kidsAdded + '명 추가' : '';
   const shelfNote = shelfAdded ? ' · 책장 ' + shelfAdded + '종 추가' : '';
-  toast(added + '권 가져왔어요' + kidNote + shelfNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
+  const wishNote = wishAdded ? ' · 읽을 목록 ' + wishAdded + '권 추가' : '';
+  toast(added + '권 가져왔어요' + kidNote + shelfNote + wishNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
   closeSheet($('#menuSheet'));
 }
 
@@ -3505,15 +4320,17 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.7',
+  version: '1.8',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
     shelf: db.shelf.length,
+    wishlist: db.wishlist.length,
     view: JSON.parse(JSON.stringify(view)),
     filter: view.filter,
     child: view.child,
-    ymode: view.ymode
+    ymode: view.ymode,
+    rec: JSON.parse(JSON.stringify(view.rec))
   }),
   kids: () => db.children.map(c => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color, books: kidBookCount(c.id) })),
   books: () => db.books.map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: (b.childIds || []).slice() })),
@@ -3552,6 +4369,33 @@ window.__rc = {
     saveQuick: () => saveQuick(),
     books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
     covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
+  },
+  /* v1.8 책 추천·읽을 목록 확인용 */
+  recApi: {
+    total: () => CURATED.length,
+    ages: () => AGES.map(a => ({ k: a.k, label: a.label, ko: recsFor(a.k, 'ko').length, en: recsFor(a.k, 'en').length })),
+    list: (age, lang) => recsFor(age || view.rec.age, lang || 'all').map(r => ({
+      id: r.id, title: r.title, author: r.author, lang: r.lang, isbn: r.isbn, age: r.age, cover: r.cover, reason: r.reason
+    })),
+    view: () => ({ age: view.rec.age, sub: view.rec.sub, filter: view.filter, shown: recsFor(view.rec.age, view.filter).length }),
+    setAge: (k) => { if(AGE_LABEL[k]){ view.rec.age = k; renderRec(); } },
+    setSub: (s) => { view.rec.sub = s === 'wish' ? 'wish' : 'age'; renderRec(); },
+    domTitles: () => $$('#recList .rec-item .rec-nm').map(e => e.textContent),
+    domWishTitles: () => $$('#wishList .wish-item .rec-nm').map(e => e.textContent),
+    wish: (rid) => { const r = recById(rid); return r ? (addToWish(r) || null) : null; },
+    wishRemove: (id) => removeFromWish(id),
+    wishlist: () => db.wishlist.map(w => ({
+      id: w.id, title: w.title, author: w.author, lang: w.lang, isbn: w.isbn, age: w.age,
+      recId: w.recId, source: w.recId ? 'rec' : 'manual', cover: !!w.cover
+    })),
+    addManual: (title, author, lang) => addToWish({ title: title, author: author || '', lang: lang || 'ko' }),
+    openRecord: (rid) => { const r = recById(rid); if(r) openBookRecord(r); },
+    openWishRecord: (wid) => openBookRecord({ wishId: wid }),
+    saveRecord: saveBookRecord,
+    setDate: (d) => { const el = $('#wDate'); if(el) el.value = d; },
+    toggleRemove: (on) => { const el = $('#wRemove'); if(el) el.checked = !!on; },
+    coverFallbacks: () => CURATED.filter(r => !r.cover).length,
+    addSamples: addSamples
   },
   /* v1.6 내 책장·지난 기록 통합 검색 확인용 */
   searchLocal: (q) => {
