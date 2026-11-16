@@ -2877,7 +2877,7 @@ function isbn13Valid(s){
   for(let i = 0; i < 12; i++) sum += Number(s[i]) * (i % 2 ? 3 : 1);
   return (10 - (sum % 10)) % 10 === Number(s[12]);
 }
-/* 책 바코드(ISBN-13) 검증: 978·979로 시작하는 13자리 + 체크섬 통과 */
+/* ISBN-13 검증(978·979로 시작하는 13자리 + 체크섬): 검색 결과의 ISBN 표지 만들기에만 사용 */
 function isValidIsbn13(s){
   const t = String(s || '').replace(/[^0-9]/g, '');
   if(!/^97[89]\d{10}$/.test(t)) return false;
