@@ -529,7 +529,7 @@ textarea.input{resize:vertical;min-height:60px}
         <input class="input" id="fSearch" placeholder="예: 구름빵, The Gruffalo" autocomplete="off" enterkeyhint="search">
         <button class="btn dark" id="btnSearch" type="button">검색</button>
       </div>
-      <div class="hint">Google Books · Open Library에서 표지와 저자를 가져와요.</div>
+      <div class="hint">Google Books · Apple Books · Open Library에서 표지와 지은이를 가져와요.</div>
       <div class="results hidden" id="searchResults"></div>
     </div>
 
@@ -711,7 +711,7 @@ let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: 
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
-let scanState = { stream: null, running: false, detector: null, raf: 0, last: 0 };
+let scanState = { stream: null, running: false, detector: null, raf: 0, last: 0, cand: '', hits: 0, candTs: 0, frame: 0 };
 
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
@@ -1612,7 +1612,7 @@ function compressImage(file, maxW, quality){
 }
 
 /* ---------- 검색 ---------- */
-const sourceState = { gbQuota: false, gbKey: '' };
+const sourceState = { gbQuota: false, gbKey: '', gbCooldown: 0 };
 
 function gbUrl(params){
   const p = new URLSearchParams(params);
@@ -1668,6 +1668,11 @@ function fromOL(doc){
 }
 
 async function googleSearch(q, lang){
+  // 방금 429를 받았으면 잠시 건너뛰고 GData/다른 서점으로 바로 간다 (쓴데없는 재시도·콘솔 오류 방지)
+  if(Date.now() < sourceState.gbCooldown){
+    sourceState.gbQuota = true;
+    return [];
+  }
   const tries = [];
   if(lang === 'ko') tries.push({ q: 'intitle:' + q, langRestrict: 'ko', maxResults: '20' });
   if(lang === 'en') tries.push({ q: q, langRestrict: 'en', maxResults: '20' });
@@ -1681,6 +1686,7 @@ async function googleSearch(q, lang){
     }catch(err){
       if(err && err.status === 429){
         sourceState.gbQuota = true;
+        sourceState.gbCooldown = Date.now() + 10 * 60 * 1000;
         break;
       }
       // 네트워크/CORS 실패 → 다음 소스로
@@ -1693,6 +1699,107 @@ async function openLibrarySearch(q){
   const url = 'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=20';
   const data = await fetchJson(url, 10000);
   return (data.docs || []).map(fromOL).filter(Boolean);
+}
+
+/* JSONP: CORS 헤더 없이도 서버가 콜백 이름을 써 주는 공식 방식 */
+function jsonpGet(url, cbParam, ms){
+  return new Promise((resolve, reject) => {
+    const name = '__rcJsonp' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+    const s = document.createElement('script');
+    let done = false;
+    const cleanup = () => {
+      try{ delete window[name]; }catch(e){ window[name] = undefined; }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    const timer = setTimeout(() => {
+      if(done) return; done = true; cleanup(); reject(new Error('jsonp timeout'));
+    }, ms || 9000);
+    window[name] = data => {
+      if(done) return; done = true; clearTimeout(timer); cleanup(); resolve(data);
+    };
+    s.onerror = () => {
+      if(done) return; done = true; clearTimeout(timer); cleanup(); reject(new Error('jsonp error'));
+    };
+    s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + cbParam + '=' + name;
+    s.async = true;
+    document.head.appendChild(s);
+  });
+}
+
+/* Google Books GData 피드 (JSONP) — 키 없이 동작하는 공식 콜백 엔드포인트.
+   v1 API가 429로 막혀도 이 경로는 계속 한글책 검색결과를 준다. */
+function gdataCoverUrl(bookId){
+  if(!bookId) return '';
+  return 'https://books.google.com/books/content?id=' + encodeURIComponent(bookId) + '&printsec=frontcover&img=1&zoom=1';
+}
+function coverByIsbn(isbn){
+  const d = cleanIsbn(isbn);
+  if(!/^97[89]\d{10}$/.test(d)) return '';
+  return 'https://books.google.com/books/content?vid=ISBN' + d + '&printsec=frontcover&img=1&zoom=1';
+}
+function fromGData(entry){
+  const title = entry && entry.title && entry.title.$t;
+  if(!title) return null;
+  const arr = v => Array.isArray(v) ? v : (v ? [v] : []);
+  const authors = arr(entry['dc$creator']).map(c => (c && c.$t) || '').filter(Boolean);
+  const langs = arr(entry['dc$language']).map(l => (l && l.$t) || '');
+  const lang = langs.indexOf('ko') >= 0 ? 'ko' : (langs.indexOf('en') >= 0 ? 'en' : '');
+  const ids = arr(entry['dc$identifier']).map(i => String((i && i.$t) || ''));
+  const isbnRaw = ids.filter(x => /^ISBN:/.test(x)).map(x => x.replace(/^ISBN:/, ''));
+  let isbn = isbnRaw.find(x => isValidIsbn13(x)) || '';
+  if(!isbn){
+    const ten = isbnRaw.find(x => /^\d{9}[\dXx]$/.test(x));
+    if(ten) isbn = isbn10to13(ten.toUpperCase());
+  }
+  const self = (entry.id && entry.id.$t) || '';
+  const m = /[?&]id=([A-Za-z0-9_-]+)/.exec(self);
+  const cover = gdataCoverUrl(m ? m[1] : '') || coverByIsbn(isbn);
+  return {
+    title: title,
+    author: authors.slice(0, 2).join(', '),
+    lang: lang,
+    cover: cover,
+    isbn: isbn || '',
+    src: 'Google'
+  };
+}
+async function gdataSearch(q){
+  const params = new URLSearchParams({ q: q, 'max-results': '20' });
+  const url = 'https://books.google.com/books/feeds/volumes?' + params.toString() + '&alt=json-in-script';
+  const data = await jsonpGet(url, 'callback', 9000);
+  const feed = (data && data.feed) || {};
+  return (feed.entry || []).map(fromGData).filter(Boolean);
+}
+async function gdataByIsbn(isbn){
+  const params = new URLSearchParams({ q: 'isbn:' + isbn, 'max-results': '3' });
+  const url = 'https://books.google.com/books/feeds/volumes?' + params.toString() + '&alt=json-in-script';
+  const data = await jsonpGet(url, 'callback', 9000);
+  const feed = (data && data.feed) || {};
+  const list = (feed.entry || []).map(fromGData).filter(Boolean);
+  return list.length ? list[0] : null;
+}
+
+/* Apple Books (iTunes Search API) — 키 없이 CORS 허용. 영어책 보완용. */
+function fromApple(r){
+  const title = r && (r.trackName || r.collectionName);
+  if(!title) return null;
+  const author = r.artistName || '';
+  const art = String(r.artworkUrl100 || '').replace(/\/100x100bb\.(jpg|png)$/, '/400x400bb.$1');
+  return {
+    title: title,
+    author: author,
+    lang: /[가-힣]/.test(title) ? 'ko' : 'en',
+    cover: art,
+    isbn: '',
+    src: 'Apple Books'
+  };
+}
+async function appleBooksSearch(q, lang){
+  const country = lang === 'ko' ? 'kr' : 'us';
+  const url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(q) +
+    '&entity=ebook&limit=20&country=' + country;
+  const data = await fetchJson(url, 9000);
+  return (data.results || []).map(fromApple).filter(Boolean);
 }
 
 function dedupeRank(list, q, lang){
@@ -1740,14 +1847,31 @@ async function doSearch(){
     const g = await googleSearch(q, draft && draft.lang);
     all = all.concat(g);
   }catch(e){ /* 무시 */ }
-  if(sourceState.gbQuota) notes.push('Google Books 사용량이 오늘은 다 찼어요');
-  if(!sourceState.gbQuota && all.length === 0) notes.push('Google Books에 결과가 없어요');
+
+  // v1이 429로 막혔거나 결과가 적으면 GData(JSONP) 경로로 이어서 찾는다.
+  if(sourceState.gbQuota || all.length < 6){
+    try{
+      const gd = await gdataSearch(q);
+      all = all.concat(gd);
+    }catch(e){
+      if(sourceState.gbQuota) notes.push('구글 책 검색이 잠시 쉬는 중이에요');
+    }
+  }
 
   try{
     const o = await openLibrarySearch(q);
     all = all.concat(o);
   }catch(e){
     notes.push('Open Library에 연결하지 못했어요');
+  }
+
+  // Apple Books는 영어권 서점이라 한글 검색어에는 쓰지 않는다.
+  const wantApple = (draft && draft.lang === 'en') || (!(draft && draft.lang) && !/[가-힣]/.test(q));
+  if(wantApple){
+    try{
+      const ap = await appleBooksSearch(q, 'en');
+      all = all.concat(ap);
+    }catch(e){ /* 무시 */ }
   }
 
   const res = dedupeRank(all, q, draft && draft.lang);
@@ -1854,6 +1978,12 @@ function isbn13Valid(s){
   for(let i = 0; i < 12; i++) sum += Number(s[i]) * (i % 2 ? 3 : 1);
   return (10 - (sum % 10)) % 10 === Number(s[12]);
 }
+/* 책 바코드(ISBN-13) 검증: 978·979로 시작하는 13자리 + 체크섬 통과 */
+function isValidIsbn13(s){
+  const t = String(s || '').replace(/[^0-9]/g, '');
+  if(!/^97[89]\d{10}$/.test(t)) return false;
+  return isbn13Valid(t);
+}
 function isbn10to13(s){
   if(!/^\d{9}[\dX]$/.test(s)) return '';
   const core = '978' + s.slice(0, 9);
@@ -1881,7 +2011,7 @@ async function lookupIsbn(raw){
   const cands = isbnCandidates(raw);
   if(!cands.length) return null;
   // Google Books
-  for(const isbn of cands){
+  for(const isbn of (Date.now() < sourceState.gbCooldown ? [] : cands)){
     try{
       const data = await fetchJson(gbUrl({ q: 'isbn:' + isbn, maxResults: '5' }));
       const items = data.items || [];
@@ -1890,9 +2020,19 @@ async function lookupIsbn(raw){
         if(r) return r;
       }
     }catch(err){
-      if(err && err.status === 429) sourceState.gbQuota = true;
+      if(err && err.status === 429){
+        sourceState.gbQuota = true;
+        sourceState.gbCooldown = Date.now() + 10 * 60 * 1000;
+      }
       break;
     }
+  }
+  // Google Books GData(JSONP) — v1이 429여도 이 경로는 살아 있다
+  for(const isbn of cands){
+    try{
+      const r = await gdataByIsbn(isbn);
+      if(r && r.title) return r;
+    }catch(e){ /* 다음 */ }
   }
   // Open Library
   for(const isbn of cands){
@@ -1901,7 +2041,11 @@ async function lookupIsbn(raw){
       const docs = data.docs || [];
       if(docs.length){
         const r = fromOL(docs[0]);
-        if(r) return r;
+        if(r){
+          if(!r.cover) r.cover = coverByIsbn(isbn);
+          if(!r.isbn) r.isbn = isbn;
+          return r;
+        }
       }
     }catch(e){ /* 다음 */ }
     try{
@@ -1988,20 +2132,16 @@ async function nativeDetector(){
       if(formats.indexOf('ean_13') < 0) return null;
     }
     return new window.BarcodeDetector({
-      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+      formats: ['ean_13']
     });
   }catch(e){ return null; }
 }
 
-function pickDigits(codes){
+/* 책 바코드는 모두 EAN-13(978·979) — 체크섬까지 통과한 값만 후보로 인정 */
+function pickIsbn(codes){
   for(const c of codes){
-    const v = String(c.rawValue || '');
-    const digits = v.replace(/[^0-9Xx]/g, '');
-    if(/^97[89]\d{10}$/.test(digits)) return digits;
-  }
-  for(const c of codes){
-    const v = String(c.rawValue || '').replace(/[^0-9Xx]/g, '');
-    if(v.length >= 10) return v;
+    const digits = String((c && c.rawValue) || '').replace(/[^0-9]/g, '');
+    if(isValidIsbn13(digits)) return digits;
   }
   return '';
 }
@@ -2010,17 +2150,14 @@ async function zxingDecodeCanvas(canvas){
   const ZX = await loadZXing();
   const reader = new ZX.MultiFormatReader();
   const hints = new Map();
-  hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, [
-    ZX.BarcodeFormat.EAN_13, ZX.BarcodeFormat.EAN_8,
-    ZX.BarcodeFormat.UPC_A, ZX.BarcodeFormat.UPC_E,
-    ZX.BarcodeFormat.CODE_128, ZX.BarcodeFormat.CODE_39
-  ]);
+  hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, [ZX.BarcodeFormat.EAN_13]);
   hints.set(ZX.DecodeHintType.TRY_HARDER, true);
   reader.setHints(hints);
   const lum = new ZX.HTMLCanvasElementLuminanceSource(canvas);
   const bitmap = new ZX.BinaryBitmap(new ZX.HybridBinarizer(lum));
   const result = reader.decode(bitmap, hints);
-  return result ? result.getText() : '';
+  const digits = result ? String(result.getText() || '').replace(/[^0-9]/g, '') : '';
+  return isValidIsbn13(digits) ? digits : '';
 }
 
 function rotateCanvas(src, deg){
@@ -2054,17 +2191,14 @@ async function decodeCanvasDeep(canvas, detector){
       try{
         const codes = await detector.detect(c);
         if(codes && codes.length){
-          const v = pickDigits(codes);
+          const v = pickIsbn(codes);
           if(v) return v;
         }
       }catch(e){ /* 다음 방법 */ }
     }
     try{
       const v = await zxingDecodeCanvas(c);
-      if(v){
-        const d = v.replace(/[^0-9Xx]/g, '');
-        if(d.length >= 10) return d;
-      }
+      if(v) return v;
     }catch(e){ /* 회전/포맷 실패 */ }
   }
   return '';
@@ -2092,7 +2226,7 @@ async function handleBarcodePhoto(file){
       const r = await lookupIsbn(isbn);
       applyLookup(r, isbn);
     }else{
-      toast('바코드를 찾지 못했어요. 바코드가 크게 보이게 다시 찍어 주세요.');
+      toast('책 바코드(ISBN)를 찾지 못했어요. 바코드가 크게 보이게 다시 찍어 주세요.');
     }
   }catch(err){
     console.warn(err);
@@ -2129,16 +2263,31 @@ async function startLiveScan(){
   }
   try{
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
       audio: false
     });
     scanState.stream = stream;
+    // 가까이 댄 바코드가 흐리게 잡히지 않도록 연속 자동초점을 요청 (지원 기기만)
+    try{
+      const track = stream.getVideoTracks()[0];
+      const caps = (track && track.getCapabilities) ? track.getCapabilities() : {};
+      if(caps && Array.isArray(caps.focusMode) && caps.focusMode.indexOf('continuous') >= 0){
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      }
+    }catch(e){ /* 초점 제어를 지원하지 않는 기기 */ }
     const video = $('#scanVideo');
     video.srcObject = stream;
     await video.play();
     scanState.detector = await nativeDetector();
     scanState.running = true;
     scanState.last = 0;
+    scanState.cand = '';
+    scanState.hits = 0;
+    scanState.frame = 0;
     setScanStatus(scanState.detector ? '바코드를 비춰 주세요' : '바코드를 비춰 주세요 (호환 모드)');
     requestAnimationFrame(tickScan);
   }catch(err){
@@ -2150,35 +2299,61 @@ async function startLiveScan(){
   }
 }
 
+/* 단발성 프레임 오인식을 막기 위한 2회 연속 일치(consensus) 확인.
+   유효한 ISBN-13이 연속 두 번 같은 값으로 읽혀야만 인정한다. */
+function confirmScanRead(value){
+  if(!isValidIsbn13(value)) return false;
+  const now = (window.performance && performance.now) ? performance.now() : Date.now();
+  if(scanState.cand === value && now - scanState.candTs <= 2600){
+    scanState.hits += 1;
+  }else{
+    scanState.cand = value;
+    scanState.hits = 1;
+  }
+  scanState.candTs = now;
+  return scanState.hits >= 2;
+}
+
 async function tickScan(ts){
   if(!scanState.running) return;
   const video = $('#scanVideo');
-  if(video.readyState >= 2 && ts - scanState.last > 240){
+  if(video.readyState >= 2 && ts - scanState.last > 220){
     scanState.last = ts;
+    scanState.frame += 1;
     let found = '';
     if(scanState.detector){
       try{
         const codes = await scanState.detector.detect(video);
-        if(codes && codes.length) found = pickDigits(codes);
+        if(codes && codes.length) found = pickIsbn(codes);
       }catch(e){ /* 무시 */ }
-    }else{
+    }
+    // 내장 감지기가 놓친 프레임은 ZXing으로 보완 (매 프레임 아니라 격프레임)
+    if(!found && (!scanState.detector || scanState.frame % 2 === 0)){
       try{
-        const c = drawToCanvas(video, 1000);
-        const v = await zxingDecodeCanvas(c);
-        const d = v.replace(/[^0-9Xx]/g, '');
-        if(d.length >= 10) found = d;
+        const c = drawToCanvas(video, 1280);
+        found = await zxingDecodeCanvas(c);
       }catch(e){ /* 무시 */ }
     }
     if(found){
-      scanState.running = false;
-      if(navigator.vibrate) navigator.vibrate(70);
-      stopLiveScan();
-      closeSheet($('#scanSheet'));
-      $('#fIsbn').value = found;
-      setScanStatus('인식했어요');
-      const r = await lookupIsbn(found);
-      applyLookup(r, found);
-      return;
+      if(confirmScanRead(found)){
+        scanState.running = false;
+        if(navigator.vibrate) navigator.vibrate(70);
+        setScanStatus('인식했어요 · ' + found);
+        stopLiveScan();
+        closeSheet($('#scanSheet'));
+        $('#fIsbn').value = found;
+        const r = await lookupIsbn(found);
+        applyLookup(r, found);
+        return;
+      }
+      setScanStatus('인식 확인 중… 바코드를 그대로 비춰 주세요 (1/2)');
+    }else if(scanState.cand){
+      const now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if(now - scanState.candTs > 2600){
+        scanState.cand = '';
+        scanState.hits = 0;
+        setScanStatus(scanState.detector ? '바코드를 비춰 주세요' : '바코드를 비춰 주세요 (호환 모드)');
+      }
     }
   }
   scanState.raf = requestAnimationFrame(tickScan);
@@ -2860,7 +3035,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.2',
+  version: '1.3',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -2884,9 +3059,24 @@ window.__rc = {
   importJson: importJson,
   decodeFile: decodeImageFile,
   lookupIsbn: lookupIsbn,
+  barcode: {
+    valid: (s) => isValidIsbn13(s),
+    reset: () => { scanState.cand = ''; scanState.hits = 0; scanState.candTs = 0; },
+    feed: (v) => confirmScanRead(v),
+    pick: (list) => pickIsbn(list.map(x => ({ rawValue: x }))),
+    state: () => ({ cand: scanState.cand, hits: scanState.hits })
+  },
+  sources: {
+    google: (q, lang) => googleSearch(q, lang || ''),
+    gdata: (q) => gdataSearch(q),
+    apple: (q, lang) => appleBooksSearch(q, lang || 'en'),
+    openlib: (q) => openLibrarySearch(q),
+    quota: () => sourceState.gbQuota
+  },
   search: (q, lang) => (async () => {
     let all = [];
     try{ all = all.concat(await googleSearch(q, lang)); }catch(e){}
+    try{ all = all.concat(await gdataSearch(q)); }catch(e){}
     try{ all = all.concat(await openLibrarySearch(q)); }catch(e){}
     return dedupeRank(all, q, lang);
   })()
