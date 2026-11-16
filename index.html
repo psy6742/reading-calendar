@@ -354,10 +354,66 @@ textarea.input{resize:vertical;min-height:60px}
 .stat b{display:block;font-size:17px;font-weight:800}
 .stat span{font-size:11px;color:#9A958A;font-weight:700}
 
-/* ---------- 보기 전환 (월간 / 연간) ---------- */
+/* ---------- 보기 전환 (월간 / 연간 / 내 책장) ---------- */
 .seg.mode{background:#E5E0D0;margin:0 2px 11px}
-.seg.mode button{padding:10px 4px;font-size:13.5px;color:#7B7567}
+.seg.mode button{padding:10px 3px;font-size:13px;color:#7B7567;letter-spacing:-.3px}
 .seg.mode button.on{background:var(--ink);color:#fff;box-shadow:0 2px 9px rgba(30,41,59,.22)}
+@media(max-width:400px){.seg.mode button{font-size:12px;padding:10px 1px;letter-spacing:-.45px}}
+
+/* ---------- 내 책장 ---------- */
+.shelf-card{margin-top:16px;padding-bottom:16px}
+.shelf-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.shelf-title{display:flex;align-items:center;gap:8px;min-width:0}
+.shelf-title h2{font-size:18px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.shelf-note{font-size:12.5px;color:#8E897C;font-weight:600;line-height:1.55;margin-top:8px}
+.shelf-list{display:flex;flex-direction:column;gap:9px;margin-top:13px}
+.sh-item{display:flex;gap:11px;align-items:flex-start;padding:10px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
+.sh-cov{position:relative;width:52px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13);padding:0}
+.sh-cov img{width:100%;height:100%;object-fit:cover}
+.sh-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
+.sh-cov::after{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(to right,rgba(0,0,0,.15),rgba(0,0,0,0));pointer-events:none}
+.sh-body{flex:1;min-width:0;padding-top:1px}
+.sh-nm{display:block;width:100%;text-align:left;background:none;padding:0;font-size:14px;font-weight:800;line-height:1.38;color:#2C3444;letter-spacing:-.2px;word-break:keep-all}
+.sh-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;min-width:0}
+.sh-meta .tg{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;flex:0 0 auto}
+.sh-meta .tg.ko{background:var(--ko-bg);color:var(--ko)}
+.sh-meta .tg.en{background:var(--en-bg);color:var(--en)}
+.sh-meta .pub{font-size:11px;font-weight:700;color:#9A958A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sh-cnt{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:6px}
+.sh-cnt b{color:#5B6270;font-weight:800}
+.sh-acts{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
+.sh-rec{font-size:12.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:999px;padding:11px 15px;line-height:1.1;box-shadow:0 2px 7px rgba(30,41,59,.16)}
+.sh-rec:active{transform:translateY(1px)}
+.sh-edit{font-size:12.5px;font-weight:800;color:#7C8291;background:#fff;border:1.4px solid #E8E3D7;border-radius:999px;padding:11px 14px;line-height:1.1}
+.shelf-sug{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center}
+.shelf-sug .pill{padding:8px 12px;font-size:12px;font-weight:700}
+
+/* 내 책장 선택 칩 (기록 시트) */
+.shelf-chips{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 -1px}
+.shelf-chips::-webkit-scrollbar{display:none}
+.sh-chip{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;max-width:210px;border-radius:999px;border:1.5px solid #E8E3D7;background:#FBFAF6;padding:5px 12px 5px 5px;font-size:12.5px;font-weight:800;color:#5B6270}
+.sh-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.sh-thumb{width:22px;height:30px;border-radius:4px;overflow:hidden;background:var(--lav-soft);display:grid;place-items:center;font-size:12px;flex:0 0 auto}
+.sh-thumb img{width:100%;height:100%;object-fit:cover}
+.sh-chip-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+/* 책장에 저장 토글 */
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:13px;font-weight:700;color:#5B6270;background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:11px 13px}
+.toggle-row input{width:19px;height:19px;accent-color:#1E293B;flex:0 0 auto;margin:0}
+.toggle-row span{flex:1;min-width:0;line-height:1.4}
+
+/* 빠른 기록 시트 */
+.quick-hero{display:flex;gap:13px;align-items:center;padding:2px 0 16px}
+.q-cov{width:58px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 3px 10px rgba(30,41,59,.15);position:relative}
+.q-cov img{width:100%;height:100%;object-fit:cover}
+.q-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:20px;color:#B9B4D2}
+.q-cov::after{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(to right,rgba(0,0,0,.15),rgba(0,0,0,0));pointer-events:none}
+.q-info{min-width:0}
+.q-info h3{font-size:16px;font-weight:800;line-height:1.35;letter-spacing:-.3px;word-break:keep-all}
+.q-meta{font-size:12px;font-weight:700;color:#9A958A;margin-top:5px}
+.q-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:-4px}
+.q-chip{font-size:12.5px;font-weight:800;color:#6C7280;background:#fff;border:1.4px solid #E8E3D7;border-radius:999px;padding:7px 13px;line-height:1}
+.q-chip.on{background:#1E293B;border-color:#1E293B;color:#fff}
 
 /* ---------- 연간 통계 ---------- */
 /* 연간 통계 전용 구분 색 (전역 태그 색은 그대로 둔다) */
@@ -435,6 +491,7 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="seg mode" id="viewSeg" role="tablist" aria-label="보기 전환">
       <button data-view="month" class="on" role="tab" aria-selected="true">월간 캘린더</button>
       <button data-view="year" role="tab" aria-selected="false">연간 통계</button>
+      <button data-view="shelf" role="tab" aria-selected="false">내 책장</button>
     </div>
     <div class="kids-row" id="kidBar" role="tablist" aria-label="아이 선택"></div>
     <div class="seg" id="filterSeg" role="tablist" aria-label="언어 필터">
@@ -494,6 +551,18 @@ textarea.input{resize:vertical;min-height:60px}
       </div>
       <div class="year-sum" id="yearSum"></div>
     </section>
+
+    <section class="card shelf-card hidden" id="shelfCard" aria-label="내 책장">
+      <div class="shelf-head">
+        <div class="shelf-title">
+          <h2>내 책장</h2>
+          <span class="badge" id="shelfBadge">0종</span>
+        </div>
+        <button class="mini-add" id="btnShelfAdd" type="button">+ 전집/책 등록</button>
+      </div>
+      <p class="shelf-note">전집이나 자주 읽는 책을 담아 두면, 읽을 때마다 <b>+ 기록하기</b> 한 번으로 바로 남길 수 있어요.</p>
+      <div class="shelf-list" id="shelfList"></div>
+    </section>
   </main>
 </div>
 
@@ -509,6 +578,12 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="sheet-head">
       <h2 id="formTitle">책 기록하기</h2>
       <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+
+    <div class="field hidden" id="shelfPickField">
+      <label>내 책장에서 고르기</label>
+      <div class="shelf-chips" id="shelfPick"></div>
+      <div class="hint" id="shelfPickHint">전집을 한 번 누르면 제목·구분·표지가 채워져요. 다시 누르면 해제돼요.</div>
     </div>
 
     <div class="field row2">
@@ -576,8 +651,101 @@ textarea.input{resize:vertical;min-height:60px}
       </div>
     </div>
 
+    <label class="toggle-row" id="saveToShelfRow" for="chkSaveShelf">
+      <input type="checkbox" id="chkSaveShelf">
+      <span>이 책을 내 책장에도 저장</span>
+    </label>
+
     <div class="save-bar">
       <button class="btn dark" id="btnSave" type="button" style="width:100%;padding:15px;border-radius:16px">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 내 책장 등록/수정 시트 ===== -->
+<div class="sheet-wrap" id="shelfSheet" role="dialog" aria-modal="true" aria-labelledby="shelfFormTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="shelfFormTitle">전집/책 등록</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <p class="sheet-note" style="margin:0 0 12px">전집 이름을 그대로 적어 두면 권수를 붙여 빠르게 기록할 수 있어요.</p>
+
+    <div class="field">
+      <label for="sfName">이름 <span style="color:#C98B77">*</span></label>
+      <input class="input" id="sfName" placeholder="예: 그레이트북스 안녕 마음아" maxlength="60" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>구분 <span style="color:#C98B77">*</span></label>
+      <div class="lang-toggle" id="sfLang">
+        <button class="lang-btn" data-lang="ko" type="button">한글책</button>
+        <button class="lang-btn" data-lang="en" type="button">영어책</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="sfPublisher">출판사 (선택)</label>
+      <input class="input" id="sfPublisher" placeholder="예: 그레이트북스" maxlength="40" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>표지 사진 (선택)</label>
+      <div class="cover-box">
+        <div class="cover-prev" id="sfCoverPrev"><div class="ph">📚</div></div>
+        <div class="cover-actions">
+          <button class="btn line" id="btnShelfCover" type="button">📷 사진 / 갤러리에서 올리기</button>
+          <button class="btn line sm hidden" id="btnShelfCoverClear" type="button">표지 지우기</button>
+          <div class="hint" style="margin-top:2px">비워 두면 이름에 어울리는 색 표지를 만들어 둘게요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn dark" id="btnShelfSave" type="button" style="width:100%;padding:15px;border-radius:16px">책장에 담기</button>
+      <button class="btn danger hidden" id="btnShelfDelete" type="button" style="width:100%;margin-top:8px">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 빠른 기록 시트 (내 책장) ===== -->
+<div class="sheet-wrap" id="quickSheet" role="dialog" aria-modal="true" aria-labelledby="quickTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="quickTitle">기록하기</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+
+    <div class="quick-hero" id="quickHero"></div>
+
+    <div class="field row2">
+      <div>
+        <label for="qDate">날짜</label>
+        <input class="input" type="date" id="qDate">
+      </div>
+      <div>
+        <label for="qSub">소제목 / 권수</label>
+        <input class="input" id="qSub" placeholder="예: 12권" maxlength="30" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="q-chips" id="qChips"></div>
+    </div>
+
+    <div class="field" id="qKidField">
+      <label>누가 읽었나요? <span style="color:#C98B77">*</span></label>
+      <div class="kid-pick" id="qKidPick"></div>
+    </div>
+
+    <button class="linkish" id="btnQuickFull" type="button">지은이·표지까지 직접 입력해서 기록하기</button>
+
+    <div class="save-bar">
+      <button class="btn dark" id="btnQuickSave" type="button" style="width:100%;padding:15px;border-radius:16px">기록하기</button>
     </div>
   </div>
 </div>
@@ -663,7 +831,7 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="menu-list">
       <button class="menu-item" id="menuExport">
         <span class="mi">⬇️</span>
-        <span class="mt"><b>JSON으로 내보내기</b><span>모든 기록을 파일로 저장해요</span></span>
+        <span class="mt"><b>JSON으로 내보내기</b><span>기록·아이·내 책장을 파일 하나로 저장해요</span></span>
       </button>
       <button class="menu-item" id="menuImport">
         <span class="mi">⬆️</span>
@@ -691,13 +859,14 @@ textarea.input{resize:vertical;min-height:60px}
       <input class="input" id="fGbKey" placeholder="검색이 안 될 때만 입력하면 돼요" autocomplete="off">
       <div class="hint">키 없이도 검색되지만, Google 쪽 하루 사용량이 차면 결과가 비어 보일 수 있어요. 무료 키를 넣으면 안정적으로 검색돼요. (Open Library 검색은 키 없이 늘 동작해요.)</div>
     </div>
-    <p class="sheet-note" style="margin-top:14px">기록은 이 브라우저(localStorage)에 저장돼요. 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 주세요.</p>
+    <p class="sheet-note" style="margin-top:14px">기록과 내 책장은 이 브라우저(localStorage)에 저장되고, JSON 백업에도 함께 담겨요. 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 주세요.</p>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <input type="file" id="coverInput" accept="image/*" class="hidden">
+<input type="file" id="shelfCoverInput" accept="image/*" class="hidden">
 <input type="file" id="barcodeCamInput" accept="image/*" capture="environment" class="hidden">
 <input type="file" id="barcodeGalInput" accept="image/*" class="hidden">
 <input type="file" id="importInput" accept="application/json,.json" class="hidden">
@@ -722,7 +891,7 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], settings: { gbKey: '' } };
+let db = { version: 2, children: [], books: [], shelf: [], settings: { gbKey: '' } };
 let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month' };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
@@ -749,6 +918,7 @@ function load(){
         db.books = p.books.map(sanitize).filter(Boolean);
         db.settings = Object.assign({ gbKey: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
+        if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Number(p.version) > 1) db.version = 2;
       }
     }
@@ -781,7 +951,25 @@ function sanitize(b){
     cover: typeof b.cover === 'string' ? b.cover : '',
     coverData: typeof b.coverData === 'string' ? b.coverData : '',
     childIds: Array.isArray(b.childIds) ? b.childIds.map(String).filter(Boolean) : [],
+    shelfId: b.shelfId ? String(b.shelfId) : '',
     createdAt: Number(b.createdAt) || Date.now()
+  };
+}
+
+/* ---------- 내 책장(전집·자주 읽는 책) ---------- */
+function uidS(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function sanitizeShelf(s){
+  if(!s || typeof s !== 'object') return null;
+  const name = String(s.name || '').trim().slice(0, 60);
+  if(!name) return null;
+  return {
+    id: s.id ? String(s.id) : uidS(),
+    name: name,
+    lang: s.lang === 'en' ? 'en' : 'ko',
+    publisher: String(s.publisher || '').trim().slice(0, 40),
+    cover: typeof s.cover === 'string' ? s.cover : '',
+    coverData: typeof s.coverData === 'string' ? s.coverData : '',
+    createdAt: Number(s.createdAt) || Date.now()
   };
 }
 
@@ -930,15 +1118,21 @@ function matchChild(b){
 
 function render(){
   const isYear = view.ymode === 'year';
+  const isShelf = view.ymode === 'shelf';
   // 첫 실행(기록 0권)에는 빈 상태 안내의 버튼을 가리지 않도록 하단 고정 버튼을 숨긴다
   const cta = document.querySelector('.cta-wrap');
-  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear);
-  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard');
-  if(mc) mc.classList.toggle('hidden', isYear);
-  if(dc) dc.classList.toggle('hidden', isYear);
+  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear || isShelf);
+  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard'), sc = $('#shelfCard');
+  if(mc) mc.classList.toggle('hidden', isYear || isShelf);
+  if(dc) dc.classList.toggle('hidden', isYear || isShelf);
   if(yc) yc.classList.toggle('hidden', !isYear);
+  if(sc) sc.classList.toggle('hidden', !isShelf);
+  const fs = $('#filterSeg'), kb = $('#kidBar');
+  if(fs) fs.classList.toggle('hidden', isShelf);
+  if(kb) kb.classList.toggle('hidden', isShelf);
   applyViewSeg();
   renderKidBar();
+  if(isShelf){ renderShelf(); return; }
   if(isYear){ renderYear(); return; }
   renderMonth();
   renderDay();
@@ -1071,14 +1265,15 @@ function renderMonth(){
 
 /* ---------- 연간 통계 ---------- */
 function applyViewSeg(){
+  const mode = view.ymode === 'year' ? 'year' : (view.ymode === 'shelf' ? 'shelf' : 'month');
   $$('#viewSeg button').forEach(b => {
-    const on = b.dataset.view === (view.ymode === 'year' ? 'year' : 'month');
+    const on = b.dataset.view === mode;
     b.classList.toggle('on', on);
     b.setAttribute('aria-selected', on ? 'true' : 'false');
   });
 }
 function setViewMode(mode){
-  const next = mode === 'year' ? 'year' : 'month';
+  const next = mode === 'year' ? 'year' : (mode === 'shelf' ? 'shelf' : 'month');
   if(view.ymode === next) return;
   view.ymode = next;
   if(next === 'month' && String(view.sel).slice(0, 7) !== view.year + '-' + pad(view.month + 1)){
@@ -1405,6 +1600,425 @@ function renderDay(){
   empty.appendChild(box);
 }
 
+/* ---------- 내 책장 화면 ---------- */
+function shelfById(id){ return db.shelf.find(s => s.id === id) || null; }
+function shelfCoverSrc(s){ return s ? (s.coverData || s.cover || '') : ''; }
+function shelfSeed(name){
+  let h = 5381; const str = String(name || '');
+  for(let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function shelfCoverFallback(name){
+  const p = PALETTES[Math.abs(shelfSeed(name)) % PALETTES.length];
+  const label = String(name || '책').trim().slice(0, 2) || '책';
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="' + p[0] + '"/><stop offset="1" stop-color="' + p[1] + '"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="200" height="300" fill="url(#g)"/>' +
+    '<rect x="0" y="0" width="15" height="300" fill="' + p[2] + '" fill-opacity="0.13"/>' +
+    '<rect x="28" y="24" width="144" height="252" rx="7" fill="none" stroke="' + p[2] + '" stroke-opacity="0.15"/>' +
+    '<text x="106" y="178" font-family="sans-serif" font-size="62" font-weight="800" fill="' + p[2] +
+    '" text-anchor="middle">' + escXML(label) + '</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function shelfRecs(id){ return db.books.filter(b => b.shelfId === id); }
+const SHELF_SUG = [
+  { name: '그레이트북스 안녕 마음아', publisher: '그레이트북스', lang: 'ko' },
+  { name: '아람 자연이랑', publisher: '아람', lang: 'ko' }
+];
+
+function renderShelf(){
+  const list = $('#shelfList');
+  if(!list) return;
+  const badge = $('#shelfBadge');
+  if(badge) badge.textContent = db.shelf.length + '종';
+  list.innerHTML = '';
+
+  if(!db.shelf.length){
+    const box = document.createElement('div');
+    box.className = 'empty';
+    box.innerHTML = '<div class="em">📚</div>' +
+      '<p>아직 담아 둔 전집이 없어요.</p>' +
+      '<p>아람·그레이트북스·웅진·성우 같은 전집을 한 번 담아 두면<br>읽을 때마다 한 번 눌러 기록할 수 있어요.</p>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'pill dark';
+    add.textContent = '+ 전집/책 등록';
+    add.onclick = () => openShelfForm();
+    row.appendChild(add);
+    box.appendChild(row);
+    const sug = document.createElement('div');
+    sug.className = 'shelf-sug';
+    SHELF_SUG.forEach(x => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pill';
+      b.textContent = x.name;
+      b.onclick = () => openShelfForm(null, x);
+      sug.appendChild(b);
+    });
+    box.appendChild(sug);
+    list.appendChild(box);
+    return;
+  }
+
+  const now = new Date();
+  const ym = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+  const frag = document.createDocumentFragment();
+  db.shelf.forEach(s => {
+    const recs = shelfRecs(s.id);
+    const mN = recs.filter(b => String(b.date).slice(0, 7) === ym).length;
+
+    const item = document.createElement('div');
+    item.className = 'sh-item';
+    item.dataset.id = s.id;
+
+    const cov = document.createElement('button');
+    cov.type = 'button';
+    cov.className = 'sh-cov';
+    cov.setAttribute('aria-label', s.name + ' 수정하기');
+    cov.onclick = () => openShelfForm(s.id);
+    const img = document.createElement('img');
+    img.src = shelfCoverSrc(s) || shelfCoverFallback(s.name);
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => { cov.innerHTML = '<div class="ph">📚</div>'; };
+    cov.appendChild(img);
+
+    const body = document.createElement('div');
+    body.className = 'sh-body';
+    const nm = document.createElement('button');
+    nm.type = 'button';
+    nm.className = 'sh-nm';
+    nm.textContent = s.name;
+    nm.onclick = () => openShelfForm(s.id);
+    const meta = document.createElement('div');
+    meta.className = 'sh-meta';
+    const tg = document.createElement('span');
+    tg.className = 'tg ' + s.lang;
+    tg.textContent = s.lang === 'ko' ? '한글' : '영어';
+    meta.appendChild(tg);
+    if(s.publisher){
+      const pb = document.createElement('span');
+      pb.className = 'pub';
+      pb.textContent = s.publisher;
+      meta.appendChild(pb);
+    }
+    const cnt = document.createElement('div');
+    cnt.className = 'sh-cnt';
+    if(recs.length){
+      cnt.innerHTML = '이번 달 <b>' + mN + '권</b> · 모두 <b>' + recs.length + '권</b>';
+    }else{
+      cnt.textContent = '아직 기록이 없어요';
+    }
+    const acts = document.createElement('div');
+    acts.className = 'sh-acts';
+    const recBtn = document.createElement('button');
+    recBtn.type = 'button';
+    recBtn.className = 'sh-rec';
+    recBtn.textContent = '+ 기록하기';
+    recBtn.setAttribute('aria-label', s.name + ' 기록하기');
+    recBtn.onclick = () => openQuick(s.id);
+    const edBtn = document.createElement('button');
+    edBtn.type = 'button';
+    edBtn.className = 'sh-edit';
+    edBtn.textContent = '수정';
+    edBtn.onclick = () => openShelfForm(s.id);
+    acts.appendChild(recBtn);
+    acts.appendChild(edBtn);
+
+    body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(acts);
+    item.appendChild(cov); item.appendChild(body);
+    frag.appendChild(item);
+  });
+  list.appendChild(frag);
+}
+
+/* ---------- 내 책장 등록/수정 ---------- */
+let shelfDraft = null;
+let shelfDelArmed = false;
+
+function renderShelfLang(){
+  $$('#sfLang .lang-btn').forEach(b => b.classList.toggle('on', !!shelfDraft && b.dataset.lang === shelfDraft.lang));
+}
+function updateShelfCoverPreview(){
+  const box = $('#sfCoverPrev');
+  if(!box) return;
+  const src = shelfDraft && (shelfDraft.coverData || shelfDraft.cover);
+  box.innerHTML = '';
+  const img = document.createElement('img');
+  img.alt = '표지 미리보기';
+  img.src = src || shelfCoverFallback(($('#sfName') && $('#sfName').value.trim()) || (shelfDraft && shelfDraft.name) || '');
+  img.onerror = () => { box.innerHTML = '<div class="ph">📚</div>'; };
+  box.appendChild(img);
+  const clr = $('#btnShelfCoverClear');
+  if(clr) clr.classList.toggle('hidden', !src);
+}
+function openShelfForm(id, preset){
+  const cur = id ? shelfById(id) : null;
+  shelfDelArmed = false;
+  if(cur){
+    shelfDraft = Object.assign({}, cur);
+  }else{
+    shelfDraft = {
+      id: '',
+      name: preset ? String(preset.name || '') : '',
+      lang: preset ? (preset.lang === 'en' ? 'en' : 'ko') : '',
+      publisher: preset ? String(preset.publisher || '') : '',
+      cover: '', coverData: ''
+    };
+  }
+  $('#shelfFormTitle').textContent = cur ? '책장 항목 수정' : '전집/책 등록';
+  $('#sfName').value = shelfDraft.name || '';
+  $('#sfPublisher').value = shelfDraft.publisher || '';
+  const del = $('#btnShelfDelete');
+  del.classList.toggle('hidden', !cur);
+  del.textContent = '삭제';
+  $('#btnShelfSave').textContent = cur ? '수정 저장하기' : '책장에 담기';
+  renderShelfLang();
+  updateShelfCoverPreview();
+  openSheet('shelfSheet');
+  if(!cur) setTimeout(() => { try{ $('#sfName').focus(); }catch(e){} }, 260);
+}
+function saveShelf(){
+  if(!shelfDraft) return;
+  const name = $('#sfName').value.trim();
+  if(!name){ toast('이름을 입력해 주세요'); $('#sfName').focus(); return; }
+  if(!shelfDraft.lang){ toast('한글책 / 영어책을 골라 주세요'); return; }
+  const publisher = $('#sfPublisher').value.trim();
+  const dup = db.shelf.find(s => s.id !== shelfDraft.id && s.name === name && s.lang === shelfDraft.lang);
+  if(dup){ toast('이미 책장에 있는 이름이에요'); return; }
+  const item = sanitizeShelf({
+    id: shelfDraft.id || uidS(),
+    name: name,
+    lang: shelfDraft.lang,
+    publisher: publisher,
+    cover: shelfDraft.cover,
+    coverData: shelfDraft.coverData,
+    createdAt: shelfDraft.createdAt || Date.now()
+  });
+  if(!item){ toast('저장하지 못했어요'); return; }
+  const i = db.shelf.findIndex(s => s.id === item.id);
+  if(i >= 0) db.shelf[i] = item;
+  else db.shelf.push(item);
+  save();
+  render();
+  closeSheet($('#shelfSheet'));
+  toast(i >= 0 ? '책장 항목을 수정했어요' : '‘' + item.name + '’' + particle(item.name, '을', '를') + ' 책장에 담았어요');
+}
+function deleteShelf(){
+  if(!shelfDraft || !shelfDraft.id) return;
+  const del = $('#btnShelfDelete');
+  if(!shelfDelArmed){
+    shelfDelArmed = true;
+    del.textContent = '정말 지울까요? 한 번 더 눌러 주세요';
+    setTimeout(() => { shelfDelArmed = false; if(del.isConnected) del.textContent = '삭제'; }, 3500);
+    return;
+  }
+  const n = shelfRecs(shelfDraft.id).length;
+  const nm = shelfDraft.name;
+  db.shelf = db.shelf.filter(s => s.id !== shelfDraft.id);
+  save();
+  render();
+  closeSheet($('#shelfSheet'));
+  toast('‘' + nm + '’' + particle(nm, '을', '를') + ' 책장에서 지웠어요' + (n ? ' · 기록 ' + n + '권은 그대로예요' : ''));
+}
+
+$('#btnShelfAdd').onclick = () => openShelfForm();
+$('#sfLang').addEventListener('click', e => {
+  const b = e.target.closest('.lang-btn');
+  if(!b || !shelfDraft) return;
+  shelfDraft.lang = b.dataset.lang === 'en' ? 'en' : 'ko';
+  renderShelfLang();
+});
+$('#sfName').addEventListener('input', () => {
+  if(shelfDraft && !shelfDraft.coverData && !shelfDraft.cover) updateShelfCoverPreview();
+});
+$('#btnShelfCover').onclick = () => $('#shelfCoverInput').click();
+$('#btnShelfCoverClear').onclick = () => {
+  if(!shelfDraft) return;
+  shelfDraft.cover = ''; shelfDraft.coverData = '';
+  updateShelfCoverPreview();
+};
+$('#shelfCoverInput').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!f || !shelfDraft) return;
+  try{
+    const data = await compressImage(f, 420, 0.8);
+    shelfDraft.coverData = data;
+    shelfDraft.cover = '';
+    updateShelfCoverPreview();
+  }catch(err){
+    console.warn(err);
+    toast('사진을 읽지 못했어요. 다른 사진으로 해보세요.');
+  }
+});
+$('#btnShelfSave').onclick = saveShelf;
+$('#btnShelfDelete').onclick = deleteShelf;
+
+/* ---------- 책장에서 빠른 기록 ---------- */
+let quickShelfId = null;
+let quickKids = [];
+const QUICK_SUBS = ['1권', '2권', '3권', '5권', '10권'];
+
+function renderQuickHero(s){
+  const box = $('#quickHero');
+  box.innerHTML = '';
+  const cov = document.createElement('div');
+  cov.className = 'q-cov';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.src = shelfCoverSrc(s) || shelfCoverFallback(s.name);
+  img.onerror = () => { cov.innerHTML = '<div class="ph">📚</div>'; };
+  cov.appendChild(img);
+  const info = document.createElement('div');
+  info.className = 'q-info';
+  const nm = document.createElement('h3');
+  nm.textContent = s.name;
+  const mt = document.createElement('div');
+  mt.className = 'q-meta';
+  mt.textContent = (s.lang === 'ko' ? '한글책' : '영어책') + (s.publisher ? ' · ' + s.publisher : '');
+  info.appendChild(nm); info.appendChild(mt);
+  box.appendChild(cov); box.appendChild(info);
+}
+function renderQuickKidPick(){
+  const wrap = $('#qKidPick');
+  const field = $('#qKidField');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  if(db.children.length < 2){ field.classList.add('hidden'); return; }
+  field.classList.remove('hidden');
+  db.children.forEach(c => {
+    const on = quickKids.indexOf(c.id) >= 0;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kp' + (on ? ' on' : '');
+    b.dataset.kid = c.id;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.style.color = on ? c.color : '#6C7280';
+    b.style.borderColor = on ? c.color : '#E8E3D7';
+    b.style.background = on ? c.color + '1F' : '#FBFAF6';
+    b.textContent = (on ? '✓ ' : '') + c.emoji + ' ' + c.name;
+    wrap.appendChild(b);
+  });
+}
+$('#qKidPick').addEventListener('click', e => {
+  const b = e.target.closest('.kp');
+  if(!b) return;
+  const id = b.dataset.kid;
+  const i = quickKids.indexOf(id);
+  if(i >= 0){
+    if(quickKids.length === 1){ toast('아이는 한 명 이상 골라 주세요'); return; }
+    quickKids.splice(i, 1);
+  }else{
+    quickKids.push(id);
+  }
+  renderQuickKidPick();
+});
+function renderQuickChips(){
+  const wrap = $('#qChips');
+  if(!wrap) return;
+  const val = $('#qSub').value.trim();
+  wrap.innerHTML = '';
+  QUICK_SUBS.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'q-chip' + (val === v ? ' on' : '');
+    b.textContent = v;
+    b.setAttribute('aria-pressed', val === v ? 'true' : 'false');
+    b.onclick = () => {
+      $('#qSub').value = ($('#qSub').value.trim() === v) ? '' : v;
+      renderQuickChips();
+    };
+    wrap.appendChild(b);
+  });
+}
+$('#qSub').addEventListener('input', renderQuickChips);
+
+function openQuick(id, dateStr){
+  const s = shelfById(id);
+  if(!s) return;
+  quickShelfId = id;
+  const fallbackKid = db.children[0] ? db.children[0].id : '';
+  quickKids = (view.child !== 'all' && kidById(view.child)) ? [view.child] : (fallbackKid ? [fallbackKid] : []);
+  $('#qDate').value = dateStr || view.sel || todayISO;
+  $('#qSub').value = '';
+  renderQuickHero(s);
+  renderQuickKidPick();
+  renderQuickChips();
+  openSheet('quickSheet');
+}
+
+function saveQuick(){
+  const s = shelfById(quickShelfId);
+  if(!s) return;
+  const date = $('#qDate').value || todayISO;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(parseISO(date).getTime())){ toast('날짜를 확인해 주세요'); return; }
+  const kids = db.children.length < 2
+    ? (db.children[0] ? [db.children[0].id] : [])
+    : quickKids.slice();
+  if(!kids.length){ toast('누가 읽었는지 골라 주세요'); return; }
+  const sub = $('#qSub').value.trim();
+  const title = s.name + (sub ? ' ' + sub : '');
+  const rec = sanitize({
+    id: uid(),
+    date: date,
+    title: title,
+    author: '',
+    lang: s.lang,
+    isbn: '',
+    cover: s.cover || shelfCoverFallback(s.name),
+    coverData: s.coverData,
+    childIds: kids,
+    shelfId: s.id,
+    createdAt: Date.now()
+  });
+  if(!rec){ toast('기록하지 못했어요'); return; }
+  db.books.push(rec);
+  save();
+  view.sel = date;
+  const d = parseISO(date);
+  view.year = d.getFullYear();
+  view.month = d.getMonth();
+  if(view.filter !== 'all' && rec.lang !== view.filter) applyFilter('all');
+  if(view.child !== 'all' && kids.indexOf(view.child) < 0) view.child = 'all';
+  render();
+  closeSheet($('#quickSheet'));
+  toast('기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일' + (sub ? ' ' + sub : ''), '되돌리기', () => {
+    const i = db.books.findIndex(b => b.id === rec.id);
+    if(i < 0) return;
+    db.books.splice(i, 1);
+    save();
+    render();
+    toast('되돌렸어요');
+  });
+}
+$('#btnQuickSave').onclick = saveQuick;
+$('#btnQuickFull').onclick = () => {
+  const s = shelfById(quickShelfId);
+  if(!s) return;
+  const date = $('#qDate').value || todayISO;
+  const sub = $('#qSub').value.trim();
+  const kids = quickKids.slice();
+  closeSheet($('#quickSheet'));
+  openForm(date);
+  draft.shelfId = s.id;
+  draft.lang = s.lang;
+  draft.cover = s.cover || shelfCoverFallback(s.name);
+  draft.coverData = s.coverData;
+  $('#fTitle').value = s.name + (sub ? ' ' + sub : '');
+  $$('#langToggle .lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === s.lang));
+  draftKids = kids.filter(id => kidById(id));
+  if(draftKids.length) renderKidPick();
+  updateCoverPreview();
+  renderShelfPick();
+};
+
 /* ---------- 이벤트: 필터·월 이동·날짜 ---------- */
 function applyFilter(f){
   view.filter = f;
@@ -1518,9 +2132,68 @@ $('#kidPick').addEventListener('click', e => {
   renderKidPick();
 });
 
+/* 기록 시트의 ‘내 책장에서 고르기’ 칩 */
+function renderShelfPick(){
+  const wrap = $('#shelfPick');
+  const field = $('#shelfPickField');
+  const row = $('#saveToShelfRow');
+  if(!wrap || !field) return;
+  wrap.innerHTML = '';
+  if(!db.shelf.length){
+    field.classList.add('hidden');
+  }else{
+    field.classList.remove('hidden');
+    db.shelf.forEach(s => {
+      const on = !!draft && draft.shelfId === s.id;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sh-chip' + (on ? ' on' : '');
+      b.dataset.shelf = s.id;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const th = document.createElement('span');
+      th.className = 'sh-thumb';
+      const im = document.createElement('img');
+      im.src = shelfCoverSrc(s) || shelfCoverFallback(s.name);
+      im.alt = '';
+      im.onerror = () => { th.textContent = '📚'; };
+      th.appendChild(im);
+      const lb = document.createElement('span');
+      lb.className = 'sh-chip-nm';
+      lb.textContent = s.name;
+      b.appendChild(th); b.appendChild(lb);
+      wrap.appendChild(b);
+    });
+  }
+  // 이미 책장 항목을 골랐거나 기존 기록을 고치고 있으면 중복 저장 토글은 숨긴다
+  if(row) row.classList.toggle('hidden', !!(draft && (draft.shelfId || draft.id)));
+  const chk = $('#chkSaveShelf');
+  if(chk) chk.checked = false;
+}
+$('#shelfPick').addEventListener('click', e => {
+  const b = e.target.closest('.sh-chip[data-shelf]');
+  if(!b || !draft) return;
+  const s = shelfById(b.dataset.shelf);
+  if(!s) return;
+  if(draft.shelfId === s.id){
+    draft.shelfId = '';
+    renderShelfPick();
+    toast('책장 선택을 해제했어요');
+    return;
+  }
+  draft.shelfId = s.id;
+  draft.lang = s.lang;
+  draft.cover = s.cover || shelfCoverFallback(s.name);
+  draft.coverData = s.coverData;
+  $('#fTitle').value = s.name;
+  $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', x.dataset.lang === s.lang));
+  updateCoverPreview();
+  renderShelfPick();
+  toast('‘' + s.name + '’ 정보를 채웠어요');
+});
+
 function openForm(dateStr, book){
   draft = book ? Object.assign({}, book) : {
-    id: '', date: dateStr || view.sel, title: '', author: '', lang: '', isbn: '', cover: '', coverData: '', childIds: []
+    id: '', date: dateStr || view.sel, title: '', author: '', lang: '', isbn: '', cover: '', coverData: '', childIds: [], shelfId: ''
   };
   const fallbackKid = db.children[0] ? db.children[0].id : '';
   let pre = book ? (book.childIds || []).slice() : [];
@@ -1537,6 +2210,7 @@ function openForm(dateStr, book){
   $('#searchResults').classList.add('hidden');
   $$('#langToggle .lang-btn').forEach(b => b.classList.toggle('on', !!draft.lang && b.dataset.lang === draft.lang));
   renderKidPick();
+  renderShelfPick();
   updateCoverPreview();
   openSheet('formSheet');
   setTimeout(() => { if(!book) $('#fSearch').focus(); }, 260);
@@ -1567,12 +2241,26 @@ $('#btnSave').onclick = () => {
     cover: draft.cover,
     coverData: draft.coverData,
     childIds: kids,
+    shelfId: draft.shelfId || '',
     createdAt: draft.createdAt || Date.now()
   });
 
   const i = db.books.findIndex(b => b.id === rec.id);
   if(i >= 0) db.books[i] = rec;
   else db.books.push(rec);
+
+  // 새로 직접 입력한 책을 책장에도 담기
+  let shelfAdded = false;
+  const chk = $('#chkSaveShelf');
+  if(chk && chk.checked && !rec.shelfId && !draft.id){
+    if(!db.shelf.some(s => s.name === rec.title && s.lang === rec.lang)){
+      const item = sanitizeShelf({
+        id: uidS(), name: rec.title, lang: rec.lang, publisher: '',
+        cover: rec.cover, coverData: rec.coverData, createdAt: Date.now()
+      });
+      if(item){ db.shelf.push(item); shelfAdded = true; }
+    }
+  }
   save();
 
   view.sel = date;
@@ -1585,7 +2273,7 @@ $('#btnSave').onclick = () => {
   if(needKidReset) view.child = 'all';
   render();
   closeSheet($('#formSheet'));
-  toast(i >= 0 ? '수정했어요' : '기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일');
+  toast((i >= 0 ? '수정했어요' : '기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일') + (shelfAdded ? ' · 책장에도 담았어요' : ''));
 };
 
 $('#btnCoverUpload').onclick = () => $('#coverInput').click();
@@ -1694,10 +2382,12 @@ async function googleSearch(q, lang){
     sourceState.gbQuota = true;
     return [];
   }
+  // 제목 검색(intitle:)을 먼저 쓴다 — 지은이·서평만 걸린 무관한 책을 줄인다
   const tries = [];
-  if(lang === 'ko') tries.push({ q: 'intitle:' + q, langRestrict: 'ko', maxResults: '20' });
-  if(lang === 'en') tries.push({ q: q, langRestrict: 'en', maxResults: '20' });
-  tries.push({ q: q, maxResults: '20', printType: 'books' });
+  const langP = lang === 'ko' ? { langRestrict: 'ko' } : (lang === 'en' ? { langRestrict: 'en' } : {});
+  tries.push(Object.assign({ q: 'intitle:' + q, maxResults: '20', printType: 'books' }, langP));
+  tries.push({ q: 'intitle:' + q, maxResults: '20', printType: 'books' });
+  tries.push(Object.assign({ q: q, maxResults: '20', printType: 'books' }, langP));
   const out = [];
   for(const params of tries){
     try{
@@ -1717,9 +2407,24 @@ async function googleSearch(q, lang){
   return out;
 }
 async function openLibrarySearch(q){
-  const url = 'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=20';
-  const data = await fetchJson(url, 10000);
-  return (data.docs || []).map(fromOL).filter(Boolean);
+  // title= 파라미터를 먼저 — 무관한 책을 걸러내는 가장 확실한 방법
+  const urls = [
+    'https://openlibrary.org/search.json?title=' + encodeURIComponent(q) + '&limit=20',
+    'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=20'
+  ];
+  let lastErr = null;
+  for(let i = 0; i < urls.length; i++){
+    try{
+      const data = await fetchJson(urls[i], 10000);
+      const list = (data.docs || []).map(fromOL).filter(Boolean);
+      if(list.length) return list;
+      if(i === urls.length - 1) return list;
+    }catch(err){
+      lastErr = err;
+    }
+  }
+  if(lastErr) throw lastErr;
+  return [];
 }
 
 /* JSONP: CORS 헤더 없이도 서버가 콜백 이름을 써 주는 공식 방식 */
@@ -1785,11 +2490,18 @@ function fromGData(entry){
   };
 }
 async function gdataSearch(q){
-  const params = new URLSearchParams({ q: q, 'max-results': '20' });
-  const url = 'https://books.google.com/books/feeds/volumes?' + params.toString() + '&alt=json-in-script';
-  const data = await jsonpGet(url, 'callback', 9000);
-  const feed = (data && data.feed) || {};
-  return (feed.entry || []).map(fromGData).filter(Boolean);
+  const run = async qq => {
+    const params = new URLSearchParams({ q: qq, 'max-results': '20' });
+    const url = 'https://books.google.com/books/feeds/volumes?' + params.toString() + '&alt=json-in-script';
+    const data = await jsonpGet(url, 'callback', 9000);
+    const feed = (data && data.feed) || {};
+    return (feed.entry || []).map(fromGData).filter(Boolean);
+  };
+  // 제목 검색을 먼저, 결과가 없을 때만 전체 검색으로 보완
+  let out = [];
+  try{ out = await run('intitle:' + q); }catch(e){ out = []; }
+  if(!out.length) out = await run(q);
+  return out;
 }
 async function gdataByIsbn(isbn){
   const params = new URLSearchParams({ q: 'isbn:' + isbn, 'max-results': '3' });
@@ -1824,27 +2536,42 @@ async function appleBooksSearch(q, lang){
 }
 
 function dedupeRank(list, q, lang){
-  const norm = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
-  const qn = norm(q);
+  const clean = s => String(s || '').toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const qn = clean(q);
+  const qFlat = qn.replace(/ /g, '');
+  const qTokens = qn.split(' ').filter(Boolean);
+  /* 제목과 검색어가 얼마나 맞는지: 완전(4) > 시작(3.2) > 제목 포함(2.6) > 모든 단어(2) > 일부 단어(1~1.6) */
+  const relOf = title => {
+    const tn = clean(title);
+    if(!tn || !qn) return 0;
+    const tFlat = tn.replace(/ /g, '');
+    if(tn === qn || tFlat === qFlat) return 4;
+    if(tn.indexOf(qn) === 0 || (qFlat && tFlat.indexOf(qFlat) === 0)) return 3.2;
+    if(tn.indexOf(qn) >= 0 || (qFlat && tFlat.indexOf(qFlat) >= 0)) return 2.6;
+    const hit = qTokens.filter(t => tn.indexOf(t) >= 0);
+    if(hit.length && hit.length === qTokens.length) return 2;
+    if(hit.length) return 1 + 0.6 * (hit.length / qTokens.length);
+    return 0;
+  };
   const seen = new Set();
   const scored = [];
   list.forEach((r, idx) => {
-    const key = norm(r.title) + '|' + norm(r.author).slice(0, 12);
+    const key = clean(r.title) + '|' + clean(r.author).slice(0, 12);
     if(seen.has(key)) return;
     seen.add(key);
-    let s = 0;
-    if(r.cover) s += 2;
-    if(lang && r.lang === lang) s += 2;
-    if(!r.lang && lang) s += 0;
-    if(norm(r.title).indexOf(qn) === 0) s += 2;
-    else if(norm(r.title).indexOf(qn) > 0) s += 1;
+    const rel = relOf(r.title);
+    if(!rel) return;                 // 제목에 검색어가 전혀 없는 결과는 버린다
+    let s = rel * 100;               // 제목 일치도가 최우선
+    if(lang && r.lang === lang) s += 12;   // 언어는 가산점으로만
+    if(r.cover) s += 3;
     if(r.src === 'Google') s += 0.5;
     scored.push({ r: r, s: s + (1 - idx / 1000) });
   });
-  scored.sort((a, b) => b.s - a.s);
-  let out = scored.map(x => x.r);
-  if(lang) out.sort((a, b) => (b.lang === lang ? 1 : 0) - (a.lang === lang ? 1 : 0));
-  return out.slice(0, 24);
+  scored.sort((a, b) => b.s - a.s);   // 검색어 일치 점수 순위를 덮어쓰는 정렬은 없앴다
+  return scored.slice(0, 24).map(x => x.r);
 }
 
 let searching = false;
@@ -3066,6 +3793,7 @@ function exportPayload(){
     exportedAt: new Date().toISOString(),
     settings: db.settings,
     children: db.children,
+    shelf: db.shelf,
     books: db.books
   };
 }
@@ -3140,6 +3868,21 @@ function importJson(text){
 
   if(!db.children.length) ensureChildren();
   const fallbackKid = db.children[0] ? db.children[0].id : '';
+
+  // 책장(내 책장) 항목 합치기 — 구버전 백업에는 없는 항목이라 있을 때만
+  const inShelf = (!Array.isArray(parsed) && parsed && Array.isArray(parsed.shelf)) ? parsed.shelf : [];
+  let shelfAdded = 0;
+  if(inShelf.length){
+    if(!Array.isArray(db.shelf)) db.shelf = [];
+    inShelf.forEach(raw => {
+      const s = sanitizeShelf(raw);
+      if(!s) return;
+      const hit = db.shelf.find(x => x.id === s.id || (x.name === s.name && x.lang === s.lang));
+      if(hit) return;
+      db.shelf.push(s);
+      shelfAdded++;
+    });
+  }
   const keyOf = b => b.date + '|' + b.title.trim().toLowerCase() + '|' + b.lang + '|' + (b.childIds || []).slice().sort().join(',');
   const ids = new Set(db.books.map(b => b.id));
   const keys = new Set(db.books.map(keyOf));
@@ -3159,7 +3902,8 @@ function importJson(text){
   save();
   render();
   const kidNote = kidsAdded ? ' · 아이 ' + kidsAdded + '명 추가' : '';
-  toast(added + '권 가져왔어요' + kidNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
+  const shelfNote = shelfAdded ? ' · 책장 ' + shelfAdded + '종 추가' : '';
+  toast(added + '권 가져왔어요' + kidNote + shelfNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
   closeSheet($('#menuSheet'));
 }
 
@@ -3246,10 +3990,11 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.4',
+  version: '1.5',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
+    shelf: db.shelf.length,
     view: JSON.parse(JSON.stringify(view)),
     filter: view.filter,
     child: view.child,
@@ -3268,6 +4013,31 @@ window.__rc = {
   openDetail: openDetail,
   payload: exportPayload,
   importJson: importJson,
+  /* v1.5 내 책장 확인용 */
+  shelfApi: {
+    list: () => db.shelf.map(s => ({
+      id: s.id, name: s.name, lang: s.lang, publisher: s.publisher,
+      cover: s.coverData ? 'data' : (s.cover ? 'url' : 'auto'),
+      recs: shelfRecs(s.id).length
+    })),
+    add: (name, lang, publisher) => {
+      const s = sanitizeShelf({ id: uidS(), name: name, lang: lang || 'ko', publisher: publisher || '', createdAt: Date.now() });
+      if(!s) return null;
+      db.shelf.push(s); save(); render();
+      return s.id;
+    },
+    remove: (id) => {
+      db.shelf = db.shelf.filter(s => s.id !== id);
+      save(); render();
+    },
+    form: (id) => openShelfForm(id),
+    saveForm: saveShelf,
+    del: deleteShelf,
+    quick: (id, date) => openQuick(id, date),
+    saveQuick: () => saveQuick(),
+    books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
+    covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
+  },
   decodeFile: decodeImageFile,
   lookupIsbn: lookupIsbn,
   barcode: {
