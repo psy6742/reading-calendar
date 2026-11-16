@@ -293,6 +293,13 @@ textarea.input{resize:vertical;min-height:60px}
 .res .rbadge.shelf{background:#E7E4F4;color:#4A4370}
 .res .rbadge.past{background:#EFE9DA;color:#7A6547}
 .res-online{display:flex;flex-direction:column;gap:8px}
+.res .rbadge.srcs{background:#F1EFEA;color:#7C7566}
+.res .rbadge.srcs.kakao{background:#FDEBD3;color:#8A5A12}
+.key-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.key-state{font-size:11px;font-weight:700;color:#9A958A}
+.key-state.ok{color:var(--ko)}
+.key-state.bad{color:#B4574A}
+.field .hint a{color:#48627F;text-decoration:underline}
 
 .cover-box{display:flex;gap:12px;align-items:flex-start}
 .cover-prev{
@@ -675,7 +682,7 @@ textarea.input{resize:vertical;min-height:60px}
         <input class="input" id="fSearch" placeholder="예: 구름빵, 백희나, The Gruffalo" autocomplete="off" enterkeyhint="search">
         <button class="btn dark" id="btnSearch" type="button">검색</button>
       </div>
-      <div class="hint">내 책장·지난 기록을 먼저 찾고, 없으면 온라인 서점(Google Books · Apple Books · Open Library)에서 가져와요.</div>
+      <div class="hint">내 책장·지난 기록을 먼저 찾고, 없으면 온라인 서점(카카오 책 검색 · Google Books · Apple Books · Open Library)에서 가져와요.</div>
       <div class="results hidden" id="searchResults"></div>
     </div>
 
@@ -953,6 +960,16 @@ textarea.input{resize:vertical;min-height:60px}
       <input class="input" id="fGbKey" placeholder="검색이 안 될 때만 입력하면 돼요" autocomplete="off">
       <div class="hint">키 없이도 검색되지만, Google 쪽 하루 사용량이 차면 결과가 비어 보일 수 있어요. 무료 키를 넣으면 안정적으로 검색돼요. (Open Library 검색은 키 없이 늘 동작해요.)</div>
     </div>
+    <div class="field" style="margin-top:16px">
+      <label for="fKakaoKey">국내 도서 검색 키 · 카카오 REST API 키 (선택)</label>
+      <input class="input" id="fKakaoKey" placeholder="카카오 REST API 키를 붙여 넣어 주세요" autocomplete="off" spellcheck="false">
+      <div class="key-row">
+        <button class="btn sm dark" id="btnKakaoSave" type="button">저장</button>
+        <button class="btn sm line" id="btnKakaoClear" type="button">삭제</button>
+        <span class="key-state" id="kakaoKeyState">등록되지 않음</span>
+      </div>
+      <div class="hint">카카오 책 검색 키를 넣으면 국내 도서·아동책 검색이 훨씬 정확해져요. <a href="https://developers.kakao.com/console/app" target="_blank" rel="noopener">developers.kakao.com</a>에서 무료 REST API 키를 발급받아 붙여 넣으면 돼요.<br>알라딘은 2026년 10월에 API 서비스를 끝내서, 국내 도서 검색은 카카오 키로 연결했어요.</div>
+    </div>
     <p class="sheet-note" style="margin-top:14px">기록·내 책장·읽을 목록은 이 브라우저(localStorage)에 저장되고, JSON 백업에도 함께 담겨요. 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 주세요.</p>
   </div>
 </div>
@@ -983,7 +1000,7 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '' } };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '' } };
 let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', rec: { age: '0-2', sub: 'age' } };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
@@ -1001,7 +1018,7 @@ function load(){
       if(Array.isArray(p)) db.books = p.map(sanitize).filter(Boolean);
       else if(p && Array.isArray(p.books)){
         db.books = p.books.map(sanitize).filter(Boolean);
-        db.settings = Object.assign({ gbKey: '' }, p.settings || {});
+        db.settings = Object.assign({ gbKey: '', kakaoKey: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
@@ -3197,7 +3214,7 @@ function compressImage(file, maxW, quality){
 }
 
 /* ---------- 검색 ---------- */
-const sourceState = { gbQuota: false, gbKey: '', gbCooldown: 0 };
+const sourceState = { gbQuota: false, gbKey: '', gbCooldown: 0, kakaoKeyBad: false };
 
 function gbUrl(params){
   const p = new URLSearchParams(params);
@@ -3231,7 +3248,8 @@ function fromGB(item){
     lang: v.language === 'ko' ? 'ko' : (v.language === 'en' ? 'en' : ''),
     cover: cover,
     isbn: String(isbn).replace(/[^0-9Xx]/g, ''),
-    src: 'Google'
+    src: 'Google',
+    srcKey: 'google'
   };
 }
 function fromOL(doc){
@@ -3248,7 +3266,8 @@ function fromOL(doc){
     lang: lang,
     cover: cover,
     isbn: isbn,
-    src: 'OpenLibrary'
+    src: 'OpenLibrary',
+    srcKey: 'openlibrary'
   };
 }
 
@@ -3301,6 +3320,87 @@ async function openLibrarySearch(q){
   }
   if(lastErr) throw lastErr;
   return [];
+}
+
+/* 카카오 책 검색 (daum 검색) — CORS 허용 + 무료 REST 키.
+   국내 도서·아동책 서지와 표지를 정확히 준다. 알라딘 OpenAPI는 2026-10-30 종료. */
+function kakaoKey(){
+  return String((db.settings && db.settings.kakaoKey) || '').trim();
+}
+function decodeKakaoText(v){
+  return String(v == null ? '' : v)
+    .replace(/<\/?[^>]+>/g, '')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function fromKakao(doc){
+  const title = decodeKakaoText(doc && doc.title);
+  if(!title) return null;
+  const ids = String((doc && doc.isbn) || '').split(/\s+/).filter(Boolean);
+  let isbn = ids.find(x => /^97[89]\d{10}$/.test(x)) || ids.find(x => /^\d{9}[\dXx]$/.test(x)) || '';
+  isbn = String(isbn).toUpperCase();
+  if(/^\d{9}[\dX]$/.test(isbn)) isbn = isbn10to13(isbn);
+  let cover = String((doc && doc.thumbnail) || '').trim().replace(/^http:/, 'https:');
+  if(!cover) cover = coverByIsbn(isbn);
+  return {
+    title: title,
+    author: (doc.authors || []).slice(0, 2).join(', '),
+    lang: /[가-힣]/.test(title) ? 'ko' : 'en',
+    cover: cover,
+    isbn: isbn,
+    publisher: decodeKakaoText(doc.publisher),
+    src: '카카오',
+    srcKey: 'kakao'
+  };
+}
+async function kakaoSearch(q){
+  const key = kakaoKey();
+  if(!key) return [];
+  const call = async params => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4500);   /* 4~5초 안에 답이 없으면 포기 */
+    try{
+      const res = await fetch('https://dapi.kakao.com/v3/search/book?' + new URLSearchParams(params).toString(), {
+        headers: { Authorization: 'KakaoAK ' + key },
+        signal: ctrl.signal,
+        cache: 'no-store'
+      });
+      if(res.status === 401 || res.status === 403){
+        const err = new Error('kakao key');
+        err.keyError = true;
+        throw err;
+      }
+      if(!res.ok){
+        const err = new Error('HTTP ' + res.status);
+        err.status = res.status;
+        throw err;
+      }
+      return await res.json();
+    }finally{ clearTimeout(t); }
+  };
+  const out = [];
+  try{
+    const d = await call({ query: q, target: 'title', size: '15', sort: 'accuracy' });
+    (d.documents || []).forEach(x => { const r = fromKakao(x); if(r) out.push(r); });
+    sourceState.kakaoKeyBad = false;
+  }catch(err){
+    if(err && err.keyError){ sourceState.kakaoKeyBad = true; throw err; }
+    return out;      /* 시간 초과·네트워크 오류: 다른 서점 결과만 보여 준다 */
+  }
+  /* 제목 검색 결과가 적으면 키워드(제목+지은이)로 한 번 더 보완 */
+  if(out.length < 5){
+    try{
+      const d = await call({ query: q, size: '15', sort: 'accuracy' });
+      (d.documents || []).forEach(x => { const r = fromKakao(x); if(r) out.push(r); });
+      sourceState.kakaoKeyBad = false;
+    }catch(err){
+      if(err && err.keyError){ sourceState.kakaoKeyBad = true; throw err; }
+    }
+  }
+  return out;
 }
 
 /* JSONP: CORS 헤더 없이도 서버가 콜백 이름을 써 주는 공식 방식 */
@@ -3362,7 +3462,8 @@ function fromGData(entry){
     lang: lang,
     cover: cover,
     isbn: isbn || '',
-    src: 'Google'
+    src: 'Google',
+    srcKey: 'google'
   };
 }
 async function gdataSearch(q){
@@ -3400,7 +3501,8 @@ function fromApple(r){
     lang: /[가-힣]/.test(title) ? 'ko' : 'en',
     cover: art,
     isbn: '',
-    src: 'Apple Books'
+    src: 'Apple Books',
+    srcKey: 'apple'
   };
 }
 async function appleBooksSearch(q, lang){
@@ -3432,18 +3534,42 @@ function dedupeRank(list, q, lang){
     if(hit.length) return 1 + 0.6 * (hit.length / qTokens.length);
     return 0;
   };
-  const seen = new Set();
+  /* 어느 출처의 정보를 남길지: 카카오(국내 서점 서지) > Google > Apple > Open Library */
+  const prioOf = r => !r ? 0 : (r.srcKey === 'kakao' ? 3 : (r.srcKey === 'google' ? 2 : (r.srcKey === 'apple' ? 1 : 0)));
+  const FIELDS = ['title', 'author', 'lang', 'cover', 'isbn', 'publisher'];
+  const groups = new Map();
+  const order = [];
+  list.forEach(r => {
+    if(!r || !r.title) return;
+    const d = cleanIsbn(r.isbn);
+    /* 같은 ISBN이면 같은 책, ISBN이 없으면 제목+지은이로 묶는다 */
+    const key = /^97[89]\d{10}$/.test(d) ? 'i:' + d : 't:' + clean(r.title) + '|' + clean(r.author).slice(0, 12);
+    const cur = groups.get(key);
+    if(!cur){
+      const copy = {};
+      FIELDS.forEach(f => { copy[f] = r[f] || ''; });
+      copy.src = r.src; copy.srcKey = r.srcKey;
+      groups.set(key, copy);
+      order.push(key);
+      return;
+    }
+    if(prioOf(r) > prioOf(cur)){
+      FIELDS.forEach(f => { cur[f] = r[f] || cur[f]; });   // 우선 출처의 값으로 채우고 빈 칸은 남은 정보로 보완
+      cur.src = r.src; cur.srcKey = r.srcKey;
+    }else{
+      FIELDS.forEach(f => { if(!cur[f] && r[f]) cur[f] = r[f]; });
+    }
+  });
   const scored = [];
-  list.forEach((r, idx) => {
-    const key = clean(r.title) + '|' + clean(r.author).slice(0, 12);
-    if(seen.has(key)) return;
-    seen.add(key);
+  order.forEach((key, idx) => {
+    const r = groups.get(key);
     const rel = relOf(r.title);
     if(!rel) return;                 // 제목에 검색어가 전혀 없는 결과는 버린다
     let s = rel * 100;               // 제목 일치도가 최우선
     if(lang && r.lang === lang) s += 12;   // 언어는 가산점으로만
     if(r.cover) s += 3;
-    if(r.src === 'Google') s += 0.5;
+    if(r.srcKey === 'kakao') s += 2.5;     // 국내 서지·한글 메타는 살짝 위로
+    else if(r.srcKey === 'google') s += 0.5;
     scored.push({ r: r, s: s + (1 - idx / 1000) });
   });
   scored.sort((a, b) => b.s - a.s);   // 검색어 일치 점수 순위를 덮어쓰는 정렬은 없앴다
@@ -3548,7 +3674,9 @@ function makeResRow(r){
   if(r.kind === 'shelf' || r.kind === 'past'){
     au.textContent = localSub(r);
   }else{
-    au.textContent = (r.author || '지은이 정보 없음') + ' · ' + r.src;
+    const bits = [r.author || '지은이 정보 없음'];
+    if(r.publisher) bits.push(r.publisher);
+    au.textContent = bits.join(' · ');
   }
   rt.appendChild(t); rt.appendChild(au);
   row.appendChild(rt);
@@ -3557,11 +3685,19 @@ function makeResRow(r){
     badge.className = 'rbadge ' + r.kind;
     badge.textContent = r.kind === 'shelf' ? '내 책장' : '지난 기록';
     row.appendChild(badge);
-  }else if(r.lang){
-    const tag = document.createElement('span');
-    tag.className = 'rbadge ' + r.lang;
-    tag.textContent = r.lang === 'ko' ? '한글' : '영어';
-    row.appendChild(tag);
+  }else{
+    if(r.src){
+      const sb = document.createElement('span');
+      sb.className = 'rbadge srcs' + (r.srcKey === 'kakao' ? ' kakao' : '');
+      sb.textContent = r.src;
+      row.appendChild(sb);
+    }
+    if(r.lang){
+      const tag = document.createElement('span');
+      tag.className = 'rbadge ' + r.lang;
+      tag.textContent = r.lang === 'ko' ? '한글' : '영어';
+      row.appendChild(tag);
+    }
   }
   return row;
 }
@@ -3686,6 +3822,16 @@ async function doSearch(){
 
   let all = [];
   let notes = [];
+  let kakaoKeyError = false;
+
+  /* 국내 도서(카카오 책 검색)는 다른 서점과 동시에 보낸다 — 국내·아동책이 위로 올라온다 */
+  const kakaoTask = kakaoSearch(q).then(
+    list => list,
+    err => {
+      if(err && err.keyError){ kakaoKeyError = true; sourceState.kakaoKeyBad = true; }
+      return [];
+    }
+  );
 
   try{
     const g = await googleSearch(q, draft && draft.lang);
@@ -3718,6 +3864,9 @@ async function doSearch(){
     }catch(e){ /* 무시 */ }
   }
 
+  all = all.concat(await kakaoTask);
+  if(kakaoKeyError) toast('카카오 키가 맞지 않아요. 설정에서 다시 확인해 주세요');
+
   if(seq !== searchSeq){ finish(); return; }
 
   // 이미 내 책장·지난 기록에서 찾은 책과 같은 제목은 온라인 목록에서 뺀다
@@ -3738,6 +3887,14 @@ async function doSearch(){
         kb.className = 'btn sm line';
         kb.textContent = 'Google Books API 키 넣기';
         kb.onclick = () => { closeSheet($('#formSheet')); openMenu(); };
+        row.appendChild(kb);
+      }
+      if(!kakaoKey()){
+        const kb = document.createElement('button');
+        kb.type = 'button';
+        kb.className = 'btn sm line';
+        kb.textContent = '국내 책이 안 나오나요? 국내 검색 키 넣기';
+        kb.onclick = openKeySettings;
         row.appendChild(kb);
       }
       const mb = document.createElement('button');
@@ -3770,6 +3927,15 @@ async function doSearch(){
   });
 
   if(notes.length) addResNote(onlineWrap, notes.join(' · '), '#B4574A');
+  if(!kakaoKey()){
+    const kb = document.createElement('button');
+    kb.type = 'button';
+    kb.className = 'btn sm line';
+    kb.style.marginTop = '6px';
+    kb.textContent = '국내 책이 안 나오나요? 설정에서 카카오 무료 키를 넣으면 국내 도서가 잘 검색돼요';
+    kb.onclick = openKeySettings;
+    onlineWrap.appendChild(kb);
+  }
   finish();
 }
 $('#btnSearch').onclick = doSearch;
@@ -4462,7 +4628,40 @@ function openMenu(){
     '<div class="stat"><b>' + db.children.length + '</b><span>아이</span></div>' +
     '<div class="stat"><b>' + (bytes > 1048576 ? (bytes / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(bytes / 1024)) + 'KB') + '</b><span>용량</span></div>';
   $('#fGbKey').value = db.settings.gbKey || '';
+  $('#fKakaoKey').value = db.settings.kakaoKey || '';
+  syncKakaoKeyState();
   openSheet('menuSheet');
+}
+function openKeySettings(){
+  /* 기록 입력 시트는 그대로 두고 그 위에 설정 시트를 연다 — 입력하던 내용이 날아가지 않는다 */
+  openMenu();
+  const el = $('#fKakaoKey');
+  if(el){ try{ el.focus({ preventScroll: false }); }catch(e){ el.focus(); } }
+}
+function syncKakaoKeyState(){
+  const el = $('#kakaoKeyState');
+  if(!el) return;
+  const key = kakaoKey();
+  el.className = 'key-state' + (key ? (sourceState.kakaoKeyBad ? ' bad' : ' ok') : '');
+  el.textContent = key ? (sourceState.kakaoKeyBad ? '키를 확인해 주세요' : '등록됨') : '등록되지 않음';
+}
+function saveKakaoKey(){
+  const el = $('#fKakaoKey');
+  const v = el ? String(el.value || '').trim() : '';
+  db.settings.kakaoKey = v;
+  sourceState.kakaoKeyBad = false;
+  save();
+  syncKakaoKeyState();
+  toast(v ? '국내 도서 검색 키를 저장했어요' : '국내 도서 검색 키를 지웠어요');
+}
+function clearKakaoKey(){
+  const el = $('#fKakaoKey');
+  if(el) el.value = '';
+  db.settings.kakaoKey = '';
+  sourceState.kakaoKeyBad = false;
+  save();
+  syncKakaoKeyState();
+  toast('국내 도서 검색 키를 지웠어요');
 }
 $('#btnMenu').onclick = openMenu;
 $('#menuKids').onclick = () => { closeSheet($('#menuSheet')); openKids(); };
@@ -4470,6 +4669,11 @@ $('#fGbKey').addEventListener('change', e => {
   db.settings.gbKey = e.target.value.trim();
   save();
   if(db.settings.gbKey) toast('API 키를 저장했어요');
+});
+$('#btnKakaoSave').onclick = saveKakaoKey;
+$('#btnKakaoClear').onclick = clearKakaoKey;
+$('#fKakaoKey').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); saveKakaoKey(); }
 });
 
 /* ---------- 시작 ---------- */
@@ -4500,7 +4704,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.9',
+  version: '2.0',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -4585,7 +4789,15 @@ window.__rc = {
       past: l.past.map(r => ({ id: r.id, title: r.title, author: r.author, lang: r.lang, date: r.date }))
     };
   },
+  /* v2.0 국내 도서 검색 키(카카오) 확인용 */
+  keyApi: {
+    get: () => ({ gbKey: db.settings.gbKey || '', kakaoKey: db.settings.kakaoKey || '' }),
+    set: (k) => { db.settings.kakaoKey = String(k || '').trim(); save(); syncKakaoKeyState(); },
+    clear: clearKakaoKey,
+    bad: () => sourceState.kakaoKeyBad
+  },
   sources: {
+    kakao: (q) => kakaoSearch(q),
     google: (q, lang) => googleSearch(q, lang || ''),
     gdata: (q) => gdataSearch(q),
     apple: (q, lang) => appleBooksSearch(q, lang || 'en'),
@@ -4594,6 +4806,7 @@ window.__rc = {
   },
   search: (q, lang) => (async () => {
     let all = [];
+    try{ all = all.concat(await kakaoSearch(q)); }catch(e){}
     try{ all = all.concat(await googleSearch(q, lang)); }catch(e){}
     try{ all = all.concat(await gdataSearch(q)); }catch(e){}
     try{ all = all.concat(await openLibrarySearch(q)); }catch(e){}
