@@ -372,15 +372,6 @@ textarea.input{resize:vertical;min-height:60px}
 .shelf-sug{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center}
 .shelf-sug .pill{padding:8px 12px;font-size:12px;font-weight:700}
 
-/* 내 책장 선택 칩 (기록 시트) */
-.shelf-chips{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 -1px}
-.shelf-chips::-webkit-scrollbar{display:none}
-.sh-chip{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;max-width:210px;border-radius:999px;border:1.5px solid #E8E3D7;background:#FBFAF6;padding:5px 12px 5px 5px;font-size:12.5px;font-weight:800;color:#5B6270}
-.sh-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
-.sh-thumb{width:22px;height:30px;border-radius:4px;overflow:hidden;background:var(--lav-soft);display:grid;place-items:center;font-size:12px;flex:0 0 auto}
-.sh-thumb img{width:100%;height:100%;object-fit:cover}
-.sh-chip-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-
 /* 책장에 저장 토글 */
 .toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:13px;font-weight:700;color:#5B6270;background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:11px 13px}
 .toggle-row input{width:19px;height:19px;accent-color:#1E293B;flex:0 0 auto;margin:0}
@@ -562,12 +553,6 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="sheet-head">
       <h2 id="formTitle">책 기록하기</h2>
       <button class="x" data-close aria-label="닫기">✕</button>
-    </div>
-
-    <div class="field hidden" id="shelfPickField">
-      <label>내 책장에서 고르기</label>
-      <div class="shelf-chips" id="shelfPick"></div>
-      <div class="hint" id="shelfPickHint">전집을 한 번 누르면 제목·지은이·구분·표지가 채워져요. 다시 누르면 해제돼요.</div>
     </div>
 
     <div class="field row2">
@@ -1972,7 +1957,7 @@ $('#btnQuickFull').onclick = () => {
   draftKids = kids.filter(id => kidById(id));
   if(draftKids.length) renderKidPick();
   updateCoverPreview();
-  renderShelfPick();
+  syncShelfSaveToggle();
 };
 
 /* ---------- 이벤트: 필터·월 이동·날짜 ---------- */
@@ -2088,65 +2073,14 @@ $('#kidPick').addEventListener('click', e => {
   renderKidPick();
 });
 
-/* 기록 시트의 ‘내 책장에서 고르기’ 칩 */
-function renderShelfPick(){
-  const wrap = $('#shelfPick');
-  const field = $('#shelfPickField');
-  const row = $('#saveToShelfRow');
-  if(!wrap || !field) return;
-  wrap.innerHTML = '';
-  if(!db.shelf.length){
-    field.classList.add('hidden');
-  }else{
-    field.classList.remove('hidden');
-    db.shelf.forEach(s => {
-      const on = !!draft && draft.shelfId === s.id;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'sh-chip' + (on ? ' on' : '');
-      b.dataset.shelf = s.id;
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      const th = document.createElement('span');
-      th.className = 'sh-thumb';
-      const im = document.createElement('img');
-      im.src = shelfCoverSrc(s) || shelfCoverFallback(s.name);
-      im.alt = '';
-      im.onerror = () => { th.textContent = '📚'; };
-      th.appendChild(im);
-      const lb = document.createElement('span');
-      lb.className = 'sh-chip-nm';
-      lb.textContent = s.name;
-      b.appendChild(th); b.appendChild(lb);
-      wrap.appendChild(b);
-    });
-  }
+/* 기록 시트의 ‘이 책을 내 책장에도 저장’ 토글 */
+function syncShelfSaveToggle(){
   // 이미 책장 항목을 골랐거나 기존 기록을 고치고 있으면 중복 저장 토글은 숨긴다
+  const row = $('#saveToShelfRow');
   if(row) row.classList.toggle('hidden', !!(draft && (draft.shelfId || draft.id)));
   const chk = $('#chkSaveShelf');
   if(chk) chk.checked = false;
 }
-$('#shelfPick').addEventListener('click', e => {
-  const b = e.target.closest('.sh-chip[data-shelf]');
-  if(!b || !draft) return;
-  const s = shelfById(b.dataset.shelf);
-  if(!s) return;
-  if(draft.shelfId === s.id){
-    draft.shelfId = '';
-    renderShelfPick();
-    toast('책장 선택을 해제했어요');
-    return;
-  }
-  draft.shelfId = s.id;
-  draft.lang = s.lang;
-  draft.cover = s.cover || shelfCoverFallback(s.name);
-  draft.coverData = s.coverData;
-  $('#fTitle').value = s.name;
-  $('#fAuthor').value = s.author || '';
-  $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', x.dataset.lang === s.lang));
-  updateCoverPreview();
-  renderShelfPick();
-  toast('‘' + s.name + '’ 정보를 채웠어요');
-});
 
 function openForm(dateStr, book){
   draft = book ? Object.assign({}, book) : {
@@ -2173,7 +2107,7 @@ function openForm(dateStr, book){
   $('#searchResults').classList.add('hidden');
   $$('#langToggle .lang-btn').forEach(b => b.classList.toggle('on', !!draft.lang && b.dataset.lang === draft.lang));
   renderKidPick();
-  renderShelfPick();
+  syncShelfSaveToggle();
   updateCoverPreview();
   openSheet('formSheet');
   setTimeout(() => { if(!book) $('#fSearch').focus(); }, 260);
@@ -2677,7 +2611,7 @@ function applyLocalResult(r){
   }
   $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', !!draft.lang && x.dataset.lang === draft.lang));
   updateCoverPreview();
-  renderShelfPick();
+  syncShelfSaveToggle();
   $('#searchResults').innerHTML = '';
   $('#searchResults').classList.add('hidden');
   toast('\u2018' + r.title.slice(0, 18) + (r.title.length > 18 ? '\u2026' : '') + '\u2019 정보를 채웠어요');
@@ -3571,7 +3505,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.6',
+  version: '1.7',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
