@@ -313,6 +313,14 @@ textarea.input{resize:vertical;min-height:60px}
 .scan-hint{color:#fff;font-size:12px;text-align:center;position:absolute;left:0;right:0;bottom:10px;opacity:.85}
 .scan-status{font-size:13px;font-weight:700;color:#5B6270;text-align:center;margin:4px 0 12px;min-height:20px}
 .scan-status.err{color:#B4574A}
+.scan-tools{display:flex;align-items:center;gap:8px;margin:-2px 0 10px;flex-wrap:wrap}
+.zoom-seg{display:inline-flex;background:#EDEAE1;border-radius:999px;padding:3px}
+.zoom-btn{font-size:13px;font-weight:800;color:#7C7768;padding:7px 15px;border-radius:999px;line-height:1;min-width:50px;transition:background .16s,color .16s}
+.zoom-btn.on{background:#1E293B;color:#fff;box-shadow:0 2px 6px rgba(30,41,59,.2)}
+.scan-tool{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:#495162;background:#F4F1E8;border:1px solid #EEEAE0;border-radius:999px;padding:8px 13px;line-height:1}
+.scan-tool.on{background:#FFF3CC;color:#8A6A12;border-color:#F0DFA6}
+.scan-tool[hidden]{display:none}
+.scan-zoom-note{font-size:11px;color:#9A958A;line-height:1.3;margin-left:auto;text-align:right;max-width:56%}
 
 .detail-head{display:flex;gap:16px;margin-bottom:18px}
 .detail-cover{width:110px;flex:0 0 auto;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--lav-soft);box-shadow:0 4px 14px rgba(30,41,59,.16)}
@@ -598,9 +606,17 @@ textarea.input{resize:vertical;min-height:60px}
     </div>
     <div class="scan-stage">
       <video id="scanVideo" playsinline muted></video>
-      <div class="scan-frame"></div>
+      <div class="scan-frame" id="scanFrame"></div>
       <div class="scan-line"></div>
       <div class="scan-hint">책 뒤표지의 바코드를 네모 안에 맞춰 주세요</div>
+    </div>
+    <div class="scan-tools">
+      <div class="zoom-seg" id="zoomSeg" role="group" aria-label="줌 배율">
+        <button class="zoom-btn" id="btnZoom1" type="button" data-zoom="1" aria-pressed="false">1x</button>
+        <button class="zoom-btn" id="btnZoom2" type="button" data-zoom="2" aria-pressed="false">2x</button>
+      </div>
+      <button class="scan-tool" id="btnTorch" type="button" aria-pressed="false" hidden>🔦 조명</button>
+      <span class="scan-zoom-note" id="scanZoomNote"></span>
     </div>
     <div class="scan-status" id="scanStatus">카메라를 준비하는 중…</div>
     <button class="btn line" id="btnScanToPhoto" type="button" style="width:100%">대신 사진으로 인식하기</button>
@@ -711,7 +727,12 @@ let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: 
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
-let scanState = { stream: null, running: false, detector: null, raf: 0, last: 0, cand: '', hits: 0, candTs: 0, frame: 0 };
+let scanState = {
+  stream: null, running: false, detector: null, raf: 0, last: 0,
+  cand: '', hits: 0, candTs: 0, frame: 0,
+  zoom: 1, zoomCap: null, zoomSupported: false, zoomFallback: false,
+  torch: false, torchSupported: false
+};
 
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
@@ -2254,6 +2275,152 @@ function setScanStatus(msg, isErr){
   el.classList.toggle('err', !!isErr);
 }
 
+/* ---------- v1.4: 2배 줌 · 가이드 영역(ROI) 크롭 · 손전등 ---------- */
+const SCAN_ZOOM_DEFAULT = 2;   // 기본 배율(지원 기기)
+const SCAN_ROI_PAD = 0.08;     // 가이드 박스 바깥 여유(주변 그림·부가기호 배제)
+
+function scanTrack(){
+  return (scanState.stream && scanState.stream.getVideoTracks) ? scanState.stream.getVideoTracks()[0] : null;
+}
+
+function scanCamCaps(){
+  const t = scanTrack();
+  try{ return (t && t.getCapabilities) ? (t.getCapabilities() || {}) : {}; }catch(e){ return {}; }
+}
+
+function updateScanZoomUI(){
+  const z = String(scanState.zoom);
+  ['1', '2'].forEach(k => {
+    const b = $('#btnZoom' + k);
+    if(!b) return;
+    const on = z === k;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const note = $('#scanZoomNote');
+  if(note){
+    if(scanState.zoom === 2 && scanState.zoomFallback) note.textContent = '이 기기는 2x를 화면 확대로 대신해요';
+    else if(scanState.zoom === 2) note.textContent = '2배로 당겨서 작은 바코드도 크게';
+    else note.textContent = '';
+  }
+}
+
+function updateScanTorchUI(){
+  const b = $('#btnTorch');
+  if(!b) return;
+  b.hidden = !scanState.torchSupported;
+  b.classList.toggle('on', !!scanState.torch);
+  b.setAttribute('aria-pressed', scanState.torch ? 'true' : 'false');
+  b.textContent = scanState.torch ? '🔦 조명 끄기' : '🔦 조명';
+}
+
+/* 하드웨어 줌을 못 쓸 때의 대안: 화면만 확대(크롭 매핑이 배율을 반영) */
+function setScanDigitalZoom(z){
+  const v = $('#scanVideo');
+  scanState.zoomFallback = z > 1;
+  if(!v) return;
+  v.style.transformOrigin = '50% 50%';
+  v.style.transform = z > 1 ? ('scale(' + z + ')') : 'none';
+}
+
+/* 배율 적용: 기기 하드웨어 줌 우선, 불가하면 디지털(화면) 줌 폴백 */
+async function applyScanZoom(z){
+  z = Number(z) === 2 ? 2 : 1;
+  const track = scanTrack();
+  const cap = scanState.zoomCap || { min: 1, max: 1 };
+  let hw = false;
+  if(track && scanState.zoomSupported && (z === 1 || (cap.max || 1) >= 2)){
+    const target = Math.min(Math.max(z, cap.min || 1), cap.max || 1);
+    try{
+      await track.applyConstraints({ advanced: [{ zoom: target }] });
+      let got = null;
+      try{
+        const s = track.getSettings ? track.getSettings() : null;
+        got = (s && typeof s.zoom === 'number') ? s.zoom : null;
+      }catch(e){ got = null; }
+      hw = (got === null) ? true : Math.abs(got - target) < 0.05;
+    }catch(e){ hw = false; }
+  }
+  if(z === 2 && hw){ scanState.zoom = 2; setScanDigitalZoom(1); }
+  else if(z === 2){ scanState.zoom = 2; setScanDigitalZoom(2); }
+  else { scanState.zoom = 1; setScanDigitalZoom(1); }
+  updateScanZoomUI();
+  return hw;
+}
+
+async function setScanTorch(on){
+  const track = scanTrack();
+  if(!track || !scanState.torchSupported) return false;
+  try{
+    await track.applyConstraints({ advanced: [{ torch: !!on }] });
+    scanState.torch = !!on;
+    updateScanTorchUI();
+    return true;
+  }catch(e){ return false; }
+}
+
+/* 화면의 가이드 박스를 카메라 원본 픽셀 좌표로 환산 (object-fit:cover + 디지털 줌 반영) */
+function scanRoiBox(){
+  const video = $('#scanVideo');
+  const frame = $('#scanFrame');
+  if(!video || !frame) return null;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  const stage = video.parentElement;
+  if(!vw || !vh || !stage) return null;
+  const s = stage.getBoundingClientRect();
+  const f = frame.getBoundingClientRect();
+  if(!s.width || !s.height) return null;
+  const cover = Math.max(s.width / vw, s.height / vh);
+  const dx = (s.width - vw * cover) / 2, dy = (s.height - vh * cover) / 2;
+  const z = scanState.zoomFallback ? (scanState.zoom || 1) : 1;
+  const cx = s.width / 2, cy = s.height / 2;
+  const toVideo = (x, y) => [ (cx + (x - cx) / z - dx) / cover, (cy + (y - cy) / z - dy) / cover ];
+  const a = toVideo(f.left - s.left, f.top - s.top);
+  const b = toVideo(f.right - s.left, f.bottom - s.top);
+  const padX = (b[0] - a[0]) * SCAN_ROI_PAD, padY = (b[1] - a[1]) * SCAN_ROI_PAD;
+  const sx = Math.max(0, Math.floor(a[0] - padX)), sy = Math.max(0, Math.floor(a[1] - padY));
+  const ex = Math.min(vw, Math.ceil(b[0] + padX)), ey = Math.min(vh, Math.ceil(b[1] + padY));
+  if(ex - sx < 24 || ey - sy < 24) return null;
+  return { sx: sx, sy: sy, sw: ex - sx, sh: ey - sy, vw: vw, vh: vh };
+}
+
+/* 가이드 영역만 잘라 디코딩용 캔버스로 (고대비 흑백 패스 옵션) */
+function scanRoiCanvas(box, highContrast){
+  const video = $('#scanVideo');
+  const b = box || scanRoiBox();
+  if(!video || !b) return null;
+  const gain = Math.min(3, Math.max(1, 1100 / Math.max(b.sw, b.sh)));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(b.sw * gain));
+  c.height = Math.max(1, Math.round(b.sh * gain));
+  const ctx = c.getContext('2d');
+  const canFilter = ('filter' in ctx);
+  if(highContrast && canFilter) ctx.filter = 'grayscale(1) contrast(1.8)';
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  try{ ctx.drawImage(video, b.sx, b.sy, b.sw, b.sh, 0, 0, c.width, c.height); }catch(e){ return null; }
+  if(highContrast){
+    if(canFilter) ctx.filter = 'none';
+    else grayscaleContrast(c, 1.8);
+  }
+  return c;
+}
+
+/* filter 미지원 브라우저용 수동 흑백·대비 강조 */
+function grayscaleContrast(canvas, contrast){
+  try{
+    const ctx = canvas.getContext('2d');
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data, k = contrast == null ? 1.8 : contrast;
+    for(let i = 0; i < d.length; i += 4){
+      const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      const v = Math.max(0, Math.min(255, (g - 128) * k + 128));
+      d[i] = d[i + 1] = d[i + 2] = v;
+    }
+    ctx.putImageData(img, 0, 0);
+  }catch(e){ /* 캔버스 접근 불가 시 원본 유지 */ }
+}
+
 async function startLiveScan(){
   openSheet('scanSheet');
   setScanStatus('카메라를 준비하는 중…', false);
@@ -2271,14 +2438,34 @@ async function startLiveScan(){
       audio: false
     });
     scanState.stream = stream;
+    const track = scanTrack();
+    const caps = scanCamCaps();
     // 가까이 댄 바코드가 흐리게 잡히지 않도록 연속 자동초점을 요청 (지원 기기만)
     try{
-      const track = stream.getVideoTracks()[0];
-      const caps = (track && track.getCapabilities) ? track.getCapabilities() : {};
       if(caps && Array.isArray(caps.focusMode) && caps.focusMode.indexOf('continuous') >= 0){
         await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
       }
     }catch(e){ /* 초점 제어를 지원하지 않는 기기 */ }
+    // v1.4: 줌·손전등 지원 여부 확인 후 기본 2배 적용
+    scanState.zoomCap = null;
+    scanState.zoomSupported = false;
+    if(caps && caps.zoom && typeof caps.zoom.max === 'number' && caps.zoom.max > 1){
+      scanState.zoomSupported = true;
+      scanState.zoomCap = {
+        min: (typeof caps.zoom.min === 'number') ? caps.zoom.min : 1,
+        max: caps.zoom.max,
+        step: caps.zoom.step || 0.1
+      };
+    }
+    scanState.torchSupported = !!(caps && caps.torch);
+    scanState.torch = false;
+    scanState.zoom = 1;
+    setScanDigitalZoom(1);
+    updateScanTorchUI();
+    updateScanZoomUI();
+    if(scanState.zoomSupported && scanState.zoomCap.max >= SCAN_ZOOM_DEFAULT){
+      await applyScanZoom(SCAN_ZOOM_DEFAULT);
+    }
     const video = $('#scanVideo');
     video.srcObject = stream;
     await video.play();
@@ -2321,18 +2508,29 @@ async function tickScan(ts){
     scanState.last = ts;
     scanState.frame += 1;
     let found = '';
-    if(scanState.detector){
-      try{
-        const codes = await scanState.detector.detect(video);
-        if(codes && codes.length) found = pickIsbn(codes);
-      }catch(e){ /* 무시 */ }
-    }
-    // 내장 감지기가 놓친 프레임은 ZXing으로 보완 (매 프레임 아니라 격프레임)
-    if(!found && (!scanState.detector || scanState.frame % 2 === 0)){
-      try{
-        const c = drawToCanvas(video, 1280);
-        found = await zxingDecodeCanvas(c);
-      }catch(e){ /* 무시 */ }
+    // v1.4: 전체 화면 대신 가이드 박스(ROI) 안쪽만 잘라 디코딩 — 주변 일러스트·부가기호 배제
+    const box = scanRoiBox();
+    if(box){
+      const contrastPass = scanState.frame % 2 === 0;   // 격프레임마다 고대비 흑백 패스
+      const canvas = scanRoiCanvas(box, contrastPass);
+      // 1) 내장 감지기 (매 프레임)
+      if(scanState.detector && canvas){
+        try{
+          const codes = await scanState.detector.detect(canvas);
+          if(codes && codes.length) found = pickIsbn(codes);
+        }catch(e){ /* 무시 */ }
+      }
+      // 2) ZXing (원본/고대비 캔버스 교대)
+      if(!found && canvas){
+        try{ found = await zxingDecodeCanvas(canvas); }catch(e){ /* 무시 */ }
+      }
+      // 3) 가로등·반사·색 배경 대비: 반대 캔버스로 한 번 더 (부하를 줄여 3프레임마다)
+      if(!found && scanState.frame % 3 === 0){
+        try{
+          const alt = scanRoiCanvas(box, !contrastPass);
+          if(alt) found = await zxingDecodeCanvas(alt);
+        }catch(e){ /* 무시 */ }
+      }
     }
     if(found){
       if(confirmScanRead(found)){
@@ -2368,8 +2566,21 @@ function stopLiveScan(){
   }
   const v = $('#scanVideo');
   if(v){ v.srcObject = null; try{ v.pause(); }catch(e){} }
+  // v1.4: 줌·조명 상태 초기화 (다음 스캔은 다시 기본값으로 시작)
+  scanState.torch = false;
+  scanState.zoom = 1;
+  scanState.zoomSupported = false;
+  scanState.zoomCap = null;
+  setScanDigitalZoom(1);
+  updateScanZoomUI();
+  updateScanTorchUI();
 }
 $('#btnLiveScan').onclick = startLiveScan;
+$('#btnZoom1').onclick = () => { if(scanState.running) applyScanZoom(1); };
+$('#btnZoom2').onclick = () => { if(scanState.running) applyScanZoom(2); };
+$('#btnTorch').onclick = () => { if(scanState.running) setScanTorch(!scanState.torch); };
+updateScanZoomUI();
+updateScanTorchUI();
 
 /* ---------- 상세 ---------- */
 let detailId = null;
@@ -3035,7 +3246,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '1.3',
+  version: '1.4',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -3065,6 +3276,26 @@ window.__rc = {
     feed: (v) => confirmScanRead(v),
     pick: (list) => pickIsbn(list.map(x => ({ rawValue: x }))),
     state: () => ({ cand: scanState.cand, hits: scanState.hits })
+  },
+  /* v1.4 스캔 화면(줌·손전등·ROI 크롭) 확인용 */
+  scan: {
+    state: () => ({
+      running: scanState.running,
+      zoom: scanState.zoom,
+      zoomSupported: scanState.zoomSupported,
+      zoomCap: scanState.zoomCap,
+      zoomFallback: !!scanState.zoomFallback,
+      torch: scanState.torch,
+      torchSupported: scanState.torchSupported,
+      frame: scanState.frame
+    }),
+    roi: () => scanRoiBox(),
+    setZoom: (z) => applyScanZoom(z),
+    setTorch: (on) => setScanTorch(on),
+    crop: (opts) => {
+      const c = scanRoiCanvas(null, !!(opts && opts.contrast));
+      return c ? c.toDataURL('image/png') : '';
+    }
   },
   sources: {
     google: (q, lang) => googleSearch(q, lang || ''),
