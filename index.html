@@ -812,6 +812,29 @@ select.input:focus{background-color:#fff}
 .jam-dsum b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px}
 .jam-dsum span{display:block;margin-top:2px;font-size:10.5px;font-weight:800;color:#9A958A}
 .detail-note{margin:10px 0 0;font-size:11.5px;font-weight:700;color:#9A958A;line-height:1.5;word-break:keep-all}
+/* ---------- v2.6.18: 잠수네 전집(시리즈) 낱권 ---------- */
+.rec-meta .tg.sb{background:#EEE9F7;color:#6A5A8E;font-size:10.5px;border-radius:6px;white-space:nowrap}
+.jam-sb-line{display:flex;margin-top:5px}
+.jam-sb-rd{font-size:10.5px;font-weight:800;color:#4E8C50;background:#EDF5E9;border-radius:999px;padding:2px 8px;letter-spacing:-.2px}
+.jam-sb-open{
+  display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:9px;
+  border-radius:11px;padding:9px 10px;font-size:12px;font-weight:800;letter-spacing:-.2px;
+  color:#4B3F78;background:#F3EFFB;border:1.4px solid #E0D8F1;
+}
+.jam-sb-open i{font-style:normal;font-size:13px;color:#8A7CB5;line-height:1}
+.jam-sb-open:active{transform:translateY(1px);background:#EBE5F7}
+/* 낱권 시트: 책장 전집(#seriesViewSheet)과 같은 모양에 표지·배지를 조금 작게 */
+.sv-btn.ws{background:#fff;border:1.3px solid #F0D9CF;color:#A8563F}
+.sv-btn.ws.on{background:#FBF0EC;border-color:#E7C6B9;color:#A8563F}
+.sv-btn.lib{background:#F4F1E8;border:1.3px solid #E4DFD2;color:#4B5262}
+#jamSeriesSheet .sv-cov.rec-cov{width:34px;border-radius:6px;box-shadow:0 1px 4px rgba(30,41,59,.12)}
+#jamSeriesSheet .sv-tx{padding-top:0}
+#jamSeriesSheet .sv-ttl{cursor:default}
+#jamSeriesSheet .sv-auth{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;max-width:100%}
+#jamSeriesSheet .sv-row{gap:7px}
+#jamSeriesSheet .sv-acts{gap:4px}
+#jamSeriesSheet .sv-btn{padding:7px 6px;font-size:10px}
+#jamSeriesSheet .sv-list{padding-bottom:8px}
 
 #toast{
   position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
@@ -1150,6 +1173,27 @@ select.input:focus{background-color:#fff}
       </div>
     </div>
     <input type="file" id="scanPhotoInput" accept="image/*" capture="environment" hidden>
+  </div>
+</div>
+
+<!-- ===== 잠수네 전집 낱권 보기 (v2.6.18) — 책장 전집 시트와 같은 모양 ===== -->
+<div class="sheet-wrap" id="jamSeriesSheet" role="dialog" aria-modal="true" aria-labelledby="jamSeriesTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="jamSeriesTitle">전집</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <div class="sv-sum" id="jamSeriesSum"></div>
+    <div class="sv-tools">
+      <input class="input" id="jamSeriesSearch" type="search" enterkeyhint="search" autocomplete="off" placeholder="낱권 제목 찾기">
+      <button class="sv-chip" id="jamSeriesUnread" type="button" aria-pressed="false">안 읽은 책만</button>
+    </div>
+    <div class="sv-list" id="jamSeriesList"></div>
+    <div class="save-bar">
+      <button class="btn line" id="btnJamSeriesClose" type="button" style="width:100%;padding:14px;border-radius:16px">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -1721,8 +1765,10 @@ const JAM_EN_CATS = ['그림책', '리더스북', '그림책 같은 리더스북
 /* 7,200권을 가볍게 다루려고 항목을 배열로 압축한다.
    한글: [단계, 플랜, 월, 주차, 급수, 분류, 제목, 지은이, 원제, 검색용, 제목맞춤키] */
 const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A = 7, KO_O = 8, KO_Q = 9, KO_K = 10;
-/* 영어: [분류, 급수, 제목, 지은이, 한글제목, 음원, 검색용, 제목맞춤키] */
+/* 영어: [분류, 급수, 제목, 지은이, 한글제목, 음원, 검색용, 제목맞춤키, 전집 낱권] */
 const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
+/* v2.6.18: 전집(시리즈) 항목에 붙는 낱권 목록 [{title, author, publisher}]. 예전에 불러온 자료에는 없어 undefined다. */
+const EN_S = 8;
 let jamIdx = null;          // 읽은 책 색인: 제목 키 → {지은이, 잠수네 급수}들 (db.books가 바뀌면 다시 만든다)
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
@@ -9110,6 +9156,19 @@ function isBookRead(title, author, itemJlevel){
 function jamIsRead(kind, it){
   return isBookRead(it[kind === 'ko' ? KO_T : EN_T], it[kind === 'ko' ? KO_A : EN_A], it[kind === 'ko' ? KO_L : EN_L]);
 }
+/* ---------- 전집 낱권 (v2.6.18) ----------
+   영어 베스트의 '… 시리즈' 항목에 붙은 낱권 목록, 그리고 그 중 몇 권을 읽었는지. */
+function jamEnItems(it){
+  const a = it ? it[EN_S] : null;
+  return (Array.isArray(a) && a.length) ? a : null;
+}
+function jamEnReadCount(items){
+  let n = 0;
+  for(let i = 0; i < items.length; i++){
+    if(isBookRead(items[i].title, items[i].author)) n++;
+  }
+  return n;
+}
 
 /* ---------- AR 지수 (v2.6.4) ----------
    arbookfind.com은 브라우저에서 바로 부를 수 없어 Cloudflare Worker 중계 주소를 설정에서 받는다.
@@ -9427,10 +9486,29 @@ function jamCoerceEn(json){
       ko,
       o.audio === true,
       (t + ' ' + (o.author || '') + ' ' + ko).toLowerCase(),
-      jamKeysFor(t)
+      jamKeysFor(t),
+      /* v2.6.18: 전집 항목에 붙은 낱권 목록을 그대로 살린다 */
+      Array.isArray(o.items) ? jamCoerceItems(o.items) : null
     ]);
   }
   return out;
+}
+/* v2.6.18: 전집 낱권 목록 다듬기 — 제목이 없는 줄은 버리고, 한 전집에 300권까지만 담는다 */
+function jamCoerceItems(arr){
+  const out = [];
+  if(!Array.isArray(arr)) return null;
+  for(let i = 0; i < arr.length && out.length < 300; i++){
+    const x = arr[i];
+    if(!x || typeof x !== 'object') continue;
+    const t = String(x.title == null ? '' : x.title).trim();
+    if(!t) continue;
+    out.push({
+      title: t.slice(0, 200),
+      author: String(x.author == null ? '' : x.author).trim().slice(0, 120),
+      publisher: String(x.publisher == null ? '' : x.publisher).trim().slice(0, 120)
+    });
+  }
+  return out.length ? out : null;
 }
 function jamCoerceWorm(json){
   if(!json || typeof json !== 'object') throw new Error('shape');
@@ -10368,6 +10446,11 @@ function jamItemHtml(kind, it, rd, wish){
     '<span class="tg lv">' + escXML(lv) + '</span>' +
     '<span class="tg cat">' + escXML(cg) + '</span>';
   if(kind === 'en' && it[EN_AU] === true) h += '<span class="tg audio">🔊 음원</span>';
+  /* v2.6.18: 전집(시리즈) 카드에는 낱권 수와 읽은 권수를 배지로 보여 준다 */
+  const subs = kind === 'en' ? jamEnItems(it) : null;
+  if(subs){
+    h += '<span class="tg sb jam-sb-tag">📚 낱권 ' + subs.length + '권</span>';
+  }
   if(rd) h += '<span class="rec-rd">✓ 읽음</span>';
   h += '</div>';
   h += '<div class="rec-nm jam-ti">' + escXML(title) + '</div>';
@@ -10378,6 +10461,11 @@ function jamItemHtml(kind, it, rd, wish){
   }else{
     const ko = it[EN_K];
     h += '<div class="rec-auth jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (ko ? ' <i>· ' + escXML(ko) + '</i>' : '') + '</div>';
+    if(subs){
+      const sn = jamEnReadCount(subs);
+      if(sn) h += '<div class="jam-sb-line"><span class="jam-sb-rd">' + sn + '/' + subs.length + '권 읽음</span></div>';
+      h += '<button type="button" class="jam-sb-open" data-act="series" aria-label="' + escXML(title) + ' 낱권 ' + subs.length + '권 펼쳐 보기">📚 낱권 (' + subs.length + ') <i>›</i></button>';
+    }
   }
   h += '<div class="card-acts">' +
     '<button type="button" class="rec-btn rd" data-act="read">+ 읽었어요</button>' +
@@ -10522,6 +10610,307 @@ function jamLogRead(kind, it, el){
     render();
   });
 }
+
+/* ---------- 잠수네 전집 낱권 보기 (v2.6.18) ----------
+   영어 베스트의 '… 시리즈' 카드를 누르면 그 전집의 낱권을 한 장에서 펼쳐 본다.
+   책장의 전집 시트(#seriesViewSheet)와 같은 모양이고, 여기서 바로 기록·읽을 목록·도서관까지 된다. */
+let jsTitle = '', jsAuthor = '', jsItems = null;
+let jsQ = '';
+let jsUnread = false;
+let jsCovObs = null;
+
+function jamSeriesOpen(kind, it){
+  const items = kind === 'en' ? jamEnItems(it) : null;
+  if(!items){ toast('낱권 목록이 없는 항목이에요'); return false; }
+  jsTitle = String(it[EN_T] || '');
+  jsAuthor = String(it[EN_A] || '');
+  jsItems = items;
+  jsQ = '';
+  jsUnread = false;
+  const s = $('#jamSeriesSearch');
+  if(s) s.value = '';
+  jamSeriesChip();
+  jamSeriesRender();
+  openSheet('jamSeriesSheet');
+  const sh = $('#jamSeriesSheet .sheet');
+  if(sh) sh.scrollTop = 0;
+  return true;
+}
+function jamSeriesChip(){
+  const b = $('#jamSeriesUnread');
+  if(!b) return;
+  b.classList.toggle('on', jsUnread);
+  b.setAttribute('aria-pressed', jsUnread ? 'true' : 'false');
+}
+function jamSeriesRender(){
+  if(!jsItems) return;
+  const t = $('#jamSeriesTitle');
+  if(t) t.textContent = jsTitle || '전집';
+  jamSeriesSyncSum();
+  jamSeriesRenderList();
+}
+/* 몇 권을 읽었는지 — 읽었는지는 제목·지은이로 달력 기록과 맞춰 본다 */
+function jamSeriesSyncSum(){
+  const sum = $('#jamSeriesSum');
+  if(!sum || !jsItems) return;
+  let read = 0;
+  jsItems.forEach(x => { if(isBookRead(x.title, x.author)) read++; });
+  const pubs = [];
+  jsItems.forEach(x => { if(x.publisher && pubs.indexOf(x.publisher) < 0) pubs.push(x.publisher); });
+  let h = '<span><b>' + read + '/' + jsItems.length + '권</b> 읽음</span>';
+  if(jsAuthor) h += '<span class="sep">·</span><span>' + escXML(jsAuthor) + '</span>';
+  if(pubs.length) h += '<span class="sep">·</span><span>' + escXML(pubs.slice(0, 2).join(', ')) + '</span>';
+  sum.innerHTML = h;
+}
+function jamSeriesRenderList(){
+  const list = $('#jamSeriesList');
+  if(!list || !jsItems) return;
+  if(jsCovObs){ try{ jsCovObs.disconnect(); }catch(e){} }
+  jsCovObs = null;
+  list.innerHTML = '';
+  const q = jamNorm(jsQ);
+  const frag = document.createDocumentFragment();
+  let shown = 0;
+  for(let i = 0; i < jsItems.length; i++){
+    const x = jsItems[i];
+    const rd = isBookRead(x.title, x.author);
+    if(jsUnread && rd) continue;
+    if(q && jamNorm(x.title).indexOf(q) < 0) continue;
+    frag.appendChild(jamSeriesRow(x, i, rd));
+    shown++;
+  }
+  if(!shown){
+    const em = document.createElement('div');
+    em.className = 'sv-empty';
+    em.textContent = jsUnread ? '안 읽은 낱권이 없어요' : (q ? '찾는 낱권이 없어요' : '낱권이 없어요');
+    list.appendChild(em);
+    return;
+  }
+  list.appendChild(frag);
+}
+function jamSeriesEmptyCheck(){
+  const list = $('#jamSeriesList');
+  if(!list || list.querySelector('.sv-row')) return;
+  list.innerHTML = '<div class="sv-empty">' + (jsUnread ? '안 읽은 낱권이 없어요' : '찾는 낱권이 없어요') + '</div>';
+}
+function jamSeriesRow(x, i, rd){
+  const row = document.createElement('div');
+  row.className = 'sv-row jam-sv' + (rd ? ' is-read' : '');
+  row.dataset.i = String(i);
+
+  const no = document.createElement('span');
+  no.className = 'sv-no';
+  no.textContent = String(i + 1);
+  row.appendChild(no);
+
+  const cov = document.createElement('span');
+  cov.className = 'sv-cov rec-cov';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.src = recFallback({ title: jamBase(x.title) });
+  cov.appendChild(img);
+  row.appendChild(cov);
+
+  const tx = document.createElement('div');
+  tx.className = 'sv-tx';
+  const ttl = document.createElement('div');
+  ttl.className = 'sv-ttl';
+  ttl.textContent = x.title;
+  tx.appendChild(ttl);
+
+  const meta = document.createElement('div');
+  meta.className = 'sv-meta';
+  if(x.author){
+    const a = document.createElement('span');
+    a.className = 'sv-auth';
+    a.textContent = x.author;
+    meta.appendChild(a);
+  }
+  /* AR 지수·표지는 카드와 같은 자리(ar-slot)에 붙는다 */
+  const arSlot = document.createElement('span');
+  arSlot.className = 'ar-slot';
+  arSlot.setAttribute('data-ar-slot', '1');
+  meta.appendChild(arSlot);
+  const rdb = document.createElement('span');
+  rdb.className = 'rec-rd jam-sv-rd' + (rd ? '' : ' hidden');
+  rdb.textContent = '✓ 읽음';
+  meta.appendChild(rdb);
+  tx.appendChild(meta);
+  row.appendChild(tx);
+
+  const acts = document.createElement('div');
+  acts.className = 'sv-acts';
+  const bRead = document.createElement('button');
+  bRead.type = 'button';
+  bRead.className = 'sv-btn rec';
+  bRead.textContent = '+ 읽었어요';
+  bRead.setAttribute('aria-label', x.title + ' 읽었어요');
+  bRead.onclick = (e) => { e.stopPropagation(); jamSeriesRead(row, x); };
+  const bWish = document.createElement('button');
+  bWish.type = 'button';
+  bWish.className = 'sv-btn ws';
+  const wished = jamWishSet().has('en|' + jamNorm(x.title));
+  bWish.classList.toggle('on', wished);
+  bWish.textContent = wished ? '✓ 읽을 목록' : '♡ 읽을 목록';
+  bWish.setAttribute('aria-label', x.title + ' 읽을 목록');
+  bWish.onclick = (e) => { e.stopPropagation(); jamSeriesWish(x, bWish); };
+  const bLib = document.createElement('button');
+  bLib.type = 'button';
+  bLib.className = 'sv-btn lib';
+  bLib.textContent = '🏛️';
+  bLib.title = escXML(libName('en') + '에서 찾기');
+  bLib.setAttribute('aria-label', x.title + ' 도서관에서 찾기');
+  bLib.onclick = (e) => { e.stopPropagation(); openLibrary('en', x.title); };
+  acts.appendChild(bRead);
+  acts.appendChild(bWish);
+  acts.appendChild(bLib);
+  row.appendChild(acts);
+
+  jamSeriesCovWatch(row, x.title, x.author);
+  arWatchCard(row, x.title, x.author);
+  return row;
+}
+/* 표지: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 (잠수네 카드와 같은 방식).
+   이 시트만의 관찰자를 따로 두어, 목록을 다시 그려도 뒤의 메인 목록 관찰은 건드리지 않는다. */
+function jamSeriesCovObserver(){
+  if(jsCovObs) return jsCovObs;
+  if(typeof IntersectionObserver !== 'function') return null;
+  jsCovObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      try{ jsCovObs.unobserve(el); }catch(e){}
+      if(el.dataset.covBusy === '1') return;
+      const title = el.dataset.covTitle || '';
+      if(!title) return;
+      const author = el.dataset.covAuth || '';
+      const key = jamCovKey('en', title, author);
+      const hit = jamCovGet(key);
+      if(hit){ jamCovApply(el, hit, key); return; }
+      if(jamCovMissed(key)) return;
+      jamCovQueue(el, 'en', title, author, key);
+    });
+  }, { rootMargin: '200px 0px' });
+  return jsCovObs;
+}
+function jamSeriesCovWatch(el, title, author){
+  if(!el || !el.dataset) return;
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return;
+  el.dataset.covTitle = t;
+  el.dataset.covAuth = String(author == null ? '' : author);
+  const key = jamCovKey('en', t, author);
+  const hit = jamCovGet(key);
+  if(hit){ jamCovApply(el, hit, key); return; }
+  if(jamCovMissed(key)) return;
+  const ob = jamSeriesCovObserver();
+  if(ob) ob.observe(el);
+  else jamCovQueue(el, 'en', t, author, key);
+}
+/* 낱권 하나를 오늘 읽은 기록으로 담는다 */
+function jamSeriesRead(row, x){
+  const title = String(x.title || '').trim();
+  if(!title) return;
+  const kids = (view.child !== 'all' && kidById(view.child)) ? [view.child] : (db.children[0] ? [db.children[0].id] : []);
+  if(!kids.length){ toast('아이를 먼저 등록해 주세요'); return; }
+  const rec = sanitize({
+    id: uid(), date: todayISO, title: title, author: String(x.author || '').trim(), lang: 'en',
+    pages: null, cover: '', coverData: '', childIds: kids, createdAt: Date.now()
+  });
+  if(!rec){ toast('기록하지 못했어요'); return; }
+  db.books.push(rec);
+  save();               /* save()가 읽은 책 색인(jamIdx)을 비워 새 기록이 바로 반영된다 */
+  jamSeriesMark(row, true);
+  jamSeriesSyncSum();
+  jamSeriesBadgeSync(jsTitle);
+  const md = todayISO.slice(5, 7).replace(/^0/, '') + '월 ' + todayISO.slice(8, 10).replace(/^0/, '') + '일';
+  toast('오늘(' + md + ') 기록에 담았어요', '되돌리기', () => {
+    const i = db.books.findIndex(b => b.id === rec.id);
+    if(i >= 0) db.books.splice(i, 1);
+    save();
+    jamSeriesMark(row, false);
+    jamSeriesSyncSum();
+    jamSeriesBadgeSync(jsTitle);
+  });
+}
+function jamSeriesMark(row, read){
+  if(!row) return;
+  row.classList.toggle('is-read', !!read);
+  const b = row.querySelector('.jam-sv-rd');
+  if(b) b.classList.toggle('hidden', !read);
+  /* '안 읽은 책만'으로 보고 있었다면, 읽은 낱권은 목록에서 조용히 뺀다 */
+  if(read && jsUnread){
+    row.style.transition = 'opacity .16s';
+    row.style.opacity = '0';
+    setTimeout(() => {
+      if(row.parentNode) row.parentNode.removeChild(row);
+      jamSeriesEmptyCheck();
+    }, 175);
+  }
+}
+function jamSeriesWish(x, btn){
+  const o = { title: String(x.title || ''), author: String(x.author || ''), lang: 'en' };
+  const setDom = on => {
+    if(!btn) return;
+    btn.classList.toggle('on', !!on);
+    btn.textContent = on ? '✓ 읽을 목록' : '♡ 읽을 목록';
+  };
+  const hit = wishFind(o);
+  if(hit){
+    const back = removeFromWish(hit.id);
+    setDom(false);
+    toast('읽을 목록에서 뺐어요', '되돌리기', () => {
+      if(back) db.wishlist.splice(Math.min(back.index, db.wishlist.length), 0, back.item);
+      save();
+      setDom(true);
+    });
+  }else{
+    const w = addToWish(o);
+    if(!w) return;
+    setDom(true);
+    toast('읽을 목록에 담았어요', '되돌리기', () => {
+      removeFromWish(w.id);
+      setDom(false);
+    });
+  }
+}
+/* 시트에서 읽음을 표시하면 뒤의 카드 배지(📚 낱권 N권 · n/N권 읽음)도 바로 고친다 */
+function jamSeriesBadgeSync(title){
+  const listEl = $('#jamList-en');
+  if(!listEl || !jam.list.en) return;
+  const cards = listEl.querySelectorAll('.jam-item');
+  for(let i = 0; i < cards.length; i++){
+    const el = cards[i];
+    const it = jam.list.en.items[Number(el.dataset.i)];
+    if(!it || String(it[EN_T]) !== String(title)) continue;
+    const items = jamEnItems(it);
+    if(!items) continue;
+    const n = jamEnReadCount(items);
+    const tag = el.querySelector('.jam-sb-tag');
+    if(tag) tag.textContent = '📚 낱권 ' + items.length + '권';
+    let line = el.querySelector('.jam-sb-line');
+    if(n){
+      if(!line){
+        line = document.createElement('div');
+        line.className = 'jam-sb-line';
+        const sp = document.createElement('span');
+        sp.className = 'jam-sb-rd';
+        line.appendChild(sp);
+        const acts = el.querySelector('.card-acts');
+        const open = el.querySelector('.jam-sb-open');
+        if(open && open.parentNode) open.parentNode.insertBefore(line, open);
+        else if(acts && acts.parentNode) acts.parentNode.insertBefore(line, acts);
+        else return;
+      }
+      const sp = line.querySelector('.jam-sb-rd');
+      if(sp) sp.textContent = n + '/' + items.length + '권 읽음';
+    }else if(line && line.parentNode){
+      line.parentNode.removeChild(line);
+    }
+  }
+}
+
 function jamSyncImp(){
   const ko = jam.ko, en = jam.en;
   const sk = $('#jamStKo'), se = $('#jamStEn');
@@ -10645,9 +11034,29 @@ $('#jamCard').addEventListener('click', e => {
     if(!it) return;
     if(act.dataset.act === 'read') jamLogRead(kind, it, itemEl);
     else if(act.dataset.act === 'wish') jamToggleWish(kind, it, itemEl);
+    else if(act.dataset.act === 'series') jamSeriesOpen(kind, it);
     else if(act.dataset.act === 'lib') openLibrary(kind === 'en' ? 'en' : 'ko', it[kind === 'ko' ? KO_T : EN_T]);
+    return;
+  }
+  /* v2.6.18: 낱권이 붙은 전집 카드는 카드 빈 곳을 눌러도 낱권 목록이 열린다 (안쪽 버튼은 따로 동작) */
+  const jit = e.target.closest('.jam-item');
+  if(jit && !e.target.closest('button')){
+    const kind = jit.closest('#jamEnPane') ? 'en' : 'ko';
+    const it = jam.list[kind].items[Number(jit.dataset.i)];
+    if(it && jamEnItems(it)){ jamSeriesOpen(kind, it); }
   }
 });
+/* v2.6.18: 잠수네 전집 낱권 시트 */
+$('#jamSeriesSearch').addEventListener('input', e => {
+  jsQ = String((e.target && e.target.value) || '');
+  jamSeriesRenderList();
+});
+$('#jamSeriesUnread').onclick = () => {
+  jsUnread = !jsUnread;
+  jamSeriesChip();
+  jamSeriesRenderList();
+};
+$('#btnJamSeriesClose').onclick = () => closeSheet($('#jamSeriesSheet'));
 $('#jamFileKo').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   e.target.value = '';
@@ -10727,7 +11136,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.17',
+  version: '2.6.18',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11048,6 +11457,60 @@ window.__rc = {
     domCount: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item').length,
     auto: () => { jamAutoFilter(); if(view.ymode === 'jam') renderJam();
       return JSON.parse(JSON.stringify(jam.f.ko)); },
+    /* v2.6.18: 영어 베스트 전집 낱권 확인용 */
+    series: {
+      subs: (title) => {
+        const it = jam.en ? jam.en.items.find(x => String(x[EN_T]) === String(title)) : null;
+        const items = jamEnItems(it);
+        return items ? items.map(x => ({ title: x.title, author: x.author, publisher: x.publisher })) : null;
+      },
+      open: (title) => {
+        if(!jam.en) return false;
+        const it = jam.en.items.find(x => String(x[EN_T]) === String(title));
+        return it ? jamSeriesOpen('en', it) : false;
+      },
+      state: () => ({
+        open: !!($('#jamSeriesSheet') && $('#jamSeriesSheet').classList.contains('open')),
+        title: jsTitle, total: jsItems ? jsItems.length : 0, q: jsQ, unread: jsUnread,
+        rows: $$('#jamSeriesList .sv-row').length,
+        readRows: $$('#jamSeriesList .sv-row.is-read').length,
+        sum: ($('#jamSeriesSum') || {}).textContent || '',
+        titles: $$('#jamSeriesList .sv-row .sv-ttl').map(e => e.textContent)
+      }),
+      search: (q) => {
+        const el = $('#jamSeriesSearch');
+        if(el){ el.value = String(q == null ? '' : q); el.dispatchEvent(new Event('input', { bubbles: true })); }
+        return $$('#jamSeriesList .sv-row').length;
+      },
+      unread: (on) => {
+        const el = $('#jamSeriesUnread');
+        if(el) el.click();
+        return !!jsUnread;
+      },
+      read: (i) => {
+        const row = $$('#jamSeriesList .sv-row')[i || 0];
+        if(!row) return false;
+        const b = row.querySelector('.sv-btn.rec');
+        if(!b) return false;
+        b.click();
+        return true;
+      },
+      close: () => closeSheet($('#jamSeriesSheet')),
+      badge: (title) => {
+        const listEl = $('#jamList-en');
+        if(!listEl || !jam.list.en) return null;
+        const it = jam.list.en.items.find(x => String(x[EN_T]) === String(title));
+        if(!it) return null;
+        const cards = $$('#jamList-en .jam-item');
+        const idx = jam.list.en.items.indexOf(it);
+        const el = cards.find(c => Number(c.dataset.i) === idx);
+        return {
+          tag: el && el.querySelector('.jam-sb-tag') ? el.querySelector('.jam-sb-tag').textContent : '',
+          read: el && el.querySelector('.jam-sb-rd') ? el.querySelector('.jam-sb-rd').textContent : '',
+          btn: el && el.querySelector('.jam-sb-open') ? el.querySelector('.jam-sb-open').textContent.trim() : ''
+        };
+      }
+    },
     autoStage: () => autoStageFor(),
     domReadTitles: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item.read .jam-ti').map(e => e.textContent)
   },
