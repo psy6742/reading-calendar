@@ -432,6 +432,8 @@ textarea.input{resize:vertical;min-height:60px}
 .sh-meta .pub{font-size:11px;font-weight:700;color:#9A958A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .sh-meta .auth{font-size:11px;font-weight:700;color:#7C8291;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .sh-meta .sep{font-size:11px;font-weight:700;color:#C6C0B1;flex:0 0 auto}
+/* v2.6.9: 내 책장에도 읽음 표시 (기록이 있는 책) */
+.sh-meta .rec-rd{font-size:9.5px;padding:2px 6px;letter-spacing:-.2px}
 .sh-cnt{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:6px}
 .sh-cnt b{color:#5B6270;font-weight:800}
 .sh-acts{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
@@ -440,6 +442,46 @@ textarea.input{resize:vertical;min-height:60px}
 .sh-edit{font-size:12.5px;font-weight:800;color:#7C8291;background:#fff;border:1.4px solid #E8E3D7;border-radius:999px;padding:11px 14px;line-height:1.1}
 .shelf-sug{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center}
 .shelf-sug .pill{padding:8px 12px;font-size:12px;font-weight:700}
+
+/* ---------- 전집 한꺼번에 찾아 담기 (v2.6.9) ---------- */
+.shelf-head{flex-wrap:wrap}
+.shelf-btns{display:flex;gap:6px;align-items:center;margin-left:auto;flex:0 0 auto}
+.shelf-btns .mini-add{font-size:12px;padding:8px 11px;letter-spacing:-.3px}
+.shelf-btns .mini-add.ghost{background:#fff;border:1.4px solid #E8E3D7;color:#6C7280}
+@media(max-width:430px){
+  .shelf-btns{width:100%;margin:10px 0 0;display:grid;grid-template-columns:1.15fr 1fr;gap:6px}
+  .shelf-btns .mini-add{padding:10px 6px;font-size:12px;text-align:center}
+}
+.series-note{font-size:11.5px;font-weight:700;color:#8E897C;margin-top:8px;line-height:1.5}
+.series-note.err{color:#B4574A}
+.series-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px}
+.series-all{font-size:12px;font-weight:800;color:#6C7280;background:#F4F1E8;border-radius:999px;padding:8px 12px;line-height:1.1;flex:0 0 auto}
+.series-all:active{background:#EBE7DA}
+.series-cnt{font-size:12px;font-weight:800;color:#9A958A;text-align:right}
+.series-cnt b{color:#3A3F58;font-weight:800}
+.series-list{display:flex;flex-direction:column;gap:7px;padding:1px 1px 4px}
+.series-row{display:flex;gap:9px;align-items:flex-start;padding:7px;border-radius:12px;background:#FBFAF6;border:1px solid #EEEAE0;text-align:left;cursor:pointer}
+.series-row.on{border-color:#D8D1EC;background:#FAF9FE}
+.series-row.already{background:#F6F5F1;border-color:#EAE6DC;cursor:default}
+.series-row input[type=checkbox]{width:18px;height:18px;margin:3px 0 0;accent-color:#1E293B;flex:0 0 auto}
+.series-row .s-cov{width:34px;flex:0 0 auto;aspect-ratio:2/3;border-radius:5px;overflow:hidden;background:var(--lav-soft);display:block;box-shadow:0 1px 4px rgba(30,41,59,.12)}
+.series-row .s-cov img{width:100%;height:100%;object-fit:cover;display:block}
+.series-row .s-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:13px;color:#B9B4D2}
+.series-row .s-tx{min-width:0;flex:1;display:block;padding-top:1px}
+.series-row .s-ttl{font-size:13px;font-weight:700;color:#2C3444;line-height:1.35;word-break:keep-all;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.series-row.already .s-ttl{color:#8E897C}
+.series-row .s-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px;font-size:11px;font-weight:700;color:#9A958A}
+.series-row .s-meta .sep{color:#C6C0B1}
+.series-row .s-meta .pg{color:#7C8291}
+.series-row .s-badge{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#E7E4F4;color:#4A4370;margin-top:4px}
+.series-empty{padding:24px 8px;text-align:center;color:#9A958A;font-size:12.5px;font-weight:700;line-height:1.65}
+.series-empty .em{font-size:26px;display:block;margin-bottom:6px}
+@media(max-width:374px){
+  .series-row .s-cov{width:30px}
+  .series-row .s-ttl{font-size:12.5px}
+  .series-row{gap:7px;padding:6px}
+}
 
 /* 책장에 저장 토글 */
 .toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:13px;font-weight:700;color:#5B6270;background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:11px 13px}
@@ -807,7 +849,10 @@ select.input:focus{background-color:#fff}
           <h2>내 책장</h2>
           <span class="badge" id="shelfBadge">0종</span>
         </div>
-        <button class="mini-add" id="btnShelfAdd" type="button">+ 전집/책 등록</button>
+        <div class="shelf-btns">
+          <button class="mini-add" id="btnSeriesFind" type="button">📚 전집 찾아 담기</button>
+          <button class="mini-add ghost" id="btnShelfAdd" type="button">+ 전집/책 등록</button>
+        </div>
       </div>
       <p class="shelf-note">전집이나 자주 읽는 책을 담아 두면, 읽을 때마다 <b>+ 기록하기</b> 한 번으로 바로 남길 수 있어요.</p>
       <div class="shelf-list" id="shelfList"></div>
@@ -1083,6 +1128,48 @@ select.input:focus{background-color:#fff}
     <div class="save-bar">
       <button class="btn dark" id="btnShelfSave" type="button" style="width:100%;padding:15px;border-radius:16px">책장에 담기</button>
       <button class="btn danger hidden" id="btnShelfDelete" type="button" style="width:100%;margin-top:8px">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 전집 한꺼번에 찾아 담기 (v2.6.9) ===== -->
+<div class="sheet-wrap" id="seriesSheet" role="dialog" aria-modal="true" aria-labelledby="seriesTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="seriesTitle">전집 찾아 담기</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <p class="sheet-note" style="margin:0 0 12px">전집 이름을 검색하면 권별 책이 한꺼번에 나와요. 담고 싶은 것만 골라 책장에 넣으세요.</p>
+
+    <div class="field">
+      <label>언어</label>
+      <div class="lang-toggle" id="seriesLang" role="tablist" aria-label="전집 언어">
+        <button class="lang-btn on" data-lang="ko" type="button" role="tab" aria-selected="true">한글</button>
+        <button class="lang-btn" data-lang="en" type="button" role="tab" aria-selected="false">영어</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="seriesSearch">전집 이름</label>
+      <div class="search-row">
+        <input class="input" id="seriesSearch" placeholder="예: 아람 자연이랑" autocomplete="off" enterkeyhint="search">
+        <button class="btn dark" id="btnSeriesSearch" type="button">검색</button>
+      </div>
+      <div class="hint" id="seriesHint">예: 아람 자연이랑 · 그레이트북스 안녕 마음아 · 웅진 호기심 도서관</div>
+      <div class="series-note hidden" id="seriesNote"></div>
+      <button class="btn sm line hidden" id="btnSeriesKey" type="button" style="margin-top:8px">설정에서 카카오 키 넣기</button>
+    </div>
+
+    <div class="series-bar hidden" id="seriesBar">
+      <button class="series-all" id="btnSeriesAll" type="button">전체 해제</button>
+      <span class="series-cnt" id="seriesCnt"></span>
+    </div>
+    <div class="series-list hidden" id="seriesList"></div>
+
+    <div class="save-bar">
+      <button class="btn dark" id="btnSeriesAdd" type="button" disabled style="width:100%;padding:15px;border-radius:16px">선택한 0권 책장에 담기</button>
     </div>
   </div>
 </div>
@@ -1535,6 +1622,8 @@ function sanitizeShelf(s){
     publisher: String(s.publisher || '').trim().slice(0, 40),
     cover: typeof s.cover === 'string' ? s.cover : '',
     coverData: typeof s.coverData === 'string' ? s.coverData : '',
+    /* v2.6.9: 전집에서 담은 책은 ISBN을 남겨 두었다가 쪽수를 나중에 채운다 */
+    isbn: cleanIsbn(s.isbn || ''),
     createdAt: Number(s.createdAt) || Date.now()
   };
 }
@@ -2326,9 +2415,16 @@ function renderShelf(){
       '<p>아람·그레이트북스·웅진·성우 같은 전집을 한 번 담아 두면<br>읽을 때마다 한 번 눌러 기록할 수 있어요.</p>';
     const row = document.createElement('div');
     row.className = 'row';
+    /* v2.6.9: 전집을 통째로 검색해 한꺼번에 담는 길을 빈 화면에도 둔다 */
+    const find = document.createElement('button');
+    find.type = 'button';
+    find.className = 'pill dark';
+    find.textContent = '📚 전집 찾아 담기';
+    find.onclick = () => openSeriesSheet();
+    row.appendChild(find);
     const add = document.createElement('button');
     add.type = 'button';
-    add.className = 'pill dark';
+    add.className = 'pill';
     add.textContent = '+ 전집/책 등록';
     add.onclick = () => openShelfForm();
     row.appendChild(add);
@@ -2403,6 +2499,13 @@ function renderShelf(){
       pb.className = 'pub';
       pb.textContent = s.publisher;
       meta.appendChild(pb);
+    }
+    /* v2.6.9: 기록이 있는 책은 추천·잠수네와 같은 ‘✓ 읽음’ 표시 (AR 지수 옆에 나란히) */
+    if(isBookRead(s.name, s.author)){
+      const rd = document.createElement('span');
+      rd.className = 'rec-rd';
+      rd.textContent = '✓ 읽음';
+      meta.appendChild(rd);
     }
     /* v2.6.7: 영어 책장 항목에 AR 지수 (지수는 카드를 다 조립한 뒤에 붙인다) */
     if(s.lang === 'en'){
@@ -2509,6 +2612,7 @@ function saveShelf(){
     publisher: publisher,
     cover: shelfDraft.cover,
     coverData: shelfDraft.coverData,
+    isbn: shelfDraft.isbn || '',   /* v2.6.9: 전집에서 담은 ISBN은 손으로 고쳐도 남긴다 */
     createdAt: shelfDraft.createdAt || Date.now()
   });
   if(!item){ toast('저장하지 못했어요'); return; }
@@ -2570,6 +2674,455 @@ $('#shelfCoverInput').addEventListener('change', async e => {
 });
 $('#btnShelfSave').onclick = saveShelf;
 $('#btnShelfDelete').onclick = deleteShelf;
+
+/* ---------- 전집 한꺼번에 찾아 담기 (v2.6.9) ----------
+   전집 이름 하나로 권별 책을 최대 100권까지 모아 체크리스트로 보여 주고,
+   고른 것만 표지·쪽수와 함께 내 책장에 담는다.
+   한글: 카카오 책 검색(없으면 Google 도서) · 영어: Open Library + Google 도서 */
+const SERIES_HINT = {
+  ko: '예: 아람 자연이랑 · 그레이트북스 안녕 마음아 · 웅진 호기심 도서관',
+  en: '예: Oxford Reading Tree · Fly Guy · Magic Tree House'
+};
+const SERIES_PH = {
+  ko: '전집 이름을 그대로 적어 주세요',
+  en: '영어 전집 이름을 적어 주세요'
+};
+let seriesLang = 'ko';
+let seriesItems = [];          /* {title, author, publisher, lang, cover, pages, isbn, src, already, sel} */
+let seriesBusy = false;
+let seriesQuery = '';
+let seriesSearched = false;
+let seriesSeq = 0;
+
+function seriesNorm(s){
+  return String(s || '').toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function seriesInShelf(title, lang){
+  const t = seriesNorm(title);
+  if(!t) return false;
+  const lg = lang === 'en' ? 'en' : 'ko';
+  return db.shelf.some(s => seriesNorm(s.name) === t && (s.lang === 'en' ? 'en' : 'ko') === lg);
+}
+function seriesSetNote(msg, bad){
+  const el = $('#seriesNote');
+  if(!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  el.classList.toggle('err', !!bad);
+}
+
+/* 같은 제목은 한 권으로 (표지·쪽수·출판사가 있는 쪽을 남긴다) */
+function seriesDedupe(list){
+  const out = [];
+  const idx = new Map();
+  list.forEach(r => {
+    const title = String((r && r.title) || '').replace(/\s+/g, ' ').trim();
+    const k = seriesNorm(title);
+    if(!k) return;
+    const i = idx.get(k);
+    if(i === undefined){
+      idx.set(k, out.length);
+      out.push({
+        title: title, author: r.author || '', publisher: r.publisher || '',
+        cover: r.cover || '', pages: toPages(r.pages) || 0,
+        isbn: cleanIsbn(r.isbn || ''), src: r.src || ''
+      });
+      return;
+    }
+    const a = out[i];
+    a.author = a.author || r.author || '';
+    a.publisher = a.publisher || r.publisher || '';
+    a.cover = a.cover || r.cover || '';
+    a.pages = a.pages || toPages(r.pages) || 0;
+    a.isbn = a.isbn || cleanIsbn(r.isbn || '');
+  });
+  return out;
+}
+/* 전집 이름에서 가장 긴 낱말(보통 전집을 가리키는 말)이 제목·출판사·지은이에 걸리는 것만 남긴다.
+   '아람 자연이랑' → 자연이랑 / '안녕 마음아' → 마음아 처럼 알아보는 말을 기준으로 삼아
+   '안녕 바나나 달' 같은 엉뚱한 책을 걸러 낸다. queries에는 본 이름과 줄인 이름이 들어온다. */
+function seriesRelevant(list, queries){
+  const sets = (queries || []).map(q => seriesNorm(q).split(' ').filter(t => t.length >= 2)).filter(t => t.length);
+  if(!sets.length) return list;
+  return list.filter(r => {
+    const hay = seriesNorm(r.title) + ' ' + seriesNorm(r.publisher) + ' ' + seriesNorm(r.author);
+    return sets.some(toks => {
+      const longest = toks.slice().sort((a, b) => b.length - a.length)[0];
+      return hay.indexOf(longest) >= 0 || toks.every(t => hay.indexOf(t) >= 0);
+    });
+  });
+}
+
+async function kakaoSeriesPage(q, page, target){
+  const key = kakaoKey();
+  if(!key) return { docs: [], bad: 'nokey' };
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 6000);
+  try{
+    const params = { query: q, size: '50', page: String(page), sort: 'accuracy' };
+    if(target) params.target = target;
+    const res = await fetch('https://dapi.kakao.com/v3/search/book?' + new URLSearchParams(params).toString(), {
+      headers: { Authorization: 'KakaoAK ' + key }, signal: ctrl.signal, cache: 'no-store'
+    });
+    if(res.status === 401 || res.status === 403){ sourceState.kakaoKeyBad = true; return { docs: [], bad: 'key' }; }
+    if(res.status === 429){ sourceState.kakaoLimited = true; return { docs: [], bad: 'limit' }; }
+    if(!res.ok) return { docs: [], bad: 'http' };
+    const d = await res.json();
+    sourceState.kakaoKeyBad = false;
+    return { docs: (d.documents || []).map(fromKakao).filter(Boolean), bad: '' };
+  }catch(e){
+    return { docs: [], bad: 'net' };
+  }finally{ clearTimeout(t); }
+}
+
+/* 카카오에서 전집 이름 하나로 최대 100권까지 모은다 (제목 50×2 → 키워드 50×2) */
+async function seriesKakaoScan(q, withGoogle){
+  const notes = [];
+  let list = [];
+  const key = kakaoKey();
+  if(key){
+    for(const target of ['title', '']){
+      if(target === '' && list.length >= 20) break;
+      for(const page of [1, 2]){
+        const r = await kakaoSeriesPage(q, page, target);
+        if(r.bad === 'key'){ notes.push('카카오 키를 확인해 주세요'); return { list: list, notes: notes, stop: true }; }
+        if(r.bad === 'limit'){ notes.push('카카오 검색 한도에 걸렸어요. 잠시 뒤 다시 해보세요'); return { list: list, notes: notes, stop: true }; }
+        if(r.bad) return { list: list, notes: notes, stop: false };
+        list = list.concat(r.docs);
+        if(r.docs.length < 50) break;
+        if(list.length >= 100) break;
+      }
+      if(list.length >= 100) break;
+    }
+  }
+  /* 키가 없거나 결과가 적으면 Google 도서(GData)로 보완 */
+  if(withGoogle && (!key || list.length < 10)){
+    try{
+      const g = await gdataSearch(q);
+      if(g && g.length) list = list.concat(g);
+    }catch(e){ /* 다음 결과만 보여 준다 */ }
+  }
+  return { list: list, notes: notes, stop: false };
+}
+async function seriesSearchKo(q){
+  const notes = [];
+  const key = kakaoKey();
+  if(!key) notes.push('카카오 키가 없어 Google 도서로 찾았어요');
+  const first = await seriesKakaoScan(q, true);
+  notes.push.apply(notes, first.notes);
+  let list = first.list;
+  let alt = '';
+  /* '그레이트북스 안녕 마음아'처럼 출판사 이름을 앞에 붙여 쓰면 카카오는 0권을 준다.
+     앞 낱말을 빼고 한 번 더 찾아본다. */
+  if(!first.stop && list.length < 3){
+    const toks = String(q).trim().split(/\s+/).filter(Boolean);
+    const altQ = toks.length >= 2 ? toks.slice(1).join(' ') : '';
+    if(altQ && altQ !== q){
+      const more = await seriesKakaoScan(altQ, true);
+      if(more.list.length){
+        list = list.concat(more.list);
+        alt = altQ;
+        notes.push('‘' + altQ + '’로도 함께 찾았어요');
+      }
+    }
+  }
+  if(q && list.length){
+    const rel = seriesRelevant(list, alt ? [q, alt] : [q]);
+    if(rel.length) list = rel;
+  }
+  list = seriesDedupe(list).slice(0, 100);
+  if(!list.length) notes.push('‘' + q + '’로는 찾은 책이 없어요. 이름을 조금 짧게 적어 보세요');
+  return { list: list, notes: notes };
+}
+
+async function seriesSearchEn(q){
+  const notes = [];
+  let list = [];
+  /* Open Library: 작품 단위 검색 — 권수·표지를 함께 준다 */
+  try{
+    const fields = 'key,title,author_name,publisher,cover_i,isbn,number_of_pages_median,language';
+    const url = 'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=50&fields=' + encodeURIComponent(fields);
+    const data = await fetchJson(url, 10000);
+    (data.docs || []).forEach(d => { const r = fromOL(d); if(r) list.push(r); });
+  }catch(e){ notes.push('Open Library가 응답하지 않았어요'); }
+  /* Google 도서(GData): 권별 제목이 잘 나온다 */
+  for(const start of [1, 21]){
+    try{
+      const params = new URLSearchParams({ q: 'intitle:' + q, 'max-results': '20', 'start-index': String(start) });
+      const data = await jsonpGet('https://books.google.com/books/feeds/volumes?' + params.toString() + '&alt=json-in-script', 'callback', 9000);
+      const feed = (data && data.feed) || {};
+      const got = (feed.entry || []).map(fromGData).filter(Boolean);
+      if(!got.length) break;
+      list = list.concat(got);
+      if(got.length < 20) break;
+    }catch(e){ break; }
+  }
+  list = seriesDedupe(list).slice(0, 100);
+  return { list: list, notes: notes };
+}
+
+function seriesSelectable(){ return seriesItems.filter(x => !x.already); }
+function seriesSelectedCount(){ return seriesSelectable().filter(x => x.sel).length; }
+function seriesCounts(){
+  const n = seriesSelectedCount();
+  const total = seriesSelectable().length;
+  const cnt = $('#seriesCnt');
+  if(cnt) cnt.innerHTML = '모두 <b>' + seriesItems.length + '권</b> · 선택 <b>' + n + '권</b>';
+  const btn = $('#btnSeriesAdd');
+  if(btn){
+    btn.textContent = '선택한 ' + n + '권 책장에 담기';
+    btn.disabled = n === 0;
+  }
+  const all = $('#btnSeriesAll');
+  if(all) all.textContent = (total > 0 && n >= total) ? '전체 해제' : '전체 선택';
+}
+function syncSeriesChecks(){
+  $$('#seriesList .series-row').forEach((row, i) => {
+    const it = seriesItems[i];
+    if(!it) return;
+    const cb = row.querySelector('input[type=checkbox]');
+    if(cb) cb.checked = !!it.sel;
+    row.classList.toggle('on', !!it.sel && !it.already);
+  });
+  seriesCounts();
+}
+function seriesRow(it, i){
+  const row = document.createElement('label');
+  row.className = 'series-row' + (it.already ? ' already' : (it.sel ? ' on' : ''));
+  row.setAttribute('data-i', String(i));
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = !!it.sel && !it.already;
+  cb.disabled = !!it.already;
+  cb.setAttribute('data-i', String(i));
+  cb.setAttribute('aria-label', it.title + ' 책장에 담기');
+
+  const cov = document.createElement('span');
+  cov.className = 's-cov';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.src = it.cover || shelfCoverFallback(it.title);
+  img.onerror = () => { cov.innerHTML = '<span class="ph">📚</span>'; };
+  cov.appendChild(img);
+
+  const tx = document.createElement('span');
+  tx.className = 's-tx';
+  const ttl = document.createElement('span');
+  ttl.className = 's-ttl';
+  ttl.textContent = it.title;
+  tx.appendChild(ttl);
+
+  const meta = document.createElement('span');
+  meta.className = 's-meta';
+  const bits = [];
+  if(it.author) bits.push(it.author);
+  if(it.publisher) bits.push(it.publisher);
+  bits.forEach((txt, k) => {
+    if(k) { const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = '·'; meta.appendChild(sep); }
+    const s = document.createElement('span');
+    s.textContent = txt;
+    meta.appendChild(s);
+  });
+  if(it.pages > 0){
+    if(bits.length){ const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = '·'; meta.appendChild(sep); }
+    const pg = document.createElement('span');
+    pg.className = 'pg';
+    pg.textContent = it.pages + '쪽';
+    meta.appendChild(pg);
+  }
+  if(!bits.length && !(it.pages > 0)) meta.textContent = it.src || '';
+  tx.appendChild(meta);
+
+  if(it.already){
+    const bd = document.createElement('span');
+    bd.className = 's-badge';
+    bd.textContent = '이미 책장에 있음';
+    tx.appendChild(bd);
+  }
+
+  row.appendChild(cb); row.appendChild(cov); row.appendChild(tx);
+  return row;
+}
+function seriesRender(){
+  const list = $('#seriesList');
+  if(!list) return;
+  const bar = $('#seriesBar');
+  const has = seriesItems.length > 0;
+  list.innerHTML = '';
+  bar.classList.toggle('hidden', !has);
+  if(!has){
+    list.classList.toggle('hidden', !seriesSearched);
+    if(seriesSearched){
+      const box = document.createElement('div');
+      box.className = 'series-empty';
+      box.innerHTML = '<span class="em">🔍</span>찾은 책이 없어요.<br>' +
+        (seriesLang === 'ko' ? '전집 이름을 조금 짧게 적어 보세요.' : '영어 시리즈 이름을 조금 짧게 적어 보세요.');
+      list.appendChild(box);
+    }
+    seriesCounts();
+    return;
+  }
+  list.classList.remove('hidden');
+  const frag = document.createDocumentFragment();
+  seriesItems.forEach((it, i) => frag.appendChild(seriesRow(it, i)));
+  list.appendChild(frag);
+  seriesCounts();
+}
+function setSeriesLang(lang){
+  seriesLang = lang === 'en' ? 'en' : 'ko';
+  $$('#seriesLang .lang-btn').forEach(b => {
+    const on = b.dataset.lang === seriesLang;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const inp = $('#seriesSearch');
+  if(inp) inp.placeholder = SERIES_PH[seriesLang];
+  const hint = $('#seriesHint');
+  if(hint) hint.textContent = SERIES_HINT[seriesLang];
+  seriesItems = [];
+  seriesSearched = false;
+  $('#btnSeriesKey').classList.add('hidden');
+  seriesSetNote('');
+  seriesRender();
+}
+function openSeriesSheet(){
+  seriesItems = [];
+  seriesQuery = '';
+  seriesSearched = false;
+  seriesBusy = false;
+  const inp = $('#seriesSearch');
+  if(inp) inp.value = '';
+  $('#btnSeriesKey').classList.add('hidden');
+  seriesSetNote('');
+  setSeriesLang(seriesLang);
+  openSheet('seriesSheet');
+  setTimeout(() => { try{ $('#seriesSearch').focus(); }catch(e){} }, 260);
+}
+function toggleSeriesAll(){
+  const sel = seriesSelectable();
+  if(!sel.length) return;
+  const allOn = sel.every(x => x.sel);
+  sel.forEach(x => { x.sel = !allOn; });
+  syncSeriesChecks();
+}
+async function runSeriesSearch(q){
+  const query = String(q == null ? (($('#seriesSearch') || {}).value || '') : q).trim();
+  if(!query){ toast('전집 이름을 적어 주세요'); return []; }
+  if(seriesBusy) return seriesItems;
+  seriesBusy = true;
+  seriesQuery = query;
+  const seq = ++seriesSeq;
+  const lang = seriesLang;   /* 찾는 중에 언어를 바꾸면 그 결과는 버린다 */
+  seriesItems = [];
+  seriesSearched = false;
+  seriesSetNote('‘' + query + '’ 찾는 중…');
+  $('#btnSeriesKey').classList.add('hidden');
+  seriesRender();
+  const btn = $('#btnSeriesSearch');
+  if(btn){ btn.disabled = true; btn.textContent = '찾는 중'; }
+  let out = { list: [], notes: [] };
+  try{
+    out = seriesLang === 'ko' ? await seriesSearchKo(query) : await seriesSearchEn(query);
+  }catch(e){
+    out = { list: [], notes: ['검색에 실패했어요. 잠시 뒤 다시 해 보세요'] };
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = '검색'; }
+    seriesBusy = false;
+  }
+  if(seq !== seriesSeq || query !== seriesQuery || lang !== seriesLang) return seriesItems;   /* 그사이 다른 검색·언어 변경 */
+  seriesItems = out.list.map(r => {
+    const already = seriesInShelf(r.title, lang);
+    return {
+      title: r.title, author: r.author || '', publisher: r.publisher || '',
+      lang: lang, cover: r.cover || '', pages: toPages(r.pages) || 0,
+      isbn: cleanIsbn(r.isbn || ''), src: r.src || '', already: already, sel: !already
+    };
+  });
+  seriesSearched = true;
+  const notes = (out.notes || []).slice();
+  if(!seriesItems.length) notes.unshift('‘' + query + '’로는 찾은 책이 없어요');
+  else if(seriesItems.every(x => x.already)) notes.push('찾은 책이 모두 이미 책장에 있어요');
+  seriesSetNote(notes.join(' · '), !seriesItems.length && notes.length > 0);
+  if(seriesLang === 'ko' && !kakaoKey()) $('#btnSeriesKey').classList.remove('hidden');
+  seriesRender();
+  return seriesItems;
+}
+function addSeriesSelected(){
+  const picked = seriesItems.filter(it => it.sel && !it.already);
+  if(!picked.length){ toast('담을 책을 골라 주세요'); return 0; }
+  const added = [];
+  picked.forEach(it => {
+    const name = String(it.title || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if(!name) return;
+    if(db.shelf.some(s => seriesNorm(s.name) === seriesNorm(name) && (s.lang === 'en' ? 'en' : 'ko') === seriesLang)) return;
+    const item = sanitizeShelf({
+      id: uidS(), name: name, author: it.author, lang: seriesLang,
+      publisher: it.publisher, pages: it.pages, cover: it.cover || '',
+      isbn: it.isbn || '', createdAt: Date.now()
+    });
+    if(!item) return;
+    db.shelf.push(item);
+    added.push(item);
+  });
+  if(!added.length){ toast('이미 책장에 있는 책이에요'); return 0; }
+  save();
+  render();
+  closeSheet($('#seriesSheet'));
+  toast(added.length + '권 책장에 담았어요');
+  seriesBackfillPages(added);   /* 쪽수를 못 받은 책은 뒤에서 조용히 채운다 */
+  return added.length;
+}
+/* 쪽수가 없고 ISBN이 있는 책만 ISBN으로 쪽수를 찾아 채운다 (화면을 막지 않는다) */
+async function seriesBackfillPages(items){
+  const need = items.filter(it => it && cleanIsbn(it.isbn) && !toPages(it.pages));
+  if(!need.length) return;
+  const queue = need.slice(0, 12);
+  let filled = 0;
+  const worker = async () => {
+    while(queue.length){
+      const it = queue.shift();
+      try{
+        const r = await lookupPagesByIsbn(it.isbn);
+        const n = r && toPages(r.pages);
+        if(!n) continue;
+        const cur = db.shelf.find(s => s.id === it.id);
+        if(cur && !toPages(cur.pages)){ cur.pages = n; filled++; }
+      }catch(e){ /* 다음 책 */ }
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+  if(filled){ save(); render(); }
+}
+
+$('#btnSeriesFind').onclick = () => openSeriesSheet();
+$('#btnSeriesKey').onclick = () => openKeySettings();
+$('#seriesLang').addEventListener('click', e => {
+  const b = e.target.closest('.lang-btn');
+  if(!b) return;
+  setSeriesLang(b.dataset.lang);
+});
+$('#btnSeriesSearch').onclick = () => runSeriesSearch();
+$('#seriesSearch').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); runSeriesSearch(); }
+});
+$('#btnSeriesAll').onclick = () => toggleSeriesAll();
+$('#btnSeriesAdd').onclick = () => addSeriesSelected();
+$('#seriesList').addEventListener('change', e => {
+  const cb = e.target.closest('input[type=checkbox]');
+  if(!cb) return;
+  const i = Number(cb.dataset.i);
+  const it = seriesItems[i];
+  if(!it || it.already) return;
+  it.sel = !!cb.checked;
+  const row = cb.closest('.series-row');
+  if(row) row.classList.toggle('on', it.sel);
+  seriesCounts();
+});
 
 /* ---------- 책장에서 빠른 기록 ---------- */
 let quickShelfId = null;
@@ -4240,6 +4793,7 @@ function fromOL(doc){
   return {
     title: title,
     author: (doc.author_name || []).slice(0, 2).join(', '),
+    publisher: (doc.publisher || [])[0] || '',
     pages: toPages(doc.number_of_pages_median) || toPages(doc.number_of_pages),
     lang: lang,
     cover: cover,
@@ -8509,7 +9063,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.8',
+  version: '2.6.9',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -8562,6 +9116,30 @@ window.__rc = {
     saveQuick: () => saveQuick(),
     books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
     covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
+  },
+  /* v2.6.9 전집 한꺼번에 찾아 담기 확인용 */
+  seriesApi: {
+    open: () => { openSeriesSheet(); return true; },
+    close: () => closeSheet($('#seriesSheet')),
+    setLang: l => { setSeriesLang(l); return seriesLang; },
+    search: q => runSeriesSearch(q),
+    state: () => ({
+      open: !!($('#seriesSheet') && $('#seriesSheet').classList.contains('open')),
+      lang: seriesLang, busy: seriesBusy, query: seriesQuery, searched: seriesSearched,
+      results: seriesItems.length,
+      selected: seriesSelectedCount(),
+      rows: $$('#seriesList .series-row').length,
+      alreadyRows: $$('#seriesList .series-row.already').length,
+      button: ($('#btnSeriesAdd') || {}).textContent || '',
+      buttonDisabled: !!($('#btnSeriesAdd') && $('#btnSeriesAdd').disabled),
+      items: seriesItems.map(x => ({ title: x.title, author: x.author, publisher: x.publisher,
+        pages: x.pages, isbn: x.isbn, cover: !!x.cover, already: x.already, sel: x.sel }))
+    }),
+    toggle: i => { const it = seriesItems[i]; if(!it || it.already) return false; it.sel = !it.sel; syncSeriesChecks(); return it.sel; },
+    toggleAll: () => { toggleSeriesAll(); return seriesSelectedCount(); },
+    add: () => addSeriesSelected(),
+    shelf: () => db.shelf.map(s => ({ name: s.name, lang: s.lang, pages: toPages(s.pages) || 0,
+      isbn: s.isbn || '', cover: !!s.cover, coverData: !!s.coverData, author: s.author || '', publisher: s.publisher || '' }))
   },
   /* v1.8 책 추천·읽을 목록 확인용 */
   recApi: {
