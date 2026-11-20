@@ -1400,7 +1400,7 @@ const JAM_EN_CATS = ['그림책', '리더스북', '그림책 같은 리더스북
 const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A = 7, KO_O = 8, KO_Q = 9, KO_K = 10;
 /* 영어: [분류, 급수, 제목, 지은이, 한글제목, 음원, 검색용, 제목맞춤키] */
 const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
-let jamIdx = null;          // 읽은 책 색인: 제목 키 → 지은이들 (db.books가 바뀌면 다시 만든다)
+let jamIdx = null;          // 읽은 책 색인: 제목 키 → {지은이, 잠수네 급수}들 (db.books가 바뀌면 다시 만든다)
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
 const DEFAULT_KID_NAME = '우리 아이';
@@ -6787,18 +6787,29 @@ function jamNormAuthor(a){
   t = t.replace(/\s+/g, '');
   return t;
 }
-/* 읽은 기록 색인: 제목 맞춤 키 → 그 책을 읽은 기록들의 지은이(없으면 '') */
+/* 기록에 남은 잠수네 급수 (v2.6.5)
+   책벌레에서 가져온 기록은 note에 '차일드 명작 동화 · JK3'처럼 시리즈와 급수가 함께 남는다.
+   급수가 없는 기록(달력에 직접 적은 책 등)은 0으로 두어 예전처럼 제목·지은이만으로 본다. */
+function jamRecLv(b){
+  if(!b) return 0;
+  const direct = jamLvNum(b.jlevel);
+  if(direct > 0) return direct;
+  const m = /\b(JK?\d+)\b/i.exec(String(b.note == null ? '' : b.note));
+  return m ? jamLvNum(m[1]) : 0;
+}
+/* 읽은 기록 색인: 제목 맞춤 키 → 그 책을 읽은 기록들의 {지은이(없으면 ''), 잠수네 급수(없으면 0)} */
 function jamReadIdx(){
   if(jamIdx) return jamIdx;
   const m = new Map();
   db.books.forEach(b => {
     const t = b && b.title;
     if(!t) return;
-    const a = jamNormAuthor(b.author);
+    const rec = { author: jamNormAuthor(b.author), lv: jamRecLv(b) };
+    const sig = rec.author + '|' + rec.lv;
     jamKeysFor(t).forEach(k => {
       let s = m.get(k);
-      if(!s){ s = new Set(); m.set(k, s); }
-      s.add(a);
+      if(!s){ s = new Map(); m.set(k, s); }
+      if(!s.has(sig)) s.set(sig, rec);
     });
   });
   jamIdx = m;
@@ -6807,12 +6818,15 @@ function jamReadIdx(){
 /* 제목과 지은이를 함께 본다 (v2.6.3 · v2.6.4에서 잠수네·추천 공용으로 뺌).
    같은 제목의 다른 책(전래동화·번역본 등)을 읽음으로 잘못 잡지 않도록,
    양쪽에 지은이가 적혀 있으면 지은이까지 맞아야 읽음이다.
-   한쪽이라도 지은이가 비어 있으면(지은이 없이 적은 기록 등) 제목만으로 본다. */
-function isBookRead(title, author){
+   한쪽이라도 지은이가 비어 있으면(지은이 없이 적은 기록 등) 제목만으로 본다.
+   v2.6.5: 잠수네 목록 항목에 급수가 있으면(itemJlevel) 기록의 급수와 크게 다를 때(2단계 이상)
+   다른 책으로 본다 — '차일드 명작 동화 JK3' 축약본을 읽었다고 초6 JK8 완역본을 읽음으로 잡지 않는다. */
+function isBookRead(title, author, itemJlevel){
   const t = String(title == null ? '' : title);
   if(!t.trim()) return false;
   const m = jamReadIdx();
   const itA = jamNormAuthor(author);
+  const itLv = jamLvNum(itemJlevel);
   const ck = 'i|' + t;
   let keys = jamKeyCache.get(ck);
   if(!keys){
@@ -6824,17 +6838,22 @@ function isBookRead(title, author){
     const rec = m.get(keys[i]);
     if(!rec) continue;
     let hit = false;
-    rec.forEach(ra => {
+    rec.forEach(r => {
       if(hit) return;
-      if(!ra || !itA || ra.indexOf(itA) >= 0 || itA.indexOf(ra) >= 0) hit = true;
+      const ra = r.author;
+      if(!ra || !itA || ra.indexOf(itA) >= 0 || itA.indexOf(ra) >= 0){
+        if(itLv > 0 && r.lv > 0 && Math.abs(itLv - r.lv) >= 2) return;
+        hit = true;
+      }
     });
     if(hit) return true;
   }
   return false;
 }
-/* 잠수네 목록 항목은 제목·지은이 칸 이름만 다르므로 공용 판정에 그대로 넘긴다. */
+/* 잠수네 목록 항목은 제목·지은이 칸 이름만 다르므로 공용 판정에 그대로 넘긴다.
+   목록 항목의 급수도 함께 넘겨 축약본·완역본을 구분한다. */
 function jamIsRead(kind, it){
-  return isBookRead(it[kind === 'ko' ? KO_T : EN_T], it[kind === 'ko' ? KO_A : EN_A]);
+  return isBookRead(it[kind === 'ko' ? KO_T : EN_T], it[kind === 'ko' ? KO_A : EN_A], it[kind === 'ko' ? KO_L : EN_L]);
 }
 
 /* ---------- AR 지수 (v2.6.4) ----------
@@ -7872,7 +7891,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.4',
+  version: '2.6.5',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
