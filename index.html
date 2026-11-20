@@ -180,9 +180,12 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.4px}
 }
 .mini-add:active{background:#EBE7DA}
 
-.book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px}
+.book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;align-items:start}
 @media(min-width:480px){.book-grid{grid-template-columns:repeat(5,1fr)}}
-.book{text-align:left;padding:0;display:block;width:100%}
+/* v2.6.8: 제목 길이·AR 지시가 달라도 한 줄의 표지가 위쪽에 나란히 서도록 카드를 위에서부터 채운다 */
+.book{text-align:left;padding:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%}
+.book > .cov{width:100%}
+.book > .btitle{align-self:stretch}
 .book:active .cov{transform:scale(.97)}
 .cov{
   position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;
@@ -470,17 +473,21 @@ textarea.input{resize:vertical;min-height:60px}
 @media(min-width:460px){.year-grid{grid-template-columns:repeat(4,1fr)}}
 .ym{
   display:flex;flex-direction:column;gap:7px;text-align:left;
-  background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:9px 10px 9px;
+  background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:9px 8px 9px;
   transition:transform .12s,background .15s,border-color .15s;
 }
 .ym:active{transform:scale(.975);background:#F4F1E8}
 .ym.now{border-color:#D8D1EC;background:#FAF9FE}
-.ym-top{display:flex;align-items:baseline;justify-content:space-between;gap:4px;min-width:0}
-.ym-m{font-size:11.5px;font-weight:800;color:#8E897C;letter-spacing:-.2px;white-space:nowrap}
-.ym-n{font-size:15.5px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1.05}
-.ym-n small{font-size:9.5px;font-weight:800;color:#B7B2A5;margin-left:1px;letter-spacing:0}
+/* v2.6.8: '10월 8,333쪽'·'12월 12,345쪽'이 좁은 화면에서도 한 줄에 들어가도록 */
+.ym-top{display:flex;align-items:baseline;justify-content:space-between;gap:3px;min-width:0;flex-wrap:nowrap}
+.ym-m{font-size:11.5px;font-weight:800;color:#8E897C;letter-spacing:-.2px;white-space:nowrap;flex:0 0 auto}
+.ym-n{
+  font-size:clamp(11px,3.2vw,13.5px);font-weight:800;color:var(--ink);
+  letter-spacing:-.5px;line-height:1.05;white-space:nowrap;min-width:0;
+}
+.ym-n small{font-size:clamp(8.5px,2.3vw,9.5px);font-weight:800;color:#B7B2A5;margin-left:1px;letter-spacing:0}
 .ym.zero .ym-m{color:#C6C0B1}
-.ym.zero .ym-n{color:#D5CFC1;font-size:14px}
+.ym.zero .ym-n{color:#D5CFC1;font-size:clamp(10.5px,3vw,12px)}
 .ym-track{display:flex;height:7px;border-radius:99px;background:#EFEBE0;overflow:hidden}
 .ym-track i{display:block;height:100%}
 .ym-track i.ko{background:var(--ko)}
@@ -1165,6 +1172,20 @@ select.input:focus{background-color:#fff}
     <p class="sheet-note" style="margin:0 0 12px">읽고 싶은 책을 적어 두면, 나중에 누르기만 해서 바로 읽은 날을 남길 수 있어요.</p>
 
     <div class="field">
+      <label for="waSearch">제목·지은이·ISBN으로 찾기 (선택)</label>
+      <div class="search-row">
+        <input class="input" id="waSearch" placeholder="예: 구름빵 · 백희나 · ISBN" autocomplete="off" enterkeyhint="search">
+        <button class="btn dark" id="btnWaSearch" type="button">검색</button>
+        <button class="btn scan" id="btnWaScan" type="button" aria-label="책 뒤 바코드를 카메라로 찍어 찾기">📷 바코드</button>
+      </div>
+      <div class="hint">찾아서 고르면 제목·지은이·구분·표지가 한 번에 채워져요.</div>
+      <div class="scan-note hidden" id="waScanNotice"></div>
+      <div class="results hidden" id="waResults"></div>
+    </div>
+
+    <div class="rec-hero hidden" id="waHero"></div>
+
+    <div class="field">
       <label for="waTitle">책 제목 <span style="color:#C98B77">*</span></label>
       <input class="input" id="waTitle" placeholder="예: 이상한 엄마" maxlength="80" autocomplete="off">
     </div>
@@ -1215,6 +1236,11 @@ select.input:focus{background-color:#fff}
     <div class="add-kid">
       <h3>아이 추가</h3>
       <input class="input" id="newKidName" placeholder="이름 (예: 서준)" maxlength="12" autocomplete="off">
+      <div class="field" style="margin:11px 0 0">
+        <label for="newKidBirth">생년월일 (선택)</label>
+        <input class="input" type="date" id="newKidBirth">
+        <div class="hint">적어 두면 잠수네 화면이 아이 나이에 맞는 단계로 저절로 걸러 줘요.</div>
+      </div>
       <div class="field" style="margin:11px 0 0">
         <label>표정</label>
         <div class="picker" id="newKidEmoji"></div>
@@ -1521,15 +1547,73 @@ function sanitizeChild(c){
   if(!name) return null;
   const color = /^#[0-9A-Fa-f]{6}$/.test(String(c.color || '')) ? String(c.color) : KID_COLORS[0];
   const emoji = String(c.emoji || '🧒').trim().slice(0, 4) || '🧒';
+  /* v2.6.8: 생년월일 (YYYY-MM-DD) — 있으면 잠수네 단계를 저절로 맞춘다 */
+  const birthRaw = String(c.birth || '').trim();
+  const birth = /^\d{4}-\d{2}-\d{2}$/.test(birthRaw) && !isNaN(parseISO(birthRaw).getTime()) ? birthRaw : '';
   return {
     id: c.id ? String(c.id) : uidC(),
     name: name,
     emoji: emoji,
     color: color,
+    birth: birth,
     createdAt: Number(c.createdAt) || Date.now()
   };
 }
 function kidById(id){ return db.children.find(c => c.id === id) || null; }
+/* v2.6.8: 생년월일 → 한국 나이(세는나이)와 잠수네 한글 단계
+   예: 2021-05-10생 · 2026년 → 6세 → '5-7세' */
+function kidKoreanAge(birth){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(birth || ''));
+  if(!m) return 0;
+  const y = Number(m[1]);
+  if(!y || y < 1900 || y > 2200) return 0;
+  return new Date().getFullYear() - y + 1;
+}
+function kidStageFromBirth(birth){
+  const kAge = kidKoreanAge(birth);
+  if(!kAge) return '';
+  if(kAge <= 4) return '1-4세';
+  if(kAge <= 7) return '5-7세';
+  if(kAge === 8) return '초1';
+  if(kAge === 9) return '초2';
+  if(kAge === 10) return '초3';
+  if(kAge === 11) return '초4';
+  if(kAge === 12) return '초5';
+  if(kAge === 13) return '초6';
+  if(kAge <= 15) return '중등';
+  return '중3이상';
+}
+/* 지금 보고 있는 아이의 단계 — '전체'인데 아이가 하나뿐이면 그 아이 기준 */
+function autoStageFor(){
+  const kids = db.children || [];
+  if(view.child && view.child !== 'all'){
+    const c = kidById(view.child);
+    return c ? kidStageFromBirth(c.birth) : '';
+  }
+  if(kids.length === 1) return kidStageFromBirth(kids[0].birth);
+  return '';
+}
+/* 잠수네 한글 화면을 아이 나이 단계 + 이번 달로 맞춘다 (사용자가 칩으로 언제든 바꿀 수 있다) */
+function jamAutoFilter(){
+  if(!jam || !jam.f || !jam.f.ko) return false;
+  const f = jam.f.ko;
+  const stage = autoStageFor();
+  f.stage = stage;
+  f.month = String(new Date().getMonth() + 1);
+  f.week = '';
+  return true;
+}
+function kidAgeLabel(c){
+  const kAge = kidKoreanAge(c && c.birth);
+  return kAge ? kAge + '세' : '';
+}
+/* 아이 정보를 고친 뒤: 잠수네 화면이 보고 있으면 필터를 다시 맞춰 바로 보여 준다 */
+function applyJamAuto(refresh){
+  if(!jamAutoFilter()) return;
+  if(refresh && view.ymode === 'jam'){
+    try{ renderJam(); }catch(e){}
+  }
+}
 /* 받는 이름의 받침에 맞춰 조사 고르기 (을/를, 과/와) */
 function particle(name, withBatchim, withoutBatchim){
   const s = String(name || '').trim();
@@ -1752,6 +1836,8 @@ function setChild(id, today){
     view.month = n.getMonth();
     view.sel = todayISO;
   }
+  /* v2.6.8: 아이를 바꾸면 잠수네 한글 단계·이번 달을 그 아이 기준으로 다시 맞춘다 */
+  jamAutoFilter();
   render();
   if(today) window.scrollTo(0, 0);
 }
@@ -3368,7 +3454,8 @@ function buildRecItem(r){
   lgb.textContent = '🏛️ 도서관';
 
   acts.appendChild(rb); acts.appendChild(wb); acts.appendChild(lgb);
-  body.appendChild(nm); body.appendChild(meta); body.appendChild(au); body.appendChild(rs); body.appendChild(acts);
+  /* v2.6.8: 잠수네 카드와 같은 순서 — 태그(읽음 표시 포함) → 제목 → 지은이 → 설명 → 버튼 */
+  body.appendChild(meta); body.appendChild(nm); body.appendChild(au); body.appendChild(rs); body.appendChild(acts);
   item.appendChild(body);
   if(r.lang === 'en') arWatchCard(item, r.title, r.author);
   return item;
@@ -3631,8 +3718,164 @@ $('#btnWishSave').onclick = saveBookRecord;
 
 /* 직접 추가 */
 let waLang = 'ko';
+let waCover = '';        /* v2.6.8: 검색·바코드로 고른 표지 주소 */
+let waIsbn = '';
+let waBusy = false, waSeq = 0;
 function renderWishAddLang(){
   $$('#waLang .lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === waLang));
+  syncWaHero();
+}
+/* 고른 책 미리보기(표지·제목·지은이) */
+function renderWaHero(){
+  const box = $('#waHero');
+  if(!box) return;
+  const title = $('#waTitle').value.trim();
+  const author = $('#waAuthor').value.trim();
+  if(!title && !waCover){ box.innerHTML = ''; box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  box.innerHTML = '';
+  box.appendChild(buildRecCover({ title: title, cover: waCover }, 'rec-cov'));
+  const body = document.createElement('div');
+  body.className = 'rec-body';
+  const nm = document.createElement('div');
+  nm.className = 'rec-nm wa-nm';
+  nm.textContent = title || '표지를 골랐어요';
+  const au = document.createElement('div');
+  au.className = 'rec-auth wa-au';
+  au.textContent = author || (waLang === 'en' ? '영어책' : '한글책');
+  body.appendChild(nm); body.appendChild(au);
+  box.appendChild(body);
+}
+function syncWaHero(){
+  const box = $('#waHero');
+  if(!box || box.classList.contains('hidden')){ renderWaHero(); return; }
+  const nm = box.querySelector('.wa-nm'), au = box.querySelector('.wa-au');
+  const title = $('#waTitle').value.trim(), author = $('#waAuthor').value.trim();
+  if(nm) nm.textContent = title || '표지를 골랐어요';
+  if(au) au.textContent = author || (waLang === 'en' ? '영어책' : '한글책');
+}
+function waReset(){
+  $('#waTitle').value = '';
+  $('#waAuthor').value = '';
+  $('#waSearch').value = '';
+  $('#waResults').innerHTML = '';
+  $('#waResults').classList.add('hidden');
+  $('#waScanNotice').textContent = '';
+  $('#waScanNotice').classList.add('hidden');
+  $('#waHero').innerHTML = '';
+  $('#waHero').classList.add('hidden');
+  waLang = 'ko';
+  waCover = '';
+  waIsbn = '';
+  waBusy = false;
+  renderWishAddLang();
+}
+/* 검색 결과에서 고른 책을 시트에 채운다 */
+function waPick(r){
+  if(!r) return;
+  $('#waTitle').value = String(r.title || '');
+  $('#waAuthor').value = String(r.author || '');
+  if(r.lang === 'en' || r.lang === 'ko') waLang = r.lang;
+  waCover = r.cover ? String(r.cover) : '';
+  waIsbn = cleanIsbn(r.isbn || '');
+  renderWishAddLang();
+  renderWaHero();
+  const box = $('#waResults');
+  if(box){ box.innerHTML = ''; box.classList.add('hidden'); }
+  const el = $('#waScanNotice');
+  if(el){ el.textContent = ''; el.classList.add('hidden'); }
+  toast('책 정보를 채웠어요 · 담기만 누르면 돼요');
+}
+function waBusyUI(on){
+  const b = $('#btnWaSearch');
+  if(!b) return;
+  b.disabled = !!on;
+  b.textContent = on ? '\u2026' : '검색';
+}
+/* 읽을 목록에서도 기록 시트와 같은 서가(내 책장·지난 기록 · 카카오 · Google · Open Library · Apple)를 뒤진다 */
+async function doWaSearch(){
+  const q = $('#waSearch').value.trim();
+  if(!q){ $('#waSearch').focus(); return []; }
+  if(waBusy) return [];
+  waBusy = true;
+  const seq = ++waSeq;
+  waBusyUI(true);
+  const box = $('#waResults');
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  const loading = document.createElement('div');
+  loading.className = 'hint';
+  loading.style.cssText = 'padding:8px 4px';
+  loading.textContent = '찾는 중\u2026';
+  box.appendChild(loading);
+
+  const asIsbn = isbnQueryOf(q);
+  const local = asIsbn ? { shelf: [], past: [] } : localSearch(q);
+  let list = [];
+  try{
+    if(asIsbn){
+      list = await isbnLookupList(asIsbn);
+    }else{
+      const parts = await Promise.all([
+        kakaoSearch(q).catch(() => []),
+        googleSearch(q, waLang).catch(() => []),
+        openLibrarySearch(q).catch(() => [])
+      ]);
+      let all = [].concat(parts[0] || [], parts[1] || [], parts[2] || []);
+      if(all.length < 6){ try{ all = all.concat(await gdataSearch(q)); }catch(e){} }
+      if(waLang === 'en' || !/[\uAC00-\uD7A3]/.test(q)){
+        try{ all = all.concat(await appleBooksSearch(q, 'en')); }catch(e){}
+      }
+      const localTitles = new Set(local.shelf.concat(local.past).map(r => normText(r.title)));
+      list = dedupeRank(all, q, waLang).filter(r => !localTitles.has(normText(r.title)));
+    }
+  }catch(e){ list = []; }
+  if(seq !== waSeq){ waBusy = false; waBusyUI(false); return []; }
+  waBusy = false;
+  waBusyUI(false);
+
+  box.innerHTML = '';
+  const nLocal = asIsbn ? 0 : localCount(local);
+  if(nLocal){
+    addResGroup(box, '내 책장 · 지난 기록');
+    local.shelf.forEach(r => { const row = makeResRow(r); row.onclick = () => waPick(r); box.appendChild(row); });
+    local.past.forEach(r => { const row = makeResRow(r); row.onclick = () => waPick(r); box.appendChild(row); });
+  }
+  const online = list.slice(0, 8);
+  if(online.length){
+    addResGroup(box, asIsbn ? 'ISBN 검색 결과' : '온라인 검색 결과');
+    online.forEach(r => { const row = makeResRow(r); row.onclick = () => waPick(r); box.appendChild(row); });
+  }
+  if(!nLocal && !online.length){
+    addResNote(box, asIsbn ? 'ISBN으로 찾지 못했어요. 제목을 직접 적어 주세요.'
+      : '검색 결과가 없어요. 제목을 직접 적으면 돼요.');
+  }else if(online.length > 1){
+    addResNote(box, '위에서 고르면 제목·지은이·표지가 채워져요.');
+  }
+  return list;
+}
+/* 바코드(ISBN)로 찾은 책을 바로 채운다 */
+async function onWishScanIsbn(raw){
+  const clean = cleanIsbn(raw);
+  const cands = isbnCandidates(clean);
+  const inp = $('#waSearch');
+  if(inp) inp.value = clean;
+  const box = $('#waResults');
+  const note = $('#waScanNotice');
+  if(note){ note.classList.add('hidden'); note.textContent = ''; }
+  if(box){
+    box.innerHTML = '<div class="hint" style="padding:8px 4px">ISBN ' + escXML(clean) + ' 책 정보를 찾는 중\u2026</div>';
+    box.classList.remove('hidden');
+  }
+  let list = [];
+  try{ list = cands.length ? await isbnLookupList(clean) : []; }catch(e){ list = []; }
+  const hit = (list || []).find(r => isbnMatchesResult(r, cands)) || (list || [])[0] || null;
+  if(!hit){
+    if(box){ box.innerHTML = ''; box.classList.add('hidden'); }
+    toast('이 바코드의 책을 찾지 못했어요 · 제목을 직접 적어 주세요');
+    return;
+  }
+  waPick(hit);
 }
 $('#waLang').addEventListener('click', e => {
   const b = e.target.closest('.lang-btn');
@@ -3640,18 +3883,23 @@ $('#waLang').addEventListener('click', e => {
   waLang = b.dataset.lang === 'en' ? 'en' : 'ko';
   renderWishAddLang();
 });
+$('#btnWaSearch').onclick = () => { doWaSearch(); };
+$('#waSearch').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); doWaSearch(); }
+});
+$('#btnWaScan').onclick = () => { openScan('wish'); };
+$('#waTitle').addEventListener('input', syncWaHero);
+$('#waAuthor').addEventListener('input', syncWaHero);
 $('#btnWishAddNew').onclick = () => {
-  $('#waTitle').value = '';
-  $('#waAuthor').value = '';
-  waLang = 'ko';
-  renderWishAddLang();
+  waReset();
   openSheet('wishAddSheet');
   setTimeout(() => { $('#waTitle').focus(); }, 260);
 };
 $('#btnWishAdd').onclick = () => {
   const title = $('#waTitle').value.trim();
   if(!title){ toast('책 제목을 입력해 주세요'); $('#waTitle').focus(); return; }
-  const w = addToWish({ title: title, author: $('#waAuthor').value.trim(), lang: waLang });
+  const w = addToWish({ title: title, author: $('#waAuthor').value.trim(), lang: waLang,
+    cover: waCover, isbn: waIsbn });
   if(!w){ toast('이미 읽을 목록에 있는 책이에요'); return; }
   setViewMode('wish');
   render();
@@ -5107,7 +5355,7 @@ const scanState = { stream: null, detector: null, running: false, timer: 0, busy
   tick: 0, flashTimer: 0, votes: [], pending: '', pendingAt: 0, paused: false, zx: null, zxLoading: null, zxFailAt: 0, engineTimer: 0, photoBusy: false };
 const SCAN_ZOOM_DEFAULT = 3;
 const SCAN_ZOOM_MAX = 5;
-/* 스캐너를 연 곳: 'record' 기록 시트 / 'find' 읽은 책 찾기 (v2.6.2) */
+/* 스캐너를 연 곳: 'record' 기록 시트 / 'find' 읽은 책 찾기 (v2.6.2) / 'wish' 읽을 목록 직접 추가 (v2.6.8) */
 let scanTarget = 'record';
 const SCAN_TIP = '바코드를 조금 떨어뜨려 네모 안에 꽉 차게 맞춰 보세요';
 
@@ -5652,12 +5900,15 @@ function closeScan(){
   document.body.style.overflow = $('.sheet-wrap.open') ? 'hidden' : '';
 }
 async function openScan(target){
-  scanTarget = target === 'find' ? 'find' : 'record';
+  scanTarget = target === 'find' ? 'find' : (target === 'wish' ? 'wish' : 'record');
   if(scanTarget === 'record' && !draft) return false;
   if(!scanSupported()){
     showScanNotice(SCAN_UNSUPPORTED);
+    const wn = $('#waScanNotice');
+    if(scanTarget === 'wish' && wn){ wn.textContent = SCAN_UNSUPPORTED; wn.classList.remove('hidden'); }
     toast('이 브라우저에서는 카메라를 켤 수 없어요');
-    const f = $('#fSearch'); if(f) f.focus();
+    const f = scanTarget === 'wish' ? $('#waSearch') : $('#fSearch');
+    if(f) f.focus();
     return false;
   }
   showScanNotice('');
@@ -5745,6 +5996,7 @@ async function onScanIsbn(isbn){
   const target = scanTarget;
   closeScan();
   if(target === 'find'){ await onFindScanIsbn(isbn); return; }
+  if(target === 'wish'){ await onWishScanIsbn(isbn); return; }   /* v2.6.8: 읽을 목록에 바로 채운다 */
   if(!draft) return;
   $('#fSearch').value = isbn;
   await runIsbnLookup(isbn);
@@ -5947,6 +6199,8 @@ function openKids(editId){
   newKid = { emoji: nextKidEmoji(), color: nextKidColor() };
   const inp = $('#newKidName');
   if(inp) inp.value = '';
+  const bt = $('#newKidBirth');
+  if(bt) bt.value = '';
   renderNewKidPickers();
   renderKids();
   openSheet('kidSheet');
@@ -6006,13 +6260,18 @@ function addKidFromForm(){
   if(!name){ toast('아이 이름을 적어 주세요'); inp.focus(); return; }
   if(db.children.length >= 8){ toast('아이는 8명까지 등록할 수 있어요'); return; }
   if(db.children.some(c => c.name === name)){ toast('같은 이름의 아이가 이미 있어요'); return; }
-  const c = sanitizeChild({ id: uidC(), name: name, emoji: newKid.emoji, color: newKid.color, createdAt: Date.now() });
+  const btIn = $('#newKidBirth');
+  const birth = btIn ? String(btIn.value || '').trim() : '';
+  const c = sanitizeChild({ id: uidC(), name: name, emoji: newKid.emoji, color: newKid.color,
+    birth: birth, createdAt: Date.now() });
   db.children.push(c);
   save();
   inp.value = '';
+  if(btIn) btIn.value = '';
   newKid = { emoji: nextKidEmoji(), color: nextKidColor() };
   renderNewKidPickers();
   renderKids();
+  applyJamAuto(true);
   render();
   const sc = $('#kidScroll');
   if(sc) sc.scrollLeft = sc.scrollWidth;
@@ -6048,7 +6307,8 @@ function buildKidRow(row, c){
   b.textContent = c.name;
   const s = document.createElement('span');
   const n = kidBookCount(c.id);
-  s.textContent = n ? '기록 ' + n + '권' : '아직 기록이 없어요';
+  const age = kidAgeLabel(c);
+  s.textContent = (age ? age + ' · ' : '') + (n ? '기록 ' + n + '권' : '아직 기록이 없어요');
   nm.appendChild(b); nm.appendChild(s);
   const edit = document.createElement('button');
   edit.type = 'button';
@@ -6074,6 +6334,21 @@ function buildKidEditor(row, c){
   inp.value = c.name;
   inp.autocomplete = 'off';
   box.appendChild(inp);
+
+  /* v2.6.8: 생년월일 수정 */
+  const birthWrap = document.createElement('div');
+  birthWrap.className = 'field';
+  birthWrap.style.margin = '10px 0 0';
+  const bl = document.createElement('label');
+  bl.textContent = '생년월일 (선택)';
+  bl.setAttribute('for', 'editKidBirth');
+  const bi = document.createElement('input');
+  bi.className = 'input';
+  bi.type = 'date';
+  bi.id = 'editKidBirth';
+  bi.value = c.birth || '';
+  birthWrap.appendChild(bl); birthWrap.appendChild(bi);
+  box.appendChild(birthWrap);
 
   const ep = document.createElement('div');
   ep.className = 'picker';
@@ -6120,9 +6395,11 @@ function buildKidEditor(row, c){
     c.name = name;
     c.emoji = tmp.emoji;
     c.color = tmp.color;
+    c.birth = String(bi.value || '').trim();
     editKidId = null;
     save();
     renderKids();
+    applyJamAuto(true);
     render();
     toast('‘' + name + '’ 정보를 바꿨어요');
   };
@@ -7147,6 +7424,8 @@ function jamInit(){
 }
 function jamAfterLoad(){
   jamSyncImp();
+  /* v2.6.8: 자료가 준비되면 아이 나이 단계 + 이번 달로 저절로 걸러 준다 */
+  jamAutoFilter();
   if(view.ymode === 'jam') renderJam();
 }
 
@@ -7571,6 +7850,294 @@ function jamFilter(kind){
   }
   return out;
 }
+/* ---------- 잠수네 표지 자동 불러오기 (v2.6.8) ----------
+   목록 카드가 화면에 들어올 때만(IntersectionObserver — AR 지수와 같은 방식) 그 책의 표지를 묻는다.
+   기기에 저장하는 것은 표지 '주소 문자열'뿐이고(그림 데이터 아님), 개수·용량을 함께 묶어 두어
+   저장 공간이 거의 늘지 않는다. 찾지 못한 책은 이번 방문 동안만 기억해 다시 묻지 않는다. */
+const JAM_COV_KEY = 'readingCalendar.jamCov.v1';
+const JAM_COV_MAX = 2000;          /* 저장해 두는 표지 주소 개수 상한 */
+const JAM_COV_BYTES = 180000;      /* 주소·키 문자열 합계 상한(약 180KB) */
+const JAM_COV_MAX_REQ = 2;         /* 한 번에 두 권까지만 묻는다 */
+const JAM_COV_GAP = 130;           /* 요청 사이 쉼(ms) — 천천히, 예의 있게 */
+let jamCovCache = null;
+let jamCovMiss = null;             /* 이번 방문에서 '표지 없음'으로 확인된 키 */
+let jamCovQ = [];
+let jamCovByKey = new Map();
+let jamCovBusy = 0;
+let jamCovObs = null;
+let jamCovSaveT = 0;
+let jamCovNextAt = 0;
+let jamCovTimer = 0;
+
+function jamCovKey(kind, title, author){
+  const t = libCleanTitle(title) || jamBase(String(title == null ? '' : title));
+  return (kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(t) + '|' + jamNormAuthor(author);
+}
+function jamCovLoad(){
+  if(jamCovCache) return jamCovCache;
+  jamCovCache = Object.create(null);
+  try{
+    const raw = localStorage.getItem(JAM_COV_KEY);
+    const p = raw ? JSON.parse(raw) : null;
+    if(p && typeof p === 'object' && !Array.isArray(p)){
+      Object.keys(p).forEach(k => {
+        const v = p[k];
+        if(typeof v === 'string' && v) jamCovCache[k] = v;
+      });
+    }
+  }catch(e){}
+  return jamCovCache;
+}
+function jamCovMissSet(){
+  if(!jamCovMiss) jamCovMiss = new Set();
+  return jamCovMiss;
+}
+/* 개수·용량을 함께 묶는다(먼저 들어온 것부터 정리) */
+function jamCovTrim(c){
+  let keys = Object.keys(c);
+  if(keys.length > JAM_COV_MAX) keys.slice(0, keys.length - JAM_COV_MAX).forEach(k => { delete c[k]; });
+  keys = Object.keys(c);
+  let size = 0;
+  keys.forEach(k => { size += k.length + String(c[k] || '').length + 6; });
+  let i = 0;
+  while(size > JAM_COV_BYTES && i < keys.length){
+    const k = keys[i++];
+    size -= k.length + String(c[k] || '').length + 6;
+    delete c[k];
+  }
+}
+function jamCovFlush(){
+  const c = jamCovLoad();
+  jamCovTrim(c);
+  try{
+    localStorage.setItem(JAM_COV_KEY, JSON.stringify(c));
+  }catch(e){
+    /* 저장이 꽉 찼으면 절반만 남기고 한 번 더 시도한다 */
+    try{
+      const ks = Object.keys(c);
+      ks.slice(0, Math.ceil(ks.length / 2)).forEach(k => { delete c[k]; });
+      localStorage.setItem(JAM_COV_KEY, JSON.stringify(c));
+    }catch(e2){}
+  }
+}
+function jamCovPersist(){
+  if(jamCovSaveT) return;
+  jamCovSaveT = setTimeout(() => { jamCovSaveT = 0; jamCovFlush(); }, 500);
+}
+function jamCovGet(key){
+  const c = jamCovLoad();
+  return Object.prototype.hasOwnProperty.call(c, key) ? c[key] : '';
+}
+function jamCovPut(key, url){
+  const c = jamCovLoad();
+  c[key] = String(url);
+  jamCovPersist();
+}
+function jamCovForget(key){
+  const c = jamCovLoad();
+  if(Object.prototype.hasOwnProperty.call(c, key)){ delete c[key]; jamCovPersist(); }
+}
+function jamCovMissed(key){ return jamCovMissSet().has(key); }
+function jamCovMissAdd(key){ const s = jamCovMissSet(); if(s.size > 6000) s.clear(); s.add(key); }
+
+/* 제목·지은이가 얼마나 맞는지 (0=다른 책, 3=같은 책) */
+function jamCovTitleScore(a, b){
+  const x = jamNorm(a), y = jamNorm(b);
+  if(!x || !y) return 0;
+  if(x === y || x.replace(/ /g, '') === y.replace(/ /g, '')) return 3;
+  if(y.indexOf(x) === 0 || x.indexOf(y) === 0) return 2;
+  if(y.indexOf(x) >= 0 || x.indexOf(y) >= 0) return 1;
+  return 0;
+}
+function jamCovAuthorHit(a, b){
+  const x = jamNormAuthor(a), y = jamNormAuthor(b);
+  if(!x || !y) return false;
+  return x === y || x.indexOf(y) >= 0 || y.indexOf(x) >= 0;
+}
+/* 후보 중 제목이 맞고 표지가 있는 책을 고른다 */
+function jamCovPick(list, title, author){
+  let best = null, bestScore = 0;
+  (list || []).forEach(r => {
+    if(!r || !r.cover) return;
+    const ts = jamCovTitleScore(title, r.title);
+    if(!ts) return;
+    let s = ts * 10;
+    if(jamCovAuthorHit(author, r.author)) s += 4;
+    if(String(r.cover).indexOf('/books/content?id=') >= 0) s += 1;   /* 구글 표지는 책 ID로 바로 받은 것 */
+    if(s > bestScore){ bestScore = s; best = r; }
+  });
+  return best;
+}
+/* 카카오 책 검색 — 국내 도서 표지. 키가 있어야 한다. */
+async function jamCovKakao(q, author){
+  const key = kakaoKey();
+  if(!key) return '';
+  const call = async params => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    try{
+      const res = await fetch('https://dapi.kakao.com/v3/search/book?' + new URLSearchParams(params).toString(), {
+        headers: { Authorization: 'KakaoAK ' + key },
+        signal: ctrl.signal,
+        cache: 'no-store'
+      });
+      if(res.status === 401 || res.status === 403){ sourceState.kakaoKeyBad = true; return null; }
+      if(!res.ok) return null;
+      return await res.json();
+    }catch(e){ return null; }
+    finally{ clearTimeout(t); }
+  };
+  const pickOf = d => jamCovPick(((d && d.documents) || []).map(x => ({
+    title: decodeKakaoText(x.title),
+    author: (x.authors || []).join(', '),
+    cover: String(x.thumbnail || '').trim().replace(/^http:/, 'https:')
+  })).filter(x => x.cover), q, author);
+  let p = pickOf(await call({ query: q, size: '3', sort: 'accuracy' }));
+  if(!p && author){
+    const qa = (q + ' ' + String(author).trim()).trim();
+    if(qa !== q) p = pickOf(await call({ query: qa, size: '3', sort: 'accuracy' }));
+  }
+  return p ? p.cover : '';
+}
+/* Open Library — 영어책 표지. cover_i로 표지 주소를 만든다. */
+async function jamCovOpenLib(q, author){
+  const go = async withAuthor => {
+    const params = new URLSearchParams({ title: q, limit: '3', fields: 'title,author_name,cover_i' });
+    if(withAuthor && author) params.set('author', String(author).trim());
+    const data = await fetchJson('https://openlibrary.org/search.json?' + params.toString(), 8000);
+    const list = ((data && data.docs) || []).map(d => ({
+      title: String(d.title || ''),
+      author: (d.author_name || []).join(', '),
+      cover: d.cover_i ? 'https://covers.openlibrary.org/b/id/' + encodeURIComponent(String(d.cover_i)) + '-M.jpg' : ''
+    })).filter(x => x.cover);
+    return jamCovPick(list, q, author);
+  };
+  let p = null;
+  try{ p = await go(true); }catch(e){}
+  if(!p){ try{ p = await go(false); }catch(e){} }
+  return p ? p.cover : '';
+}
+/* Google Books GData(JSONP) — 카카오 키가 없거나 카카오에 표지가 없을 때 */
+async function jamCovGdata(q, author){
+  let list = [];
+  try{ list = await gdataSearch(q); }catch(e){ return ''; }
+  const p = jamCovPick(list, q, author);
+  return p ? String(p.cover || '') : '';
+}
+async function jamCovLookup(kind, title, author){
+  const q = libCleanTitle(title) || jamBase(String(title || ''));
+  if(!q) return '';
+  if(kind === 'en'){
+    try{ const u = await jamCovOpenLib(q, author); if(u) return u; }catch(e){}
+    try{ const u = await jamCovGdata(q, author); if(u) return u; }catch(e){}
+    return '';
+  }
+  try{ const u = await jamCovKakao(q, author); if(u) return u; }catch(e){}
+  try{ const u = await jamCovGdata(q, author); if(u) return u; }catch(e){}
+  return '';
+}
+/* 진짜 표지를 넣는다. 이미 진짜 표지가 있으면(AR 등) 건드리지 않고, 실패하면 미니 표지로 되돌린다. */
+function jamCovApply(el, url, key){
+  if(!el || !el.isConnected) return;
+  const img = el.querySelector('.rec-cov img');
+  if(!img) return;
+  const cur = String(img.getAttribute('src') || '');
+  if(cur && cur.indexOf('data:') !== 0) return;
+  const ph = cur || recFallback({ title: jamBase(String(el.dataset.covTitle || '')) });
+  img.onload = () => { img.onload = null; img.onerror = null; el.dataset.covReal = '1'; };
+  img.onerror = () => {
+    img.onerror = null; img.onload = null;
+    delete el.dataset.covReal;
+    img.src = ph;
+    if(key){ jamCovForget(key); jamCovMissAdd(key); }   /* 죽은 주소는 지우고 이번 방문에는 다시 묻지 않는다 */
+  };
+  img.src = url;
+}
+function jamCovPump(){
+  if(jamCovBusy >= JAM_COV_MAX_REQ || !jamCovQ.length) return;
+  const wait = jamCovNextAt - Date.now();
+  if(wait > 0){
+    if(!jamCovTimer) jamCovTimer = setTimeout(() => { jamCovTimer = 0; jamCovPump(); }, wait);
+    return;
+  }
+  const job = jamCovQ.shift();
+  jamCovNextAt = Date.now() + JAM_COV_GAP;
+  jamCovBusy++;
+  Promise.resolve()
+    .then(() => jamCovLookup(job.kind, job.title, job.author))
+    .then(url => {
+      if(url){
+        jamCovPut(job.key, url);
+        (job.els || []).forEach(el => jamCovApply(el, url, job.key));
+      }else{
+        jamCovMissAdd(job.key);
+      }
+    })
+    .catch(() => {})
+    .then(() => {
+      jamCovByKey.delete(job.key);
+      (job.els || []).forEach(el => { if(el && el.dataset) el.dataset.covBusy = ''; });
+      jamCovBusy = Math.max(0, jamCovBusy - 1);
+      jamCovPump();
+    });
+}
+function jamCovQueue(el, kind, title, author, key){
+  if(el.dataset.covBusy === '1') return;
+  el.dataset.covBusy = '1';
+  const job = jamCovByKey.get(key);
+  if(job){ job.els.push(el); return; }
+  const nj = { kind: kind, title: title, author: author, key: key, els: [el] };
+  jamCovByKey.set(key, nj);
+  jamCovQ.push(nj);
+  jamCovPump();
+}
+function jamCovObserver(){
+  if(jamCovObs) return jamCovObs;
+  if(typeof IntersectionObserver !== 'function') return null;
+  jamCovObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      try{ jamCovObs.unobserve(el); }catch(e){}
+      if(el.dataset.covBusy === '1') return;
+      const kind = el.dataset.covKind === 'en' ? 'en' : 'ko';
+      const title = el.dataset.covTitle || '';
+      const author = el.dataset.covAuth || '';
+      if(!title) return;
+      const key = jamCovKey(kind, title, author);
+      const hit = jamCovGet(key);
+      if(hit){ jamCovApply(el, hit, key); return; }
+      if(jamCovMissed(key)) return;
+      jamCovQueue(el, kind, title, author, key);
+    });
+  }, { rootMargin: '240px 0px' });
+  return jamCovObs;
+}
+/* 카드 하나를 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 */
+function jamCovWatch(el, kind, title, author){
+  if(!el || !el.dataset) return;
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return;
+  el.dataset.covTitle = t;
+  el.dataset.covAuth = String(author == null ? '' : author);
+  el.dataset.covKind = kind === 'en' ? 'en' : 'ko';
+  const img = el.querySelector('.rec-cov img');
+  const cur = img ? String(img.getAttribute('src') || '') : '';
+  if(cur && cur.indexOf('data:') !== 0) return;   /* AR 등이 이미 진짜 표지를 넣은 카드 */
+  const key = jamCovKey(kind, t, author);
+  const hit = jamCovGet(key);
+  if(hit){ jamCovApply(el, hit, key); return; }
+  if(jamCovMissed(key)) return;
+  const ob = jamCovObserver();
+  if(ob) ob.observe(el);
+  else jamCovQueue(el, kind, t, author, key);   // IntersectionObserver가 없으면 바로 시도
+}
+/* 목록을 다시 그릴 때: 사라진 카드는 관찰에서 뺀다(대기 중인 조회는 그대로 두고 결과만 저장) */
+function jamCovWatchReset(){
+  if(jamCovObs){ try{ jamCovObs.disconnect(); }catch(e){} }
+  jamCovObs = null;
+}
+
 /* v2.6.4: 잠수네 카드도 추천 카드와 같은 모양(표지 · 태그 · 제목 · 지은이 · 3단 버튼)으로 그린다 */
 function jamItemHtml(kind, it, rd, wish){
   const title = it[kind === 'ko' ? KO_T : EN_T];
@@ -7626,11 +8193,13 @@ function jamRenderList(kind, reset){
     st.read = next.read;
     st.rendered = 0;
     listEl.innerHTML = '';
+    jamCovWatchReset();   /* v2.6.8: 사라진 카드는 표지 관찰에서 뺐다 */
   }
   const end = Math.min(st.items.length, st.rendered + JAM_PAGE);
   if(end > st.rendered){
     const frag = document.createDocumentFragment();
     const wish = jamWishSet();
+    const made = [];
     for(let i = st.rendered; i < end; i++){
       const it = st.items[i];
       const rd = jamIsRead(kind, it);
@@ -7639,9 +8208,13 @@ function jamRenderList(kind, reset){
       el.dataset.i = String(i);
       el.innerHTML = jamItemHtml(kind, it, rd, wish.has((kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(it[kind === 'ko' ? KO_T : EN_T])));
       if(kind === 'en') arWatchCard(el, it[EN_T], it[EN_A]);
+      made.push([el, kind === 'ko' ? it[KO_T] : it[EN_T], kind === 'ko' ? it[KO_A] : it[EN_A]]);
       frag.appendChild(el);
     }
     listEl.appendChild(frag);
+    /* v2.6.8: 카드가 화면에 들어오면 진짜 표지를 붙인다(저장된 주소가 있으면 바로).
+       화면에 붙인 뒤에 걸어야 저장해 둔 표지가 바로 보인다. */
+    for(let i = 0; i < made.length; i++) jamCovWatch(made[i][0], kind, made[i][1], made[i][2]);
     st.rendered = end;
   }
   if(!st.items.length && !listEl.querySelector('.jam-empty')){
@@ -7752,9 +8325,10 @@ function jamSyncImp(){
     ms.textContent = txt + ' · 책벌레 기록 ' + fmtNum(w) + '권';
   }
   if(!ko && !en) jam.impOpen = true;
-  /* 아직 아무것도 없을 때는 탭 안 안내 카드가 불러오기 버튼을 대신한다 */
+  /* v2.6.8: 자료가 들어온 뒤에는 탭 위의 불러오기 카드를 감춘다 — 같은 기능은 설정 창에만 남긴다.
+     아직 아무것도 없을 때만 탭 안 안내 카드가 불러오기 버튼을 대신한다. */
   const box = $('#jamImp');
-  if(box) box.classList.toggle('hidden', !ko && !en);
+  if(box) box.classList.toggle('hidden', !!ko || !!en);
   jamSyncImpOpen();
 }
 function jamSyncImpOpen(){
@@ -7935,7 +8509,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.7',
+  version: '2.6.8',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -7948,14 +8522,16 @@ window.__rc = {
     yunit: view.yunit,
     rec: JSON.parse(JSON.stringify(view.rec))
   }),
-  kids: () => db.children.map(c => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color, books: kidBookCount(c.id) })),
+  kids: () => db.children.map(c => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color,
+    birth: c.birth || '', age: kidKoreanAge(c.birth), stage: kidStageFromBirth(c.birth),
+    books: kidBookCount(c.id) })),
   books: () => db.books.map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, pages: toPages(b.pages), childIds: (b.childIds || []).slice() })),
   setChild: setChild,
   setFilter: setFilter,
   setView: setViewMode,
   gotoYear: gotoYear,
   openMonth: openMonth,
-  addKid: (name, emoji, color) => addKidDirect(name, emoji, color),
+  addKid: (name, emoji, color, birth) => addKidDirect(name, emoji, color, birth),
   removeKid: removeKid,
   openKids: openKids,
   openForm: openForm,
@@ -8009,6 +8585,20 @@ window.__rc = {
       recId: w.recId, source: w.recId ? 'rec' : 'manual', cover: !!w.cover
     })),
     addManual: (title, author, lang) => addToWish({ title: title, author: author || '', lang: lang || 'ko' }),
+    /* v2.6.8 읽을 목록 직접 추가 시트의 검색 확인용 */
+    waOpen: () => { $('#btnWishAddNew').click(); return true; },
+    waState: () => ({
+      open: !!($('#wishAddSheet') && $('#wishAddSheet').classList.contains('open')),
+      title: ($('#waTitle') || {}).value || '',
+      author: ($('#waAuthor') || {}).value || '',
+      lang: waLang, cover: waCover, isbn: waIsbn,
+      hero: !!($('#waHero') && !$('#waHero').classList.contains('hidden')),
+      results: $$('#waResults .res').length,
+      heroSrc: (() => { const i = $('#waHero') && $('#waHero').querySelector('img'); return i ? i.getAttribute('src') : ''; })()
+    }),
+    waSearch: (q) => { $('#waSearch').value = String(q || ''); return doWaSearch(); },
+    waPickIndex: (i) => { const rows = $$('#waResults .res'); const r = rows[i || 0]; if(r) r.click(); return !!r; },
+    waScan: (isbn) => onWishScanIsbn(isbn),
     openRecord: (rid) => { const r = recById(rid); if(r) openBookRecord(r); },
     openWishRecord: (wid) => openBookRecord({ wishId: wid }),
     saveRecord: saveBookRecord,
@@ -8107,6 +8697,9 @@ window.__rc = {
       };
     },
     domCount: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item').length,
+    auto: () => { jamAutoFilter(); if(view.ymode === 'jam') renderJam();
+      return JSON.parse(JSON.stringify(jam.f.ko)); },
+    autoStage: () => autoStageFor(),
     domReadTitles: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item.read .jam-ti').map(e => e.textContent)
   },
   /* v2.6.2 읽은 책 찾기 확인용 */
@@ -8171,6 +8764,22 @@ window.__rc = {
     pending: () => ({ queue: arQueue.length, busy: arBusy }),
     badges: (root) => $$((root || '#recList') + ' .ar-rd').map(a => ({ text: a.textContent, href: a.getAttribute('href') })),
     watched: (root) => $$((root || '#recList') + ' [data-ar-title]').length
+  },
+  /* v2.6.8 잠수네 표지 불러오기 확인용 */
+  jamCovApi: {
+    cache: () => Object.assign({}, jamCovLoad()),
+    size: () => Object.keys(jamCovLoad()).length,
+    bytes: () => { try{ const s = localStorage.getItem(JAM_COV_KEY); return s ? s.length : 0; }catch(e){ return 0; } },
+    key: (kind, t, a) => jamCovKey(kind, t, a),
+    miss: () => Array.from(jamCovMissSet()),
+    pending: () => ({ queue: jamCovQ.length, busy: jamCovBusy }),
+    lookup: (kind, t, a) => jamCovLookup(kind === 'en' ? 'en' : 'ko', t, a),
+    clear: () => {
+      jamCovCache = Object.create(null);
+      jamCovMiss = new Set();
+      try{ localStorage.removeItem(JAM_COV_KEY); }catch(e){}
+      jamCovWatchReset();
+    }
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
@@ -8279,8 +8888,9 @@ window.__rc = {
     paused: () => scanState.paused
   }
 };
-function addKidDirect(name, emoji, color){
-  const c = sanitizeChild({ id: uidC(), name: name, emoji: emoji || '🧒', color: color || KID_COLORS[0], createdAt: Date.now() });
+function addKidDirect(name, emoji, color, birth){
+  const c = sanitizeChild({ id: uidC(), name: name, emoji: emoji || '🧒', color: color || KID_COLORS[0],
+    birth: birth || '', createdAt: Date.now() });
   if(!c) return null;
   db.children.push(c);
   save();
