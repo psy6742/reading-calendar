@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>독서 캘린더</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F6F3EA'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   --bg:#F6F3EA;
@@ -283,10 +284,14 @@ textarea.input{resize:vertical;min-height:60px}
 .scan-laser{position:absolute;left:9%;right:9%;top:50%;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(255,120,120,0),#FF7A7A,rgba(255,120,120,0));animation:scanmove 1.9s ease-in-out infinite}
 @keyframes scanmove{0%,100%{transform:translateY(-24px)}50%{transform:translateY(24px)}}
 .scan-foot{display:flex;align-items:center;gap:8px;padding:10px 2px 0}
-.scan-status{flex:1;font-size:11.5px;font-weight:700;line-height:1.5;color:#B7C0CF}
+.scan-status{flex:1;min-width:0;font-size:11.5px;font-weight:700;line-height:1.5;color:#B7C0CF;word-break:keep-all}
 .scan-status.err{color:#FFB6A8}
-.scan-torch{background:rgba(255,255,255,.13);color:#fff;border-radius:11px;padding:8px 11px;font-size:11.5px;font-weight:800;white-space:nowrap}
+.scan-acts{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.scan-torch{background:rgba(255,255,255,.13);color:#fff;border-radius:11px;padding:8px 10px;font-size:11px;font-weight:800;white-space:nowrap;letter-spacing:-.2px}
 .scan-torch.on{background:#FFE9B5;color:#4A3A10}
+.scan-frame.lock{border-color:#FFE9B5}
+.scan-frame.lock::after{box-shadow:0 0 16px rgba(255,220,140,.75) inset}
+.scan-frame.lock + .scan-laser{opacity:.25}
 .scan-zoom{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 2px 0}
 .scan-zoom-btns{display:flex;align-items:center;gap:5px;flex:0 0 auto}
 .scan-zbtn{min-width:38px;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.13);color:#fff;font-size:11.5px;font-weight:800;letter-spacing:-.2px;line-height:1.2}
@@ -763,7 +768,7 @@ textarea.input{resize:vertical;min-height:60px}
     <div class="scan-stage" id="scanStage">
       <video id="scanVideo" playsinline muted autoplay></video>
       <canvas class="scan-detect" id="scanDetect" aria-hidden="true"></canvas>
-      <div class="scan-frame"></div>
+      <div class="scan-frame" id="scanFrame"></div>
       <div class="scan-laser"></div>
     </div>
     <div class="scan-zoom">
@@ -777,8 +782,12 @@ textarea.input{resize:vertical;min-height:60px}
     </div>
     <div class="scan-foot">
       <div class="scan-status" id="scanStatus">카메라를 준비하는 중…</div>
-      <button class="scan-torch hidden" id="btnTorch" type="button" aria-pressed="false">🔦 조명</button>
+      <div class="scan-acts">
+        <button class="scan-torch" id="btnScanPhoto" type="button" aria-label="사진으로 찍어 바코드 읽기">📸 사진 찍기</button>
+        <button class="scan-torch hidden" id="btnTorch" type="button" aria-pressed="false">🔦 조명</button>
+      </div>
     </div>
+    <input type="file" id="scanPhotoInput" accept="image/*" capture="environment" hidden>
   </div>
 </div>
 
@@ -4289,12 +4298,21 @@ async function runIsbnLookup(raw){
   return list;
 }
 
-/* ---------- 크롬 내장 BarcodeDetector 바코드 스캐너 ---------- */
-const SCAN_UNSUPPORTED = '이 브라우저(아이폰 사파리 등)에서는 카메라 바코드 인식을 지원하지 않아 안드로이드 크롬에서 이용해 주세요. 책 제목으로 검색하거나 ISBN 숫자를 입력해 주세요.';
+/* ---------- 바코드 스캐너 (크롬 BarcodeDetector + zxing-wasm 하이브리드 · 2프레임 합의) ---------- */
+const SCAN_UNSUPPORTED = '이 브라우저에서는 카메라를 켤 수 없어요. 책 제목이나 ISBN 숫자로 찾아 주세요.';
 const SCAN_NO_CAMERA = '카메라를 켜지 못했어요. 주소창의 카메라 권한을 허용한 뒤 다시 시도해 주세요.';
-const SCAN_NO_DETECTOR = '이 브라우저에서는 카메라 바코드 인식을 쓸 수 없어요. 책 제목이나 ISBN 숫자로 찾아 주세요.';
+const SCAN_NO_ENGINE = '바코드 인식 엔진을 불러오지 못했어요(네트워크 확인). 📸 사진 찍기나 제목·ISBN으로 찾아 주세요.';
+const SCAN_SEARCHING = '바코드를 찾는 중\u2026';
+const SCAN_CONFIRMING = '확인 중\u2026 조금만 유지해 주세요';
+const SCAN_VOTE_FRAMES = 4;                    /* 최근 4프레임 안에 같은 ISBN이 두 번 잡혀야 확정 */
+const SCAN_VOTE_MS = 1500;                     /* 또는 1.5초 안에 두 번 */
+const ZX_VER = '2.2.4';
+const ZX_MODULE_URL = 'https://cdn.jsdelivr.net/npm/zxing-wasm@' + ZX_VER + '/dist/es/reader/index.js';
+const ZX_WASM_URL = 'https://cdn.jsdelivr.net/npm/zxing-wasm@' + ZX_VER + '/dist/reader/zxing_reader.wasm';
+const SCAN_ZX_OPTS = { formats: ['EAN-13', 'EAN-8'], tryHarder: true, tryRotate: true, tryInvert: true };
 const scanState = { stream: null, detector: null, running: false, timer: 0, busy: false, torch: false, torchSupported: false, otherHint: 0,
-  zoom: 3, hwZoom: 1, digitalZoom: 1, zoomRange: null, focusSupported: false, canvas: null, tick: 0, flashTimer: 0 };
+  zoom: 3, hwZoom: 1, digitalZoom: 1, zoomRange: null, focusSupported: false, canvas: null, fullCanvas: null, boostCanvas: null,
+  tick: 0, flashTimer: 0, votes: [], pending: '', pendingAt: 0, paused: false, zx: null, zxLoading: null, zxFailAt: 0, engineTimer: 0, photoBusy: false };
 const SCAN_ZOOM_DEFAULT = 3;
 const SCAN_ZOOM_MAX = 5;
 const SCAN_TIP = '바코드를 조금 떨어뜨려 네모 안에 꽉 차게 맞춰 보세요';
@@ -4366,38 +4384,109 @@ function scanRoiRect(){
   if(sw < 8 || sh < 8) return null;
   return { sx: sx, sy: sy, sw: sw, sh: sh, vw: vw, vh: vh };
 }
+/* 감지용 캔버스(네모 크롭용 / 전체 화면용)를 재사용한다 */
+function scanCanvasOf(kind){
+  let c = kind === 'full' ? scanState.fullCanvas : scanState.canvas;
+  if(!c){
+    if(kind === 'full'){
+      c = document.createElement('canvas');
+      scanState.fullCanvas = c;
+    }else{
+      c = $('#scanDetect') || document.createElement('canvas');
+      c.className = 'scan-detect';
+      if(!c.parentNode){ const stage = $('#scanStage'); if(stage) stage.appendChild(c); }
+      scanState.canvas = c;
+    }
+  }
+  return c;
+}
+function scanDrawFull(){
+  const video = $('#scanVideo');
+  if(!video) return null;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if(!vw || !vh) return null;
+  let w = vw, h = vh;
+  if(w > 1100){ const k = 1100 / w; w = 1100; h = vh * k; }
+  const c = scanCanvasOf('full');
+  c.width = Math.max(16, Math.round(w));
+  c.height = Math.max(16, Math.round(h));
+  try{
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if(!ctx) return null;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(video, 0, 0, c.width, c.height);
+  }catch(e){ return null; }
+  return c;
+}
 /* 크롭한 네모 영역을 감지용 캔버스에 그려 준다(너무 작으면 조금 키워 또렷하게) */
 function scanDrawRoi(){
   const rect = scanRoiRect();
   const video = $('#scanVideo');
   if(!rect || !video) return null;
-  let c = scanState.canvas;
-  if(!c){
-    c = $('#scanDetect') || document.createElement('canvas');
-    c.className = 'scan-detect';
-    if(!c.parentNode){ const stage = $('#scanStage'); if(stage) stage.appendChild(c); }
-    scanState.canvas = c;
-  }
+  const c = scanCanvasOf('roi');
   let w = rect.sw, h = rect.sh;
   if(w > 1100){ const k = 1100 / w; w = 1100; h = h * k; }
   else if(w < 420){ const k = Math.min(420 / w, 2.5); w = w * k; h = h * k; }
-  const cw = Math.max(16, Math.round(w)), ch = Math.max(16, Math.round(h));
-  if(c.width !== cw) c.width = cw;
-  if(c.height !== ch) c.height = ch;
+  c.width = Math.max(16, Math.round(w));
+  c.height = Math.max(16, Math.round(h));
   try{
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     if(!ctx) return null;
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, cw, ch);
+    ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, c.width, c.height);
   }catch(e){ return null; }
   return c;
+}
+/* ---------- 그레이스케일 + 명암 대비 늘리기 ----------
+   비닐 표지 반사·어두운 조명에서도 검은 바/흰 여백 경계가 또렷해지도록
+   휘도(luma) 히스토그램 2~98% 구간을 0~255로 펴 준다. 대비가 이미 충분하면 그대로 둔다. */
+function scanPercentile(hist, total, p){
+  const target = total * p;
+  let acc = 0;
+  for(let i = 0; i < 256; i++){
+    acc += hist[i];
+    if(acc >= target) return i;
+  }
+  return 255;
+}
+function scanBoost(src){
+  if(!src || !src.width || !src.height) return null;
+  let b = scanState.boostCanvas;
+  if(!b){ b = document.createElement('canvas'); scanState.boostCanvas = b; }
+  if(b.width !== src.width) b.width = src.width;
+  if(b.height !== src.height) b.height = src.height;
+  let ctx = null;
+  try{ ctx = b.getContext('2d', { willReadFrequently: true }); }catch(e){ ctx = null; }
+  if(!ctx) return null;
+  let img = null;
+  try{
+    ctx.drawImage(src, 0, 0);
+    img = ctx.getImageData(0, 0, b.width, b.height);
+  }catch(e){ return null; }
+  const d = img.data, n = d.length, total = (n / 4) | 0;
+  if(!total) return null;
+  const hist = new Uint32Array(256);
+  for(let i = 0; i < n; i += 4) hist[(d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8]++;
+  const lo = scanPercentile(hist, total, 0.02), hi = scanPercentile(hist, total, 0.98);
+  const span = hi - lo;
+  const k = span > 12 ? 255 / span : 0;          /* 저대비가 아니면 그레이스케일만 */
+  for(let i = 0; i < n; i += 4){
+    let l = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
+    if(k){
+      l = (l - lo) * k;
+      l = l < 0 ? 0 : (l > 255 ? 255 : l);
+    }
+    d[i] = d[i + 1] = d[i + 2] = l;
+  }
+  try{ ctx.putImageData(img, 0, 0); }catch(e){ return null; }
+  return b;
 }
 function flashScanStatus(msg, ms){
   clearTimeout(scanState.flashTimer);
   setScanStatus(msg, false);
   scanState.flashTimer = setTimeout(() => {
     scanState.flashTimer = 0;
-    if(scanState.running) setScanStatus('바코드를 찾는 중\u2026', false);
+    if(scanState.running && !scanState.pending) setScanStatus(SCAN_SEARCHING, false);
   }, ms || 2200);
 }
 /* 미리보기를 톡 누르면 초점을 다시 잡고, 초점 제어가 없는 기기에는 안내를 띄운다 */
@@ -4422,8 +4511,9 @@ async function retapScanFocus(){
   return false;
 }
 
+/* 카메라만 있으면 스캐너는 열린다 — 인식 엔진은 BarcodeDetector(크롬) 또는 zxing-wasm(사파리 포함) 중 되는 쪽 */
 function scanSupported(){
-  return typeof window.BarcodeDetector === 'function' && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  return !!(navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function');
 }
 function showScanNotice(msg){
   const el = $('#scanNotice');
@@ -4436,6 +4526,10 @@ function setScanStatus(msg, isErr){
   if(!el) return;
   el.textContent = msg;
   el.classList.toggle('err', !!isErr);
+}
+function setScanLock(on){
+  const f = $('#scanFrame');
+  if(f) f.classList.toggle('lock', !!on);
 }
 async function scanDetector(){
   if(typeof window.BarcodeDetector !== 'function') return null;
@@ -4450,6 +4544,32 @@ async function scanDetector(){
   }catch(e){
     try{ return new window.BarcodeDetector({ formats: ['ean_13'] }); }catch(e2){ return null; }
   }
+}
+/* zxing-wasm(ZXing-C++ WASM) 리더 — 스캐너를 열 때 한 번만 CDN에서 불러온다.
+   실패(오프라인·차단)하면 조용히 넘어가고 BarcodeDetector만으로 계속 동작한다. */
+function loadScanZXing(){
+  if(scanState.zx) return Promise.resolve(scanState.zx);
+  if(scanState.zxLoading) return scanState.zxLoading;
+  if(scanState.zxFailAt && (Date.now() - scanState.zxFailAt) < 15000) return Promise.resolve(null);
+  scanState.zxLoading = import(ZX_MODULE_URL).then(mod => {
+    if(!mod || typeof mod.readBarcodes !== 'function') throw new Error('no readBarcodes');
+    /* 워커/wasm 파일은 같은 버전의 CDN 경로에서 받도록 고정한다 */
+    if(typeof mod.prepareZXingModule === 'function'){
+      try{
+        mod.prepareZXingModule({ overrides: { locateFile: (p) => (String(p).slice(-5) === '.wasm' ? ZX_WASM_URL : p) } });
+      }catch(e){}
+    }
+    scanState.zx = mod;
+    return mod;
+  }).catch(() => {
+    scanState.zxFailAt = Date.now();
+    return null;
+  });
+  scanState.zxLoading = scanState.zxLoading.then(mod => {
+    if(!mod) scanState.zxLoading = null;      /* 다음에 다시 시도할 수 있게 */
+    return mod;
+  });
+  return scanState.zxLoading;
 }
 function scanTrack(){
   try{
@@ -4488,6 +4608,90 @@ function pickScanIsbn(codes){
   }
   return other ? { other: other } : null;
 }
+/* ---------- 2프레임 합의: 같은 ISBN이 두 번 잡혀야 확정 (한 프레임 오독 방지) ---------- */
+function clearScanPending(keepStatus){
+  scanState.pending = '';
+  scanState.pendingAt = 0;
+  setScanLock(false);
+  if(!keepStatus && scanState.running){
+    const el = $('#scanStatus');
+    if(el && el.textContent === SCAN_CONFIRMING) setScanStatus(SCAN_SEARCHING, false);
+  }
+}
+function scanExpireVotes(){
+  if(!scanState.votes.length) return;
+  const now = Date.now();
+  const kept = scanState.votes.filter(v => (now - v.t) <= SCAN_VOTE_MS && (scanState.tick - v.tick) <= (SCAN_VOTE_FRAMES - 1));
+  const lost = kept.length !== scanState.votes.length;
+  scanState.votes = kept;
+  if(lost && !kept.length && scanState.pending) clearScanPending();
+}
+/* 한 프레임에서 나온 ISBN들을 합의 투표에 넣는다 */
+function scanVoteIsbn(isbn){
+  const code = String(isbn || '');
+  if(!code) return { confirmed: false, isbn: '' };
+  const same = scanState.votes.filter(v => v.isbn === code);
+  if(same.length){
+    const n = same.length + 1;
+    scanState.votes = [];
+    clearScanPending();
+    return { confirmed: true, isbn: code, votes: n };
+  }
+  scanState.votes.push({ isbn: code, t: Date.now(), tick: scanState.tick });
+  while(scanState.votes.length > SCAN_VOTE_FRAMES) scanState.votes.shift();
+  scanState.pending = code;
+  scanState.pendingAt = Date.now();
+  setScanStatus(SCAN_CONFIRMING, false);
+  setScanLock(true);
+  return { confirmed: false, isbn: code, votes: 1 };
+}
+function handleScanHits(hits){
+  const pick = pickScanIsbn(hits);
+  if(pick && pick.isbn){
+    const v = scanVoteIsbn(pick.isbn);
+    if(v.confirmed){ onScanIsbn(pick.isbn); return true; }
+    return false;
+  }
+  if(pick && pick.other){
+    clearScanPending(true);
+    const now = Date.now();
+    if(now - scanState.otherHint > 4000){
+      scanState.otherHint = now;
+      setScanStatus('책 바코드(978·979로 시작)를 찾아 주세요. 지금은 다른 상품 바코드예요.', true);
+    }
+    return false;
+  }
+  return false;
+}
+/* ---------- 인식 엔진 ---------- */
+async function scanDetectNative(src){
+  const det = scanState.detector;
+  if(!det || !src) return [];
+  try{
+    const codes = await det.detect(src);
+    const out = [];
+    for(let i = 0; i < (codes || []).length; i++) out.push({ rawValue: (codes[i] && codes[i].rawValue) || '', engine: 'native' });
+    return out;
+  }catch(e){ return []; }
+}
+async function scanDetectZXing(src){
+  const zx = scanState.zx;
+  if(!zx || !src || !src.width || !src.height) return [];
+  let ctx = null;
+  try{ ctx = src.getContext('2d', { willReadFrequently: true }); }catch(e){ ctx = null; }
+  if(!ctx) return [];
+  let data = null;
+  try{ data = ctx.getImageData(0, 0, src.width, src.height); }catch(e){ return []; }
+  try{
+    const res = await zx.readBarcodes(data, SCAN_ZX_OPTS);
+    const out = [];
+    for(let i = 0; i < (res || []).length; i++){
+      const r = res[i];
+      if(r && r.text && r.isValid !== false) out.push({ rawValue: r.text, engine: 'zxing' });
+    }
+    return out;
+  }catch(e){ return []; }
+}
 function scheduleScan(){
   clearTimeout(scanState.timer);
   if(!scanState.running) return;
@@ -4497,52 +4701,140 @@ function scanTick(){
   scanState.timer = 0;
   if(!scanState.running) return;
   const video = $('#scanVideo');
-  const detector = scanState.detector;
-  if(!video || !detector){ scheduleScan(); return; }
-  if(video.readyState >= 2 && video.videoWidth && !scanState.busy){
-    scanState.busy = true;
-    scanState.tick++;
-    /* 네모 안쪽(크롭)을 우선 보고, 세 번에 한 번은 전체 화면도 함께 본다 */
-    let src = video;
-    if(scanState.tick % 3 !== 0){
-      const roi = scanDrawRoi();
-      if(roi) src = roi;
+  if(!video || video.readyState < 2 || !video.videoWidth || scanState.busy || scanState.paused){ scheduleScan(); return; }
+  scanState.busy = true;
+  scanState.tick++;
+  scanExpireVotes();
+  scanStep(video).catch(() => {}).then(() => {
+    scanState.busy = false;
+    if(scanState.running) scheduleScan();
+  });
+}
+async function scanStep(video){
+  /* 네모 안쪽(크롭)을 우선 보고, 세 번에 한 번은 전체 화면도 함께 본다 */
+  const full = (scanState.tick % 3 === 0);
+  let src = null;
+  if(!full) src = scanDrawRoi();
+  if(!src) src = scanDrawFull();
+  if(!src) return;
+  const hits = [];
+  const nat = await scanDetectNative(src);
+  if(nat.length) hits.push.apply(hits, nat);
+  /* zxing-wasm: BarcodeDetector가 없으면(사파리) 매 프레임, 있으면 격 프레임에 한 번 더 */
+  const useZX = !scanState.detector || (scanState.tick % 2 === 0);
+  if(useZX){
+    if(!scanState.zx && !scanState.zxLoading) loadScanZXing();
+    if(scanState.zx){
+      /* 짝수 프레임은 대비를 편 캔버스, 홀수 프레임은 원본으로 본다 */
+      const boosted = (scanState.tick % 4 === 0) ? scanBoost(src) : null;
+      const z = await scanDetectZXing(boosted || src);
+      if(z.length) hits.push.apply(hits, z);
+      if(boosted && !z.length){
+        const zRaw = await scanDetectZXing(src);
+        if(zRaw.length) hits.push.apply(hits, zRaw);
+      }
     }
-    Promise.resolve()
-      .then(() => detector.detect(src))
-      .then(codes => {
-        scanState.busy = false;
-        if(!scanState.running) return;
-        const hit = pickScanIsbn(codes);
-        if(hit && hit.isbn){ onScanIsbn(hit.isbn); return; }
-        if(hit && hit.other){
-          const now = Date.now();
-          if(now - scanState.otherHint > 4000){
-            scanState.otherHint = now;
-            setScanStatus('책 바코드(978·979로 시작)를 찾아 주세요. 지금은 다른 상품 바코드예요.', true);
-          }
-        }
-        scheduleScan();
-      })
-      .catch(() => { scanState.busy = false; scheduleScan(); });
-    return;
   }
-  scheduleScan();
+  if(!scanState.running) return;
+  if(hits.length) handleScanHits(hits);
+}
+/* ---------- 📸 사진 찍기: 고해상도 한 장을 원본·대비 보정 두 가지로 읽는다 ---------- */
+function scanLoadImage(src){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+async function scanDecodePhotoSource(src){
+  const img = await scanLoadImage(src);
+  if(!img) return null;
+  let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  if(!w || !h) return null;
+  const max = 1600;
+  const longest = Math.max(w, h);
+  if(longest > max){ const k = max / longest; w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k)); }
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  let ctx = null;
+  try{ ctx = c.getContext('2d', { willReadFrequently: true }); }catch(e){ ctx = null; }
+  if(!ctx) return null;
+  try{ ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, w, h); }catch(e){ return null; }
+  const hits = [];
+  const nat = await scanDetectNative(c);
+  if(nat.length) hits.push.apply(hits, nat);
+  const zx = scanState.zx || await loadScanZXing();
+  if(zx){
+    const z1 = await scanDetectZXing(c);
+    if(z1.length) hits.push.apply(hits, z1);
+    const boosted = scanBoost(c);
+    if(boosted){
+      const z2 = await scanDetectZXing(boosted);
+      if(z2.length) hits.push.apply(hits, z2);
+    }
+  }
+  /* 사진은 선명한 정지 화상이라 한 번만 잡혀도 확정한다 */
+  return pickScanIsbn(hits);
+}
+async function scanDecodePhotoFile(file){
+  if(!file) return null;
+  const url = URL.createObjectURL(file);
+  try{ return await scanDecodePhotoSource(url); }
+  finally{ try{ URL.revokeObjectURL(url); }catch(e){} }
+}
+async function runScanPhoto(file){
+  if(!file || !scanState.running || scanState.photoBusy) return null;
+  scanState.photoBusy = true;
+  scanState.paused = true;
+  clearScanPending(true);
+  setScanStatus('사진에서 바코드를 읽는 중\u2026', false);
+  let pick = null;
+  try{ pick = await scanDecodePhotoFile(file); }
+  catch(e){ pick = null; }
+  scanState.photoBusy = false;
+  scanState.paused = false;
+  if(!scanState.running) return pick;
+  if(pick && pick.isbn){
+    onScanIsbn(pick.isbn);
+    return pick;
+  }
+  if(pick && pick.other){
+    setScanStatus('책 바코드(978·979로 시작)가 아니에요. 책 뒤쪽 바코드를 찍어 주세요.', true);
+  }else{
+    setScanStatus('사진에서 바코드를 못 찾았어요. 바코드가 크고 선명하게 보이게 다시 찍어 주세요.', true);
+  }
+  clearTimeout(scanState.flashTimer);
+  scanState.flashTimer = setTimeout(() => {
+    scanState.flashTimer = 0;
+    if(scanState.running && !scanState.pending) setScanStatus(SCAN_SEARCHING, false);
+  }, 3400);
+  if(scanState.running) scheduleScan();
+  return pick;
 }
 /* 카메라·타이머를 깔끔하게 끄고 오버레이를 닫는다 */
 function closeScan(){
   scanState.running = false;
   scanState.busy = false;
+  scanState.paused = false;
+  scanState.photoBusy = false;
   clearTimeout(scanState.timer);
   scanState.timer = 0;
   clearTimeout(scanState.flashTimer);
   scanState.flashTimer = 0;
+  clearTimeout(scanState.engineTimer);
+  scanState.engineTimer = 0;
   scanState.zoom = SCAN_ZOOM_DEFAULT;
   scanState.hwZoom = 1;
   scanState.digitalZoom = 1;
   scanState.zoomRange = null;
   scanState.focusSupported = false;
   scanState.tick = 0;
+  scanState.votes = [];
+  scanState.pending = '';
+  scanState.pendingAt = 0;
+  scanState.otherHint = 0;
+  setScanLock(false);
   const video0 = $('#scanVideo');
   if(video0){ try{ video0.style.transform = ''; }catch(e){} }
   const tag0 = $('#scanZoomTag');
@@ -4568,21 +4860,16 @@ async function openScan(){
   if(!draft) return false;
   if(!scanSupported()){
     showScanNotice(SCAN_UNSUPPORTED);
-    toast('이 브라우저에서는 바코드 인식을 쓸 수 없어요');
+    toast('이 브라우저에서는 카메라를 켤 수 없어요');
     const f = $('#fSearch'); if(f) f.focus();
     return false;
   }
   showScanNotice('');
-  const detector = await scanDetector();
-  if(!detector){
-    showScanNotice(SCAN_NO_DETECTOR);
-    return false;
-  }
   $('#scanWrap').classList.add('open');
   document.body.style.overflow = 'hidden';
   setScanStatus('카메라를 준비하는 중\u2026', false);
   scanState.running = true;
-  scanState.detector = detector;
+  scanState.detector = null;
   scanState.torch = false;
   scanState.torchSupported = false;
   scanState.otherHint = 0;
@@ -4592,8 +4879,16 @@ async function openScan(){
   scanState.zoomRange = null;
   scanState.focusSupported = false;
   scanState.tick = 0;
+  scanState.votes = [];
+  scanState.pending = '';
+  scanState.paused = false;
+  scanState.photoBusy = false;
   updateScanZoomUI();
   updateTorchUI();
+  setScanLock(false);
+  /* 엔진 두 개를 미리 준비: 크롬 내장 BarcodeDetector는 즉시, zxing-wasm은 뒤에서 불러온다 */
+  scanDetector().then(d => { if(scanState.running && d) scanState.detector = d; }).catch(() => {});
+  const zxTask = loadScanZXing();
   let stream = null;
   try{
     stream = await navigator.mediaDevices.getUserMedia({
@@ -4633,11 +4928,20 @@ async function openScan(){
   if(track0 && scanState.focusSupported){
     try{ await track0.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); }catch(e){}
   }
-  setScanStatus('바코드를 찾는 중\u2026', false);
+  setScanStatus(SCAN_SEARCHING, false);
   /* 기본 3배: 기기 줌 + 화면 확대를 합쳐서 당긴다 */
   await applyScanZoom(SCAN_ZOOM_DEFAULT);
   if(!scanState.focusSupported) flashScanStatus(SCAN_TIP, 3200);
   scheduleScan();
+  /* 두 엔진 모두 못 쓰면 그때만 안내한다 */
+  clearTimeout(scanState.engineTimer);
+  scanState.engineTimer = setTimeout(async () => {
+    if(!scanState.running) return;
+    if(scanState.detector) return;
+    const zx = await zxTask;
+    if(!scanState.running || scanState.detector || zx) return;
+    if(!scanState.pending) setScanStatus(SCAN_NO_ENGINE, true);
+  }, 5000);
   return true;
 }
 async function onScanIsbn(isbn){
@@ -4650,6 +4954,16 @@ async function onScanIsbn(isbn){
 $('#btnScan').onclick = () => { openScan(); };
 $('#btnScanClose').onclick = () => closeScan();
 $('#btnTorch').onclick = () => { if(scanState.running) setScanTorch(!scanState.torch); };
+$('#btnScanPhoto').onclick = () => {
+  const inp = $('#scanPhotoInput');
+  if(inp) inp.click();
+};
+$('#scanPhotoInput').addEventListener('change', e => {
+  const inp = e.target;
+  const f = (inp.files && inp.files[0]) || null;
+  try{ inp.value = ''; }catch(err){}
+  if(f) runScanPhoto(f);
+});
 /* 1x·2x·3x·5x 확대 배율 */
 $('#scanZoom').addEventListener('click', e => {
   const btn = e.target && e.target.closest ? e.target.closest('.scan-zbtn') : null;
@@ -5429,7 +5743,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.2',
+  version: '2.3',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -5569,7 +5883,56 @@ window.__rc = {
     retap: () => retapScanFocus(),
     roi: () => scanRoiRect(),
     detectSize: () => { const c = $('#scanDetect'); return c ? { w: c.width, h: c.height } : null; },
-    supportedFormats: () => (window.BarcodeDetector && window.BarcodeDetector.getSupportedFormats ? window.BarcodeDetector.getSupportedFormats() : [])
+    supportedFormats: () => (window.BarcodeDetector && window.BarcodeDetector.getSupportedFormats ? window.BarcodeDetector.getSupportedFormats() : []),
+    /* v2.3 2프레임 합의·복합 엔진·사진 인식 확인용 */
+    frame: (code) => {
+      scanState.tick++;
+      scanExpireVotes();
+      const raw = String(code || '');
+      const pick = pickScanIsbn([{ rawValue: raw }]);
+      if(!pick || !pick.isbn){
+        handleScanHits([{ rawValue: raw }]);
+        return { confirmed: false, isbn: '', ignored: true };
+      }
+      const r = scanVoteIsbn(pick.isbn);
+      if(r.confirmed) onScanIsbn(pick.isbn);
+      return r;
+    },
+    pending: () => scanState.votes.map(v => ({ isbn: v.isbn, t: v.t, tick: v.tick })),
+    clearVotes: () => { scanState.votes = []; clearScanPending(); },
+    engines: () => ({ native: !!scanState.detector, zxing: !!scanState.zx, zxFailAt: scanState.zxFailAt }),
+    loadZXing: () => loadScanZXing().then(m => !!m),
+    zxModuleUrl: () => ZX_MODULE_URL,
+    zxWasmUrl: () => ZX_WASM_URL,
+    voteRule: () => ({ frames: SCAN_VOTE_FRAMES, ms: SCAN_VOTE_MS }),
+    boosting: (dataUrl) => {
+      const img = new Image();
+      img.src = dataUrl;
+      return new Promise(resolve => {
+        img.onload = () => {
+          const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+          c.getContext('2d').drawImage(img, 0, 0);
+          const b = scanBoost(c);
+          if(!b) return resolve(null);
+          const before = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+          const after = b.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, b.width, b.height).data;
+          const st = (d) => {
+            let mn = 255, mx = 0, sum = 0, n = 0, gray = true;
+            for(let i = 0; i < d.length; i += 4){
+              const l = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
+              if(l < mn) mn = l; if(l > mx) mx = l; sum += l; n++;
+              if(Math.abs(d[i] - d[i + 1]) > 1 || Math.abs(d[i + 1] - d[i + 2]) > 1) gray = false;
+            }
+            return { min: mn, max: mx, mean: Math.round(sum / n), grayOnly: gray };
+          };
+          resolve({ before: st(before), after: st(after) });
+        };
+        img.onerror = () => resolve(null);
+      });
+    },
+    decodePhoto: (dataUrl) => scanDecodePhotoSource(dataUrl),
+    photoBusy: () => scanState.photoBusy,
+    paused: () => scanState.paused
   }
 };
 function addKidDirect(name, emoji, color){
