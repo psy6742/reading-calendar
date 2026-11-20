@@ -4196,6 +4196,7 @@ async function runIsbnLookup(raw){
   if(!draft) return [];
   const clean = cleanIsbn(raw);
   const cands = isbnCandidates(clean);
+  showScanNotice('');
   if(!cands.length){ toast('ISBN은 숫자 10자리 또는 13자리예요'); return []; }
   if(clean.length === 13 && !isbn13Valid(clean)){ toast('ISBN 숫자를 다시 확인해 주세요'); return []; }
   if(isbnBusy) return [];
@@ -4204,7 +4205,6 @@ async function runIsbnLookup(raw){
   const seq = ++searchSeq;
   isbnLast = clean;
   const box = $('#searchResults');
-  showScanNotice('');
   clearTimeout(localTimer);
   setSearchBusy(true);
   box.innerHTML = '';
