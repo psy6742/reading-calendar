@@ -2834,8 +2834,7 @@ async function seriesSearchKo(q){
     if(rel.length) list = rel;
   }
   list = seriesDedupe(list).slice(0, 100);
-  if(!list.length) notes.push('‘' + q + '’로는 찾은 책이 없어요. 이름을 조금 짧게 적어 보세요');
-  return { list: list, notes: notes };
+  return { list: list, notes: notes };   /* 빈 결과 안내는 runSeriesSearch가 한 번만 붙인다 */
 }
 
 async function seriesSearchEn(q){
