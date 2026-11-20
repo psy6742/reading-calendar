@@ -419,6 +419,8 @@ textarea.input{resize:vertical;min-height:60px}
 .shelf-note{font-size:12.5px;color:#8E897C;font-weight:600;line-height:1.55;margin-top:8px}
 .shelf-list{display:flex;flex-direction:column;gap:9px;margin-top:13px}
 .sh-item{display:flex;gap:11px;align-items:flex-start;padding:10px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
+/* v2.6.9: 내 책장도 읽은 책은 바탕색을 다르게 (추천·잠수네와 같은 세이지 민트) */
+.sh-item.is-read{background:#E9F3E9;border-color:#C2DBC2}
 .sh-cov{position:relative;width:52px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13);padding:0}
 .sh-cov img{width:100%;height:100%;object-fit:cover}
 .sh-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
@@ -568,7 +570,8 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-list,.wish-list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
 /* v2.6.4: 추천·잠수네가 같은 책 카드를 쓴다 */
 .rec-item,.jam-item,.wish-item{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
-.rec-item.read,.jam-item.read{background:#FDF8F6;border-color:#F2DED8}
+/* v2.6.9: 읽은 책은 한눈에 보이게 — 진한 원색 대신 부드러운 세이지 민트 */
+.rec-item.read,.jam-item.read{background:#E9F3E9;border-color:#C2DBC2}
 .rec-cov{position:relative;width:54px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13)}
 .rec-cov img{width:100%;height:100%;object-fit:cover}
 .rec-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
@@ -2452,7 +2455,8 @@ function renderShelf(){
     const mN = recs.filter(b => String(b.date).slice(0, 7) === ym).length;
 
     const item = document.createElement('div');
-    item.className = 'sh-item';
+    const isRead = isBookRead(s.name, s.author);
+    item.className = 'sh-item' + (isRead ? ' is-read' : '');
     item.dataset.id = s.id;
 
     const cov = document.createElement('button');
@@ -2501,7 +2505,7 @@ function renderShelf(){
       meta.appendChild(pb);
     }
     /* v2.6.9: 기록이 있는 책은 추천·잠수네와 같은 ‘✓ 읽음’ 표시 (AR 지수 옆에 나란히) */
-    if(isBookRead(s.name, s.author)){
+    if(isRead){
       const rd = document.createElement('span');
       rd.className = 'rec-rd';
       rd.textContent = '✓ 읽음';
