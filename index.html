@@ -9504,7 +9504,12 @@ function jamSeriesAllRead(it){
 /* ---------- AR 지수 (v2.6.4) ----------
    arbookfind.com은 브라우저에서 바로 부를 수 없어 Cloudflare Worker 중계 주소를 설정에서 받는다.
    영어책 카드가 화면에 들어올 때만(IntersectionObserver) 한 번씩 묻고, 답은 기기에 영구 저장한다. */
-const AR_CACHE_KEY = 'readingCalendar.ar.v2';
+const AR_CACHE_KEY = 'readingCalendar.ar.v3';
+/* v2.6.23: 중계가 돌려준 제목을 확인하며 받는데, 예전 중계는 제목을 주지 않았다.
+   중계가 제목을 주기 시작하면(모드 t) 제목 없이 받아 둔 예전 값은 믿을 수 없으므로 캐시를 한 번 비운다. */
+const AR_MODE_KEY = 'readingCalendar.ar.mode';
+function arModeGet(){ try{ return localStorage.getItem(AR_MODE_KEY) || ''; }catch(e){ return ''; } }
+function arModeSet(m){ try{ localStorage.setItem(AR_MODE_KEY, m); }catch(e){} }
 const AR_MAX_REQ = 2;
 let arCache = null;
 let arQueue = [];
@@ -9522,6 +9527,56 @@ function arCleanTitle(t){
   return s;
 }
 function arKeyOf(title, author){ return jamNorm(title) + '|' + jamNormAuthor(author); }
+
+/* ---------- 제목 핵심 단어 맞추기 (v2.6.23) ----------
+   'Gran and the Go-Karts'를 물었는데 중계가 'The Go-kart'(지은이는 같음)를 돌려주는 일이 있었다.
+   제목 안에 짧은 제목이 들어 있다는 이유만으로 같은 책으로 보면 안 되므로,
+   관사·접속사 같은 흔한 단어를 뺀 '핵심 단어'가 서로 얼마나 겹치는지로 판단한다. */
+const AR_TITLE_STOP = { the: 1, a: 1, an: 1, and: 1, of: 1, in: 1, on: 1, at: 1, to: 1, for: 1, by: 1, with: 1, from: 1, is: 1 };
+const AR_TITLE_EDGE = { the: 1, a: 1, an: 1, and: 1, of: 1 };
+/* 꼬리말(부제·설명)을 뺀 제목의 낱말 — '구름빵 (KBS 그림책)', 'The Gruffalo: A Push, Pull Book'은 앞부분만 본다 */
+function arTitleWords(s){
+  let t = String(s == null ? '' : s);
+  t = t.replace(/\[[^\]]*\]/g, ' ').replace(/[（(][^)）]*[)）]/g, ' ');
+  t = t.replace(/[:：].*$/, ' ').replace(/\s+[-–—]\s+.*$/, ' ');
+  t = jamNorm(t);
+  let w = t ? t.split(' ') : [];
+  while(w.length && AR_TITLE_EDGE[w[0]]) w.shift();
+  while(w.length && AR_TITLE_EDGE[w[w.length - 1]]) w.pop();
+  return w;
+}
+/* 복수·단수 정도만 같은 말로 본다 (karts → kart, stories → story) */
+function arWordBase(w){
+  const x = String(w || '');
+  if(x.length > 3 && /ies$/.test(x)) return x.replace(/ies$/, 'y');
+  if(x.length > 3 && /(?:s|x|ch|sh)es$/.test(x)) return x.replace(/es$/, '');
+  if(x.length > 3 && /s$/.test(x) && !/ss$/.test(x)) return x.replace(/s$/, '');
+  return x;
+}
+function arTitleTokens(s){ return arTitleWords(s).filter(w => !AR_TITLE_STOP[w]).map(arWordBase); }
+/* 두 제목의 핵심 단어가 서로 얼마나 덮이는지 (0~1) */
+function arTitleRatios(queryTitle, candTitle){
+  const q = arTitleTokens(queryTitle), c = arTitleTokens(candTitle);
+  const qs = new Set(q), cs = new Set(c);
+  return {
+    q: q.length, c: c.length,
+    qHit: q.length ? q.filter(w => cs.has(w)).length / q.length : 1,
+    cHit: c.length ? c.filter(w => qs.has(w)).length / c.length : 1
+  };
+}
+/* 중계가 돌려준 제목이 물어본 책과 같은 책인지 — 양쪽 핵심 단어가 80% 이상 겹쳐야 한다.
+   'Gran and the Go-Karts' vs 'The Go-kart' → gran이 빠져 67% → 다른 책(거절) */
+function arTitleMatches(queryTitle, returnedTitle){
+  const r = arTitleRatios(queryTitle, returnedTitle);
+  if(!r.q || !r.c) return true;   /* 비교할 낱말이 없으면 막지 않는다 */
+  return r.qHit >= 0.8 && r.cHit >= 0.8;
+}
+/* 표지 후보가 물어본 책의 핵심 단어를 빠뜨리지 않았는지 — 빠뜨렸으면 다른 책(0) */
+function arTitleCovers(queryTitle, candTitle){
+  const r = arTitleRatios(queryTitle, candTitle);
+  if(!r.q || !r.c) return true;
+  return r.qHit >= 0.8;
+}
 function arLoad(){
   if(arCache) return arCache;
   arCache = Object.create(null);
@@ -9572,9 +9627,21 @@ function arPump(){
         .then(j => {
           clearTimeout(timer);
           if(!j || j.ok !== true) return done({ bl: null, fail: true });
+          /* 중계가 제목을 주는지/안 주는지가 바뀌면 예전 캐시는 믿을 수 없다 — 한 번 비우고 새로 받는다 */
+          const mode = j.title ? 't' : 'n';
+          if(arModeGet() !== mode){
+            arCache = Object.create(null);
+            try{ localStorage.removeItem(AR_CACHE_KEY); }catch(e){}
+            arModeSet(mode);
+            setTimeout(() => { try{ arResetWatch(); render(); }catch(e){} }, 0);
+          }
+          /* v2.6.23: 중계가 물어본 책과 다른 책(제목 핵심 단어가 빠짐)을 돌려주면
+             지수·표지·링크를 모두 버리고 '없음'으로 본다 — 문의 자체는 성공했으므로 fail은 아니다. */
+          if(j.title && !arTitleMatches(job.title, j.title)) return done({ bl: null, fail: false });
+          const rTitle = j.title ? String(j.title) : '';
           done({ bl: j.bl == null ? null : String(j.bl), il: j.il ? String(j.il) : '',
                  pts: j.pts ? String(j.pts) : '', cover: j.cover ? String(j.cover) : '',
-                 url: j.url ? String(j.url) : '' });
+                 url: j.url ? String(j.url) : '', t: rTitle });
         })
         .catch(() => { clearTimeout(timer); done({ bl: null, fail: true }); });
     }catch(e){ clearTimeout(timer); done({ bl: null, fail: true }); }
@@ -10316,8 +10383,18 @@ function jamCovTitleScore(a, b){
   const x = jamNorm(a), y = jamNorm(b);
   if(!x || !y) return 0;
   if(x === y || x.replace(/ /g, '') === y.replace(/ /g, '')) return 3;
+  /* v2.6.23: 짧은 제목이 긴 제목 안에 들어 있다는 이유만으로 같은 책으로 보지 않는다.
+     후보가 물어본 책의 핵심 단어를 빠뜨리면('Gran and the Go-Karts' vs 'The Go-kart') 0. */
+  if(!arTitleCovers(a, b)) return 0;
   if(y.indexOf(x) === 0 || x.indexOf(y) === 0) return 2;
-  if(y.indexOf(x) >= 0 || x.indexOf(y) >= 0) return 1;
+  if(y.indexOf(x) >= 0 || x.indexOf(y) >= 0){
+    /* 중간에 우연히 들어 있는 것만으로 맞다고 하지 않는다 —
+       반대로 짧은 제목을 물었는데 다른 책 이름 중간에 들어 있으면('The Go-kart' vs 'Gran and the Go-Karts')
+       후보가 덧붙인 핵심 단어가 많으므로 다른 책(0) */
+    const r = arTitleRatios(a, b);
+    if(r.q && r.c && r.cHit < 0.8) return 0;
+    return 1;
+  }
   return 0;
 }
 function jamCovAuthorHit(a, b){
@@ -11477,8 +11554,9 @@ $('#btnJamWormSave').onclick = () => {
 
 /* ---------- 시작 ---------- */
 /* v2.6.6: 중계(Worker)의 응답 규칙이 엄격해지며 예전 캐시(ar.v1)에 다른 책의 지수·표지가 섞여 남았다.
-   예전 키는 한 번 지워서 새 키(ar.v2)로 다시 받게 한다. */
-try{ localStorage.removeItem('readingCalendar.ar.v1'); }catch(e){}
+   v2.6.23: 중계 응답의 제목을 확인하지 않던 시절의 캐시(ar.v2)에도 같은 문제가 남아 있다.
+   예전 키는 한 번 지워서 새 키(ar.v3)로 다시 받게 한다. */
+try{ localStorage.removeItem('readingCalendar.ar.v1'); localStorage.removeItem('readingCalendar.ar.v2'); }catch(e){}
 load();
 const migrated = ensureChildren();
 if(migrated) save();
@@ -11506,7 +11584,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.22',
+  version: '2.6.23',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11966,13 +12044,15 @@ window.__rc = {
     },
     clear: () => {
       arCache = Object.create(null);
-      try{ localStorage.removeItem(AR_CACHE_KEY); }catch(e){}
+      try{ localStorage.removeItem(AR_CACHE_KEY); localStorage.removeItem(AR_MODE_KEY); }catch(e){}
       db.settings.arProxyUrl = '';
       save(); arResetWatch(); render();
     },
     cache: () => Object.assign({}, arLoad()),
     cached: (t, a) => arHas(t, a),
     clean: (t) => arCleanTitle(t),
+    lookup: (t, a) => arLookup(t, a),
+    match: (q, r) => arTitleMatches(q, r),
     pending: () => ({ queue: arQueue.length, busy: arBusy }),
     badges: (root) => $$((root || '#recList') + ' .ar-rd').map(a => ({ text: a.textContent, href: a.getAttribute('href') })),
     watched: (root) => $$((root || '#recList') + ' [data-ar-title]').length
@@ -11986,6 +12066,7 @@ window.__rc = {
     miss: () => Array.from(jamCovMissSet()),
     pending: () => ({ queue: jamCovQ.length, busy: jamCovBusy }),
     lookup: (kind, t, a) => jamCovLookup(kind === 'en' ? 'en' : 'ko', t, a),
+    score: (a, b) => jamCovTitleScore(a, b),
     clear: () => {
       jamCovCache = Object.create(null);
       jamCovMiss = new Set();
