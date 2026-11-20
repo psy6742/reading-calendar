@@ -722,6 +722,12 @@ textarea.input{resize:vertical;min-height:60px}
 .find-res .find-dates{color:#6C7280;font-weight:700}
 .find-res .find-cnt{font-size:12px;font-weight:800;color:#3F7A4E}
 .find-res .rbadge{margin-top:2px}
+/* v2.6.12: 찾은 책을 누르면 그 기록의 상세·수정 창이 바로 열린다 */
+.find-res{cursor:pointer}
+.find-res:active{background:#F1EDE2}
+.find-res .find-go{display:inline-flex;align-items:center;gap:2px;margin-top:6px;font-size:11px;
+  font-weight:800;line-height:1.2;color:#8C8676;letter-spacing:-.2px;white-space:nowrap}
+.find-res:active .find-go{color:#5F6673}
 .find-group{font-size:10.5px;font-weight:800;color:#9A958A;letter-spacing:-.1px;padding:6px 4px 0}
 .rec-hero{display:flex;gap:13px;align-items:center;padding:2px 0 16px}
 .rec-hero .rec-cov{width:62px}
@@ -4848,13 +4854,18 @@ function findGroups(text, all){
     const k = (b.lang === 'en' ? 'en' : 'ko') + '|' + jamNorm(b.title);
     let g = byKey[k];
     if(!g){
-      g = byKey[k] = { title: b.title, author: b.author, publisher: b.publisher, lang: b.lang, dates: [], kids: [] };
+      g = byKey[k] = { title: b.title, author: b.author, publisher: b.publisher, lang: b.lang, dates: [], kids: [], recs: [] };
       groups.push(g);
     }
     g.dates.push(b.date);
+    /* v2.6.12: 누르면 열 기록을 고를 수 있게 기록 id를 날짜와 함께 모아 둔다 */
+    g.recs.push({ id: b.id, date: b.date });
     (b.childIds || []).forEach(id => { if(g.kids.indexOf(id) < 0) g.kids.push(id); });
   });
-  groups.forEach(g => g.dates.sort().reverse());
+  groups.forEach(g => {
+    g.dates.sort().reverse();
+    g.recs.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  });
   groups.sort((a, b) => String(b.dates[0] || '').localeCompare(String(a.dates[0] || '')));
   return groups;
 }
@@ -4879,7 +4890,26 @@ function findRowEl(g){
   const names = g.kids.map(id => { const k = kidById(id); return k ? k.name : ''; }).filter(Boolean);
   cnt.textContent = g.dates.length + '회 읽음' + (names.length ? ' · ' + names.join(', ') : '');
   rt.appendChild(ti); rt.appendChild(au); rt.appendChild(dt); rt.appendChild(cnt);
+  /* v2.6.12: 누르면 상세·수정 창으로 — 눌러도 된다는 것을 글자로 알려 준다 */
+  const go = document.createElement('span');
+  go.className = 'find-go';
+  go.textContent = '상세 · 수정 ›';
+  rt.appendChild(go);
   row.appendChild(rt);
+  const goId = (g.recs && g.recs[0]) ? g.recs[0].id : '';
+  if(goId){
+    row.dataset.goId = goId;
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-label', g.title + ' 상세·수정 열기');
+    row.addEventListener('click', e => {
+      if(e.target.closest('a')) return;   /* AR 지수 링크는 링크대로 */
+      openFindDetail(goId);
+    });
+    row.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFindDetail(goId); }
+    });
+  }
   const badge = document.createElement('span');
   badge.className = 'rbadge ' + (g.lang === 'en' ? 'en' : 'ko');
   badge.textContent = g.lang === 'en' ? '영어' : '한글';
@@ -4961,6 +4991,15 @@ function renderFind(){
   }
   groups.slice(0, 40).forEach(g => box.appendChild(findRowEl(g)));
   if(groups.length > 40) box.appendChild(findHeading('외 ' + fmtNum(groups.length - 40) + '권 더 있어요 — 검색어를 좁혀 보세요'));
+}
+/* v2.6.12: 찾은 책을 누르면 그 기록의 상세 창을 연다.
+   찾기 창을 먼저 닫아야 그 위로 상세 → 수정 → 저장 흐름이 자연스럽게 이어진다
+   (수정 창 #formSheet는 찾기 창보다 아래에 쌓이므로 찾기 창을 열어 두면 가려진다). */
+function openFindDetail(id){
+  if(!id) return;
+  const w = $('#findSheet');
+  if(w && w.classList.contains('open')) closeSheet(w);
+  openDetail(id);
 }
 function openFind(){
   findBuild();
@@ -10276,7 +10315,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.11',
+  version: '2.6.12',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -10593,6 +10632,7 @@ window.__rc = {
     },
     rows: () => $$('#findResults .find-res').map(el => ({
       title: (el.querySelector('b') || {}).textContent || '',
+      go: el.dataset.goId || '',   /* v2.6.12: 누를 때 열리는 기록 id */
       text: el.innerText
     })),
     count: () => $$('#findResults .find-res').length,
