@@ -366,6 +366,18 @@ textarea.input{resize:vertical;min-height:60px}
 .cover-prev .ph{width:100%;height:100%;display:grid;place-items:center;color:#B9B4D2;font-size:22px}
 .cover-actions{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
 .cover-actions .btn{width:100%}
+/* v2.6.11: 책장 수정 창 안의 책 검색 */
+.sf-q{display:flex;gap:7px;align-items:stretch}
+.sf-q .input{flex:1;min-width:0}
+.sf-q .btn{flex:0 0 auto;white-space:nowrap}
+.sf-res{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding:2px 0}
+.sf-hit{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px;border-radius:13px;background:#FBFAF6;border:1px solid #EEEAE0}
+.sf-hit:active{background:#F4F1E8}
+.sf-hit .h-cov{flex:0 0 auto;width:34px;aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:var(--lav-soft);display:grid;place-items:center}
+.sf-hit .h-cov img{width:100%;height:100%;object-fit:cover;display:block}
+.sf-hit .h-tx{flex:1;min-width:0}
+.sf-hit .h-nm{display:block;font-size:12.5px;font-weight:800;color:#2C3444;line-height:1.35;word-break:keep-all}
+.sf-hit .h-sub{display:block;font-size:10.5px;font-weight:700;color:#9A958A;margin-top:2px;line-height:1.4}
 
 .detail-head{display:flex;gap:16px;margin-bottom:18px}
 .detail-cover{width:110px;flex:0 0 auto;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--lav-soft);box-shadow:0 4px 14px rgba(30,41,59,.16)}
@@ -1216,9 +1228,19 @@ select.input:focus{background-color:#fff}
         <div class="cover-actions">
           <button class="btn line" id="btnShelfCover" type="button">📷 사진 / 갤러리에서 올리기</button>
           <button class="btn line sm hidden" id="btnShelfCoverClear" type="button">표지 지우기</button>
-          <div class="hint" style="margin-top:2px">비워 두면 이름에 어울리는 색 표지를 만들어 둘게요.</div>
+          <div class="hint" style="margin-top:2px">비워 두면 이름에 어울리는 색 표지를 만들어 둘게요. 한 번 지운 표지는 저도로 다시 붙지 않으니, 다시 넣으려면 아래 책 검색을 써 주세요.</div>
         </div>
       </div>
+    </div>
+
+    <div class="field">
+      <label for="sfSearchQ">책 검색으로 채우기 (선택)</label>
+      <div class="sf-q">
+        <input class="input" id="sfSearchQ" placeholder="책 제목을 넣어 찾기" maxlength="60" autocomplete="off">
+        <button class="btn sm dark" id="btnSfSearch" type="button">🔍 검색</button>
+      </div>
+      <div class="sf-res hidden" id="sfSearchList"></div>
+      <div class="hint">찾은 책을 누르면 이름·지은이·출판사·쪽수·표지가 한 번에 들어가요.</div>
     </div>
 
     <div class="save-bar">
@@ -1782,6 +1804,8 @@ function sanitizeShelf(s){
     isbn: cleanIsbn(s.isbn || ''),
     /* v2.6.10: 전집 낱권은 전집 이름으로 묶어 책장에서 한 장으로 보여 준다 */
     series: String(s.series || '').replace(/\s+/g, ' ').trim().slice(0, 60),
+    /* v2.6.11: 손으로 표지를 지운 항목은 자동으로 다시 채우지 않는다 */
+    noCover: s.noCover === true && !String(s.cover || '') && !String(s.coverData || ''),
     createdAt: Number(s.createdAt) || Date.now()
   };
 }
@@ -2743,7 +2767,7 @@ function renderShelf(){
     body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(acts);
     item.appendChild(cov); item.appendChild(body);
     /* v2.6.10: 진짜 표지가 없으면 화면에 들어올 때 표지를 찾아 채운다 */
-    if(!shelfCoverSrc(s)) shelfCovWatch(cov, s.lang, s.name, s.author, s.id);
+    if(!shelfCoverSrc(s)) shelfCovWatch(cov, s);
     if(s.lang === 'en') arWatchCard(item, s.name, s.author);
     frag.appendChild(item);
   });
@@ -2781,7 +2805,7 @@ function shelfSetCard(group){
   mark.setAttribute('aria-hidden', 'true');
   cov.appendChild(mark);
   /* 대표 표지가 없으면 첫 낱권 제목으로 표지를 불러와 함께 채운다 */
-  if(first && !shelfCoverSrc(first)) shelfCovWatch(cov, first.lang, first.name, first.author, first.id);
+  if(first) shelfCovWatch(cov, first);
 
   const body = document.createElement('div');
   body.className = 'sh-body';
@@ -2968,7 +2992,7 @@ function seriesViewRow(s, no){
   cov.appendChild(img);
   row.appendChild(cov);
   /* 표지가 없으면 이 줄이 화면에 들어올 때 표지를 찾아 채운다 */
-  if(!shelfCoverSrc(s)) shelfCovWatch(cov, s.lang, s.name, s.author, s.id);
+  if(!shelfCoverSrc(s)) shelfCovWatch(cov, s);
 
   const tx = document.createElement('div');
   tx.className = 'sv-tx';
@@ -3039,16 +3063,38 @@ function seriesViewRow(s, no){
    표지 주소를 묻고, 받은 주소는 기기 표지 캐시와 책장 항목에 남겨 다시 묻지 않는다(주소 문자열만). */
 const SH_COV_MAX_REQ = 2;
 const SH_COV_GAP = 140;
-let shCovObs = null, shCovQ = [], shCovBusy = 0, shCovNextAt = 0, shCovTimer = 0, shCovSaveT = 0;
-const shCovByKey = new Map();
+let shCovObs = null, shCovQ = [], shCovBusy = 0, shCovNextAt = 0, shCovTimer = 0, shCovSaveT = 0, shMetaSaveT = 0;
 
 function shCovStore(id, url){
   if(!id || !url) return;
   const s = db.shelf.find(x => x.id === id);
-  if(!s || s.cover || s.coverData) return;
+  if(!s || s.noCover || s.cover || s.coverData) return;
   s.cover = String(url);
   if(shCovSaveT) return;
   shCovSaveT = setTimeout(() => { shCovSaveT = 0; save(); }, 800);
+}
+/* 찾은 쪽수를 책장 항목에 넣는다 (사용자가 적은 쪽수는 덮지 않는다) */
+function shPagesStore(id, n){
+  const v = toPages(n);
+  if(!id || !v) return false;
+  const s = db.shelf.find(x => x.id === id);
+  if(!s || toPages(s.pages)) return false;
+  s.pages = v;
+  shPagesApplyDom(id, v);
+  if(shMetaSaveT) return true;
+  shMetaSaveT = setTimeout(() => { shMetaSaveT = 0; save(); }, 900);
+  return true;
+}
+/* 열려 있는 전집 낱권 목록에 쪽수를 바로 보여 준다 */
+function shPagesApplyDom(id, n){
+  if(!id || !n) return;
+  $$('#svList .sv-row[data-id="' + String(id).replace(/"/g, '') + '"] .sv-meta').forEach(m => {
+    if(m.querySelector('.sv-pg')) return;
+    const sp = document.createElement('span');
+    sp.className = 'sv-pg';
+    sp.textContent = n + '쪽';
+    m.appendChild(sp);
+  });
 }
 function shCovApply(el, url, key){
   if(!el || !el.isConnected) return;
@@ -3076,32 +3122,34 @@ function shCovPump(){
   const job = shCovQ.shift();
   shCovNextAt = Date.now() + SH_COV_GAP;
   shCovBusy++;
+  const s = job.s || {};
+  const kind = s.lang === 'en' ? 'en' : 'ko';
+  const key = jamCovKey(kind, s.name, s.author);
   Promise.resolve()
-    .then(() => jamCovLookup(job.kind, job.title, job.author))
-    .then(url => {
-      if(url){
-        jamCovPut(job.key, url);
-        (job.els || []).forEach(el => { shCovApply(el, url, job.key); if(el && el.dataset) shCovStore(el.dataset.cvId, url); });
-      }else{
-        jamCovMissAdd(job.key);
+    .then(() => shMetaLookup(kind, s.name, s.author, s.publisher || '', s.isbn || '',
+      job.needCover, job.needPages))
+    .then(meta => {
+      if(!meta) return;
+      if(meta.cover && job.needCover){
+        jamCovPut(key, meta.cover);
+        shCovApply(job.el, meta.cover, key);
+        shCovStore(s.id, meta.cover);
+      }else if(job.needCover){
+        jamCovMissAdd(key);   /* 이번 방문에는 다시 묻지 않는다 */
       }
+      if(meta.pages && job.needPages) shPagesStore(s.id, meta.pages);
     })
     .catch(() => {})
     .then(() => {
-      shCovByKey.delete(job.key);
-      (job.els || []).forEach(el => { if(el && el.dataset) el.dataset.covBusy = ''; });
+      if(job.el && job.el.dataset) job.el.dataset.covBusy = '';
       shCovBusy = Math.max(0, shCovBusy - 1);
       shCovPump();
     });
 }
-function shCovQueue(el, kind, title, author, key){
+function shCovQueue(el, s, needCover, needPages){
   if(el.dataset.covBusy === '1') return;
   el.dataset.covBusy = '1';
-  const job = shCovByKey.get(key);
-  if(job){ job.els.push(el); return; }
-  const nj = { kind: kind, title: title, author: author, key: key, els: [el] };
-  shCovByKey.set(key, nj);
-  shCovQ.push(nj);
+  shCovQ.push({ el: el, s: s, needCover: needCover, needPages: needPages });
   shCovPump();
 }
 function shCovObserver(){
@@ -3113,39 +3161,52 @@ function shCovObserver(){
       const el = en.target;
       try{ shCovObs.unobserve(el); }catch(e){}
       if(el.dataset.covBusy === '1') return;
-      const kind = el.dataset.cvKind === 'en' ? 'en' : 'ko';
-      const title = el.dataset.cvTitle || '';
-      const author = el.dataset.cvAuth || '';
-      if(!title) return;
-      const key = jamCovKey(kind, title, author);
-      const hit = jamCovGet(key);
-      if(hit){ shCovApply(el, hit, key); shCovStore(el.dataset.cvId, hit); return; }
-      if(jamCovMissed(key)) return;
-      shCovQueue(el, kind, title, author, key);
+      const s = shelfById(el.dataset.cvId || '');
+      if(!s) return;
+      const needCover = !shelfCoverSrc(s) && !s.noCover;
+      const needPages = !toPages(s.pages);
+      if(!needCover && !needPages) return;
+      const kind = s.lang === 'en' ? 'en' : 'ko';
+      const key = jamCovKey(kind, s.name, s.author);
+      if(needCover){
+        const hit = jamCovGet(key);
+        if(hit){ shCovApply(el, hit, key); shCovStore(s.id, hit); }
+      }
+      const coverLeft = needCover && !shelfCoverSrc(s) && !jamCovGet(key) && !jamCovMissed(key);
+      if(!coverLeft && !needPages) return;
+      shCovQueue(el, s, coverLeft, needPages);
     });
   }, { rootMargin: '240px 0px' });
   return shCovObs;
 }
-/* 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 */
-function shelfCovWatch(el, lang, title, author, id){
-  if(!el || !el.dataset) return;
-  const t = String(title == null ? '' : title).trim();
+/* 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다.
+   v2.6.11: 표지를 손으로 지운 항목(noCover)은 다시 묻지 않고, 쪽수가 비어 있으면 쪽수만 찾는다. */
+function shelfCovWatch(el, s){
+  if(!el || !el.dataset || !s) return;
+  const t = String(s.name == null ? '' : s.name).trim();
   if(!t) return;
   const img = el.querySelector('img');
   if(!img) return;
+  const kind = s.lang === 'en' ? 'en' : 'ko';
   el.dataset.cvTitle = t;
-  el.dataset.cvAuth = String(author == null ? '' : author);
-  el.dataset.cvKind = lang === 'en' ? 'en' : 'ko';
-  el.dataset.cvId = String(id || '');
-  const cur = String(img.getAttribute('src') || '');
-  if(cur && cur.indexOf('data:') !== 0) return;   /* 진짜 표지가 이미 있다 */
-  const key = jamCovKey(el.dataset.cvKind, t, el.dataset.cvAuth);
-  const hit = jamCovGet(key);
-  if(hit){ shCovApply(el, hit, key); shCovStore(el.dataset.cvId, hit); return; }
-  if(jamCovMissed(key)) return;
-  const ob = shCovObserver();
-  if(ob) ob.observe(el);
-  else shCovQueue(el, el.dataset.cvKind, t, el.dataset.cvAuth, key);
+  el.dataset.cvAuth = String(s.author == null ? '' : s.author);
+  el.dataset.cvKind = kind;
+  el.dataset.cvId = String(s.id || '');
+  const needCover = !shelfCoverSrc(s) && !s.noCover;
+  const needPages = !toPages(s.pages);
+  if(!needCover && !needPages) return;
+  const key = jamCovKey(kind, t, s.author);
+  if(needCover){
+    const hit = jamCovGet(key);
+    if(hit){ shCovApply(el, hit, key); shCovStore(s.id, hit); }
+  }
+  const coverLeft = needCover && !shelfCoverSrc(s) && !jamCovGet(key) && !jamCovMissed(key);
+  if(!coverLeft && !needPages) return;
+  if(coverLeft){
+    const ob = shCovObserver();
+    if(ob){ ob.observe(el); return; }
+  }
+  shCovQueue(el, s, coverLeft, needPages);
 }
 
 /* ---------- 내 책장 등록/수정 ---------- */
@@ -3181,7 +3242,7 @@ function openShelfForm(id, preset){
       lang: preset ? (preset.lang === 'en' ? 'en' : 'ko') : '',
       publisher: preset ? String(preset.publisher || '') : '',
       series: preset ? String(preset.series || '') : '',
-      cover: '', coverData: ''
+      cover: '', coverData: '', noCover: false, isbn: ''
     };
   }
   $('#shelfFormTitle').textContent = cur ? '책장 항목 수정' : '전집/책 등록';
@@ -3190,6 +3251,8 @@ function openShelfForm(id, preset){
   $('#sfAuthor').value = shelfDraft.author || '';
   $('#sfPages').value = toPages(shelfDraft.pages) ? String(toPages(shelfDraft.pages)) : '';
   $('#sfPublisher').value = shelfDraft.publisher || '';
+  sfSearchClear();
+  if($('#sfSearchQ')) $('#sfSearchQ').value = shelfDraft.name || '';
   const del = $('#btnShelfDelete');
   del.classList.toggle('hidden', !cur);
   del.textContent = '삭제';
@@ -3219,6 +3282,7 @@ function saveShelf(){
     series: series,
     cover: shelfDraft.cover,
     coverData: shelfDraft.coverData,
+    noCover: shelfDraft.noCover === true,   /* v2.6.11: 지운 표지를 자동으로 다시 채우지 않는다 */
     isbn: shelfDraft.isbn || '',   /* v2.6.9: 전집에서 담은 ISBN은 손으로 고쳐도 남긴다 */
     createdAt: shelfDraft.createdAt || Date.now()
   });
@@ -3267,8 +3331,16 @@ $('#sfName').addEventListener('input', () => {
 $('#btnShelfCover').onclick = () => $('#shelfCoverInput').click();
 $('#btnShelfCoverClear').onclick = () => {
   if(!shelfDraft) return;
-  shelfDraft.cover = ''; shelfDraft.coverData = '';
+  const nm = $('#sfName').value.trim() || shelfDraft.name || '';
+  const au = $('#sfAuthor').value.trim() || shelfDraft.author || '';
+  shelfDraft.cover = '';
+  shelfDraft.coverData = '';
+  /* v2.6.11: 손으로 지운 표지는 자동으로 다시 채우지 않는다.
+     그 제목으로 저장돼 있던(잘못된) 표지 주소도 지운다. */
+  shelfDraft.noCover = true;
+  if(nm) jamCovForget(jamCovKey(shelfDraft.lang === 'en' ? 'en' : 'ko', nm, au));
   updateShelfCoverPreview();
+  toast('표지를 지웠어요. 저장하면 자동으로 다시 붙지 않아요');
 };
 $('#shelfCoverInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0];
@@ -3278,6 +3350,7 @@ $('#shelfCoverInput').addEventListener('change', async e => {
     const data = await compressImage(f, 420, 0.8);
     shelfDraft.coverData = data;
     shelfDraft.cover = '';
+    shelfDraft.noCover = false;   /* v2.6.11: 새 표지를 올리면 다시 자동 채우기 대상 */
     updateShelfCoverPreview();
   }catch(err){
     console.warn(err);
@@ -3286,6 +3359,134 @@ $('#shelfCoverInput').addEventListener('change', async e => {
 });
 $('#btnShelfSave').onclick = saveShelf;
 $('#btnShelfDelete').onclick = deleteShelf;
+
+/* ---------- 책장 수정 창의 책 검색 (v2.6.11) ----------
+   잘못 붙은 표지나 빈 쪽수를 손으로 바로잡을 때 쓴다.
+   찾은 책을 누르면 이름·지은이·출판사·쪽수·표지가 한 번에 들어간다. */
+let sfSearchSeq = 0;
+let sfPagesSeq = 0;
+function sfSearchClear(){
+  const box = $('#sfSearchList');
+  if(box){ box.innerHTML = ''; box.classList.add('hidden'); }
+}
+function sfSearchApply(r){
+  if(!r || !shelfDraft) return;
+  const name = String(r.title || '').trim();
+  if(!name) return;
+  $('#sfName').value = name;
+  if(r.author) $('#sfAuthor').value = r.author;
+  if(r.publisher) $('#sfPublisher').value = r.publisher;
+  if(toPages(r.pages)) $('#sfPages').value = String(toPages(r.pages));
+  shelfDraft.cover = String(r.cover || '');
+  shelfDraft.coverData = '';
+  shelfDraft.noCover = false;      /* 손으로 고른 표지라 자동 채우기와 상관없다 */
+  if(r.isbn) shelfDraft.isbn = r.isbn;
+  if(r.lang && !shelfDraft.lang){ shelfDraft.lang = r.lang === 'en' ? 'en' : 'ko'; renderShelfLang(); }
+  updateShelfCoverPreview();
+  sfSearchClear();
+  if(toPages(r.pages)){ toast('표지와 쪽수까지 넣었어요'); return; }
+  toast('표지와 정보를 넣었어요');
+  /* 쪽수가 비어 있으면 배경에서 한 번 더 찾아 채운다 (ISBN → 제목 순) */
+  const seq = ++sfPagesSeq;
+  const fillPages = n => {
+    const el = $('#sfPages');
+    if(!el || String(el.value).trim() || !shelfDraft || seq !== sfPagesSeq) return;
+    el.value = String(n);
+    toast('쪽수도 채웠어요 — ' + n + '쪽');
+  };
+  (async () => {
+    if(r.isbn){
+      try{
+        const f = await lookupPagesByIsbn(r.isbn);
+        if(f && f.pages){ fillPages(f.pages); return; }
+      }catch(e){}
+    }
+    try{
+      const m = await shMetaLookup(shelfDraft.lang === 'en' ? 'en' : 'ko', name,
+        String(($('#sfAuthor') || {}).value || '').trim(), String(($('#sfPublisher') || {}).value || '').trim(),
+        r.isbn || '', false, true);
+      if(m && m.pages) fillPages(m.pages);
+    }catch(e){}
+  })();
+}
+async function sfSearchRun(){
+  const q = String(($('#sfSearchQ') || {}).value || '').trim();
+  if(!q){ const i = $('#sfSearchQ'); if(i) i.focus(); return; }
+  const box = $('#sfSearchList');
+  if(!box) return;
+  const seq = ++sfSearchSeq;
+  box.classList.remove('hidden');
+  box.innerHTML = '<div class="hint" style="padding:8px 4px">찾는 중…</div>';
+  const lang = shelfDraft && shelfDraft.lang ? shelfDraft.lang : '';
+  const pub = String(($('#sfPublisher') || {}).value || '').trim();
+  const parts = await Promise.all([
+    kakaoSearch(q).catch(() => []),
+    googleSearch(q, lang).catch(() => []),
+    gdataSearch(q).catch(() => []),
+    openLibrarySearch(q).catch(() => [])
+  ]);
+  if(seq !== sfSearchSeq) return;
+  const seen = new Set();
+  const scored = [];
+  parts.forEach(list => (list || []).forEach(r => {
+    if(!r || !r.title) return;
+    const ts = jamCovTitleScore(q, r.title);
+    if(!ts) return;
+    const k = jamNorm(r.title) + '|' + jamNormAuthor(r.author);
+    if(seen.has(k)) return;
+    seen.add(k);
+    let s = ts * 10;
+    if(pub && jamPubHit(pub, r.publisher)) s += 6;
+    if(r.cover) s += 2;
+    if(toPages(r.pages)) s += 1;
+    scored.push({ r: r, s: s });
+  }));
+  scored.sort((a, b) => b.s - a.s);
+  const list = scored.slice(0, 12).map(x => x.r);
+  box.innerHTML = '';
+  if(!list.length){
+    box.innerHTML = '<div class="hint" style="padding:8px 4px">찾는 책이 없어요. 제목을 조금 짧게 바꿔 다시 찾아보세요.</div>';
+    return;
+  }
+  list.forEach(r => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sf-hit';
+    const cov = document.createElement('span');
+    cov.className = 'h-cov';
+    if(r.cover){
+      const img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.referrerPolicy = 'no-referrer';
+      img.src = r.cover;
+      img.onerror = () => { cov.innerHTML = '<span>📚</span>'; };
+      cov.appendChild(img);
+    }else{
+      cov.textContent = '📚';
+    }
+    b.appendChild(cov);
+    const tx = document.createElement('span');
+    tx.className = 'h-tx';
+    const nm = document.createElement('span');
+    nm.className = 'h-nm';
+    nm.textContent = r.title;
+    tx.appendChild(nm);
+    const sub = document.createElement('span');
+    sub.className = 'h-sub';
+    sub.textContent = [r.author || '지은이 정보 없음', r.publisher || '', toPages(r.pages) ? fmtNum(toPages(r.pages)) + '쪽' : '', r.src || ''].filter(Boolean).join(' · ');
+    tx.appendChild(sub);
+    b.appendChild(tx);
+    b.onclick = () => sfSearchApply(r);
+    box.appendChild(b);
+  });
+  /* 결과가 저장 버튼에 가리지 않게 그 자리로 스크롤한다 */
+  try{ box.scrollIntoView({ block: 'center' }); }catch(e){}
+}
+$('#btnSfSearch').onclick = () => sfSearchRun();
+$('#sfSearchQ').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); sfSearchRun(); }
+});
 
 /* ---------- 전집 한꺼번에 찾아 담기 (v2.6.9) ----------
    전집 이름 하나로 권별 책을 최대 100권까지 모아 체크리스트로 보여 주고,
@@ -5763,7 +5964,7 @@ async function googleSearch(q, lang){
 }
 async function openLibrarySearch(q){
   /* v2.4: 쪽수(number_of_pages_median)를 함께 받으려면 fields를 지정해야 한다 */
-  const FIELDS = 'fields=title,author_name,language,isbn,cover_i,edition_count,number_of_pages_median,number_of_pages';
+  const FIELDS = 'fields=title,author_name,language,isbn,cover_i,edition_count,publisher,number_of_pages_median,number_of_pages';
   // title= 파라미터를 먼저 — 무관한 책을 걸러내는 가장 확실한 방법
   const urls = [
     'https://openlibrary.org/search.json?title=' + encodeURIComponent(q) + '&limit=20&' + FIELDS,
@@ -5924,13 +6125,14 @@ function fromGData(entry){
   const self = (entry.id && entry.id.$t) || '';
   const m = /[?&]id=([A-Za-z0-9_-]+)/.exec(self);
   const cover = gdataCoverUrl(m ? m[1] : '') || coverByIsbn(isbn);
-  /* GData는 쪽수를 dc:format(예: "25 pages")에 넣어 준다 */
   const fmts = arr(entry['dc$format']).concat(arr(entry['dc$extent'])).map(f => String((f && f.$t) || ''));
   let pages = null;
   for(const f of fmts){ const n = toPages(f); if(n){ pages = n; break; } }
+  const pubs = arr(entry['dc$publisher']).map(p => String((p && p.$t) || '')).filter(Boolean);
   return {
     title: title,
     author: authors.slice(0, 2).join(', '),
+    publisher: pubs[0] || '',
     pages: pages,
     lang: lang,
     cover: cover,
@@ -9444,22 +9646,54 @@ function jamCovAuthorHit(a, b){
   if(!x || !y) return false;
   return x === y || x.indexOf(y) >= 0 || y.indexOf(x) >= 0;
 }
-/* 후보 중 제목이 맞고 표지가 있는 책을 고른다 */
-function jamCovPick(list, title, author){
-  let best = null, bestScore = 0;
+/* 출판사 맞추기 (v2.6.11) — '아람'/'아람북스', '그레이트북스'/'그레이트북스(전집)'처럼
+   이름이 조금 다른 경우를 같게 본다 */
+function jamPubHit(a, b){
+  const x = jamNorm(a).replace(/ /g, ''), y = jamNorm(b).replace(/ /g, '');
+  if(!x || !y) return false;
+  return x === y || x.indexOf(y) >= 0 || y.indexOf(x) >= 0;
+}
+/* 후보 하나가 얼마나 맞는지 — 제목(0=다른 책, 3=같은 책)을 바탕으로 지은이·출판사 가산 */
+function jamCandScore(title, author, publisher, r){
+  const ts = jamCovTitleScore(title, r.title);
+  if(!ts) return null;
+  let s = ts * 10;
+  if(jamCovAuthorHit(author, r.author)) s += 4;
+  const pHit = !!publisher && jamPubHit(publisher, r.publisher);
+  if(pHit) s += 6;
+  if(String(r.cover || '').indexOf('/books/content?id=') >= 0) s += 1;   /* 구글 표지는 책 ID로 바로 받은 것 */
+  return { s: s, ts: ts, pHit: pHit };
+}
+/* 후보 중 제목이 맞고 표지가 있는 책을 고른다.
+   v2.6.11: 출판사를 알면 제목·출판사 둘 다 맞지 않는 후보는 버린다 —
+   전집 낱권에 엉뚝한 소설 표지가 붙던 문제 */
+function jamCovPick(list, title, author, publisher){
+  let best = null, bestScore = 0, bestTs = 0, bestPub = false;
   (list || []).forEach(r => {
     if(!r || !r.cover) return;
-    const ts = jamCovTitleScore(title, r.title);
-    if(!ts) return;
-    let s = ts * 10;
-    if(jamCovAuthorHit(author, r.author)) s += 4;
-    if(String(r.cover).indexOf('/books/content?id=') >= 0) s += 1;   /* 구글 표지는 책 ID로 바로 받은 것 */
-    if(s > bestScore){ bestScore = s; best = r; }
+    const sc = jamCandScore(title, author, publisher, r);
+    if(!sc) return;
+    if(sc.s > bestScore){ bestScore = sc.s; best = r; bestTs = sc.ts; bestPub = sc.pHit; }
   });
+  if(best && publisher && !bestPub && bestTs < 3) return null;
   return best;
 }
+/* 표지든 쪽수든 쓸 만한 값을 가진 후보를 고른다 (v2.6.11) — 점수와 함께 돌려준다 */
+function jamMetaPick(list, title, author, publisher){
+  let best = null, bestScore = 0, bestTs = 0, bestPub = false;
+  (list || []).forEach(r => {
+    if(!r) return;
+    const hasCov = !!r.cover, hasPg = toPages(r.pages) > 0;
+    if(!hasCov && !hasPg) return;
+    const sc = jamCandScore(title, author, publisher, r);
+    if(!sc) return;
+    const s = sc.s + (hasCov ? 2 : 0) + (hasPg ? 1 : 0);
+    if(s > bestScore){ bestScore = s; best = r; bestTs = sc.ts; bestPub = sc.pHit; }
+  });
+  return best ? { row: best, ts: bestTs, pubHit: bestPub } : null;
+}
 /* 카카오 책 검색 — 국내 도서 표지. 키가 있어야 한다. */
-async function jamCovKakao(q, author){
+async function jamCovKakao(q, author, publisher){
   const key = kakaoKey();
   if(!key) return '';
   const call = async params => {
@@ -9480,51 +9714,94 @@ async function jamCovKakao(q, author){
   const pickOf = d => jamCovPick(((d && d.documents) || []).map(x => ({
     title: decodeKakaoText(x.title),
     author: (x.authors || []).join(', '),
+    publisher: decodeKakaoText(x.publisher),
     cover: String(x.thumbnail || '').trim().replace(/^http:/, 'https:')
-  })).filter(x => x.cover), q, author);
+  })).filter(x => x.cover), q, author, publisher);
   let p = pickOf(await call({ query: q, size: '3', sort: 'accuracy' }));
   if(!p && author){
     const qa = (q + ' ' + String(author).trim()).trim();
     if(qa !== q) p = pickOf(await call({ query: qa, size: '3', sort: 'accuracy' }));
   }
+  /* v2.6.11: 전집 낱권은 출판사까지 넣어 한 번 더 찾아본다 */
+  if(!p && publisher){
+    const qp = (q + ' ' + String(publisher).trim()).trim();
+    if(qp !== q) p = pickOf(await call({ query: qp, size: '5', sort: 'accuracy' }));
+  }
   return p ? p.cover : '';
 }
 /* Open Library — 영어책 표지. cover_i로 표지 주소를 만든다. */
-async function jamCovOpenLib(q, author){
-  const go = async withAuthor => {
-    const params = new URLSearchParams({ title: q, limit: '3', fields: 'title,author_name,cover_i' });
-    if(withAuthor && author) params.set('author', String(author).trim());
+async function jamCovOpenLib(q, author, publisher){
+  const go = async mode => {
+    const params = new URLSearchParams({ title: q, limit: '5', fields: 'title,author_name,publisher,cover_i' });
+    if(mode === 'author' && author) params.set('author', String(author).trim());
+    if(mode === 'publisher' && publisher) params.set('publisher', String(publisher).trim());
     const data = await fetchJson('https://openlibrary.org/search.json?' + params.toString(), 8000);
     const list = ((data && data.docs) || []).map(d => ({
       title: String(d.title || ''),
       author: (d.author_name || []).join(', '),
+      publisher: (d.publisher || [])[0] || '',
       cover: d.cover_i ? 'https://covers.openlibrary.org/b/id/' + encodeURIComponent(String(d.cover_i)) + '-M.jpg' : ''
     })).filter(x => x.cover);
-    return jamCovPick(list, q, author);
+    return jamCovPick(list, q, author, publisher);
   };
   let p = null;
-  try{ p = await go(true); }catch(e){}
-  if(!p){ try{ p = await go(false); }catch(e){} }
+  try{ p = await go('author'); }catch(e){}
+  if(!p){ try{ p = await go('title'); }catch(e){} }
+  if(!p && publisher){ try{ p = await go('publisher'); }catch(e){} }
   return p ? p.cover : '';
 }
 /* Google Books GData(JSONP) — 카카오 키가 없거나 카카오에 표지가 없을 때 */
-async function jamCovGdata(q, author){
+async function jamCovGdata(q, author, publisher){
   let list = [];
   try{ list = await gdataSearch(q); }catch(e){ return ''; }
-  const p = jamCovPick(list, q, author);
+  const p = jamCovPick(list, q, author, publisher);
   return p ? String(p.cover || '') : '';
 }
-async function jamCovLookup(kind, title, author){
+async function jamCovLookup(kind, title, author, publisher){
   const q = libCleanTitle(title) || jamBase(String(title || ''));
   if(!q) return '';
   if(kind === 'en'){
-    try{ const u = await jamCovOpenLib(q, author); if(u) return u; }catch(e){}
-    try{ const u = await jamCovGdata(q, author); if(u) return u; }catch(e){}
+    try{ const u = await jamCovOpenLib(q, author, publisher); if(u) return u; }catch(e){}
+    try{ const u = await jamCovGdata(q, author, publisher); if(u) return u; }catch(e){}
     return '';
   }
-  try{ const u = await jamCovKakao(q, author); if(u) return u; }catch(e){}
-  try{ const u = await jamCovGdata(q, author); if(u) return u; }catch(e){}
+  try{ const u = await jamCovKakao(q, author, publisher); if(u) return u; }catch(e){}
+  try{ const u = await jamCovGdata(q, author, publisher); if(u) return u; }catch(e){}
   return '';
+}
+/* ---------- 책장 항목의 표지·쪽수 함께 찾기 (v2.6.11) ----------
+   출판사까지 넘겨 엉뚝한 표지를 걸러내고, 표지가 없을 때도 쪽수는 채운다.
+   needCover/needPages 가 false인 쪽은 찾지 않아 요청을 아낌다. */
+async function shMetaLookup(kind, title, author, publisher, isbn, needCover, needPages){
+  const q = libCleanTitle(title) || jamBase(String(title || ''));
+  const out = { cover: '', pages: 0 };
+  if(!q) return out;
+  const take = rows => {
+    const best = jamMetaPick(rows, q, author, publisher);
+    if(!best) return;
+    const r = best.row;
+    /* 표지는 제목·출판사가 맞을 때만 붙인다. 쪽수는 제목이 맞으면 채운다. */
+    const coverOk = !publisher || best.pubHit || best.ts >= 3;
+    if(needCover && !out.cover && r.cover && coverOk) out.cover = String(r.cover);
+    if(needPages && !out.pages && toPages(r.pages)) out.pages = toPages(r.pages);
+  };
+  const want = () => (needCover && !out.cover) || (needPages && !out.pages);
+  const srcs = kind === 'en'
+    ? [() => openLibrarySearch(q), () => googleSearch(q, 'en'), () => gdataSearch(q)]
+    : [() => kakaoSearch(q), () => googleSearch(q, 'ko'), () => gdataSearch(q), () => openLibrarySearch(q)];
+  for(let i = 0; i < srcs.length && want(); i++){
+    let rows = [];
+    try{ rows = await srcs[i](); }catch(e){ rows = []; }
+    if(rows && rows.length) take(rows);
+  }
+  /* 카카오에는 쪽수가 없어, ISBN이 있으면 그 ISBN으로 한 번 더 확인한다 */
+  if(needPages && !out.pages && cleanIsbn(isbn)){
+    try{
+      const f = await lookupPagesByIsbn(isbn);
+      if(f && f.pages) out.pages = f.pages;
+    }catch(e){}
+  }
+  return out;
 }
 /* 진짜 표지를 넣는다. 이미 진짜 표지가 있으면(AR 등) 건드리지 않고, 실패하면 미니 표지로 되돌린다. */
 function jamCovApply(el, url, key){
@@ -10053,6 +10330,20 @@ window.__rc = {
     saveQuick: () => saveQuick(),
     books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
     covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
+  },
+  /* v2.6.11 책장 표지·쪽수 찾기 확인용 */
+  metaApi: {
+    lookup: (kind, title, author, publisher, isbn, needCover, needPages) =>
+      shMetaLookup(kind || 'ko', title, author, publisher, isbn, needCover !== false, needPages !== false),
+    pick: (rows, title, author, publisher) => {
+      const p = jamCovPick(rows, title, author, publisher);
+      return p ? p.title : '';
+    },
+    queue: () => ({ q: shCovQ.length, busy: shCovBusy }),
+    forget: (kind, title, author) => { jamCovForget(jamCovKey(kind || 'ko', title, author)); return true; },
+    resetMiss: () => { jamCovMissSet().clear(); return true; },
+    cached: (kind, title, author) => jamCovGet(jamCovKey(kind || 'ko', title, author)),
+    item: id => { const s = shelfById(id); return s ? { name: s.name, pages: toPages(s.pages), cover: shelfCoverSrc(s), noCover: s.noCover === true } : null; }
   },
   /* v2.6.11 책벌레 기록과 책장 제목 맞춤 확인용 */
   readApi: {
