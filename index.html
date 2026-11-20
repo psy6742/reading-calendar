@@ -5824,6 +5824,10 @@ $('#btnSave').onclick = () => {
     coverData: draft.coverData,
     childIds: kids,
     shelfId: draft.shelfId || '',
+    /* v2.6.13: 수정 저장 때도 출판사·메모·가져온 기록 표시를 잃지 않는다 */
+    publisher: draft.publisher || '',
+    note: draft.note || '',
+    imp: draft.imp || '',
     createdAt: draft.createdAt || Date.now()
   });
 
@@ -10315,7 +10319,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.12',
+  version: '2.6.13',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
