@@ -6859,7 +6859,7 @@ function jamIsRead(kind, it){
 /* ---------- AR 지수 (v2.6.4) ----------
    arbookfind.com은 브라우저에서 바로 부를 수 없어 Cloudflare Worker 중계 주소를 설정에서 받는다.
    영어책 카드가 화면에 들어올 때만(IntersectionObserver) 한 번씩 묻고, 답은 기기에 영구 저장한다. */
-const AR_CACHE_KEY = 'readingCalendar.ar.v1';
+const AR_CACHE_KEY = 'readingCalendar.ar.v2';
 const AR_MAX_REQ = 2;
 let arCache = null;
 let arQueue = [];
@@ -7864,6 +7864,9 @@ $('#btnJamWormSave').onclick = () => {
 };
 
 /* ---------- 시작 ---------- */
+/* v2.6.6: 중계(Worker)의 응답 규칙이 엄격해지며 예전 캐시(ar.v1)에 다른 책의 지수·표지가 섞여 남았다.
+   예전 키는 한 번 지워서 새 키(ar.v2)로 다시 받게 한다. */
+try{ localStorage.removeItem('readingCalendar.ar.v1'); }catch(e){}
 load();
 const migrated = ensureChildren();
 if(migrated) save();
@@ -7891,7 +7894,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.5',
+  version: '2.6.6',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
