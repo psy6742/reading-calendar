@@ -531,6 +531,13 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-btn.dark{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 2px 7px rgba(30,41,59,.16)}
 .rec-btn:active{transform:translateY(1px)}
 .rec-btn.del{background:#FBEAE7;border-color:#F3D9D3;color:#B4574A}
+/* v2.6: 카드에서 도서관 청구기호를 바로 찾는 단추 */
+.rec-lib{
+  margin-left:auto;flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;font-weight:800;line-height:1;letter-spacing:-.2px;white-space:nowrap;
+  color:#4B5262;background:#F4F1E8;border:1.3px solid #E4DFD2;border-radius:999px;padding:7px 10px;
+}
+.rec-lib:active{transform:translateY(1px);background:#EDE8DC}
 .wish-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
 .wish-top p{font-size:12px;font-weight:700;color:#9A958A;line-height:1.5;min-width:0}
 .wish-add{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--ink);background:#F4F1E8;border-radius:999px;padding:9px 12px;white-space:nowrap}
@@ -601,10 +608,24 @@ textarea.input{resize:vertical;min-height:60px}
 .jam-acts button{flex:1 1 0;min-width:0;border-radius:10px;padding:7px 6px;font-size:11.5px;font-weight:800;border:1.5px solid #E4DFD2;background:#fff;color:#5F6673}
 .jam-acts button.rd{border-color:#D9E8CB;background:#F4F9EE;color:#4F6B3B}
 .jam-acts button.ws.on{border-color:#F0D9CF;background:#FBF0EC;color:#A8563F}
+.jam-acts button.lib{border-color:#E4DFD2;background:#F4F1E8;color:#4B5262;white-space:nowrap}
 .jam-more{width:100%;margin-top:10px;border-radius:12px;padding:11px;font-size:12.5px;font-weight:800;color:#5F6673;background:#F4F1E8;border:1px solid #EAE5D8}
 .jam-empty{padding:20px 6px;text-align:center;font-size:12.5px;font-weight:700;line-height:1.6;color:#9A958A}
 .jam-onb h3{font-size:14px;font-weight:800;letter-spacing:-.25px;word-break:keep-all}
 .jam-onb p{margin-top:7px;font-size:12.5px;font-weight:700;line-height:1.6;color:#8E897C}
+/* v2.6: 도서관 검색 설정 */
+.lib-menu{margin-top:16px;padding-top:14px;border-top:1px solid #F1EDE2}
+.lib-menu h3{font-size:13px;font-weight:800;color:#4B5262;letter-spacing:-.2px}
+.lib-menu > p{margin-top:5px;font-size:11.5px;font-weight:700;line-height:1.55;color:#9A958A}
+.lib-menu > p b{color:#6C7280}
+.lib-prev{margin-top:9px;font-size:10.5px;font-weight:700;color:#A8A294;line-height:1.6;overflow-wrap:anywhere;word-break:break-all}
+.lib-prev b{color:#6C7280}
+select.input{
+  appearance:none;-webkit-appearance:none;font-weight:700;padding-right:38px;background-color:#FBFAF6;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%239A958A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;
+}
+select.input:focus{background-color:#fff}
 .jam-menu{margin-top:16px;padding-top:14px;border-top:1px solid #F1EDE2}
 .jam-menu h3{font-size:13px;font-weight:800;color:#4B5262;letter-spacing:-.2px}
 .jam-menu p{margin-top:5px;font-size:11.5px;font-weight:700;line-height:1.55;color:#9A958A}
@@ -1167,6 +1188,37 @@ textarea.input{resize:vertical;min-height:60px}
         <span class="mt"><b id="resetLabel">모든 기록 지우기</b><span>되돌릴 수 없으니 먼저 백업해 주세요</span></span>
       </button>
     </div>
+    <div class="lib-menu">
+      <h3>🏛️ 도서관 검색 설정</h3>
+      <p>책 카드의 <b>🏛️ 도서관</b> 단추를 누르면 그 책을 이 도서관에서 찾아요. 청구기호와 빌릴 수 있는지가 바로 보여요.</p>
+      <div class="field" style="margin-top:12px;margin-bottom:10px">
+        <label for="fLibKo">한글책 도서관</label>
+        <select class="input" id="fLibKo">
+          <option value="dsn">답십리도서관 (기본)</option>
+          <option value="intro">동대문구립도서관 통합</option>
+          <option value="yelc">용두어린이영어도서관</option>
+          <option value="custom">직접 입력 (URL)</option>
+        </select>
+      </div>
+      <div class="field hidden" id="fLibKoUrlField" style="margin-bottom:10px">
+        <input class="input" id="fLibKoUrl" placeholder="https://… 주소에 {query}를 넣어 주세요" autocomplete="off" spellcheck="false" inputmode="url">
+        <div class="hint">주소의 <code>{query}</code> 자리에 책 제목이 들어가요. <code>{query}</code>가 없으면 주소 끝에 제목을 붙여요. 비워 두면 기본 도서관에서 찾아요.</div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label for="fLibEn">영어책 도서관</label>
+        <select class="input" id="fLibEn">
+          <option value="yelc">용두어린이영어도서관 (기본)</option>
+          <option value="dsn">답십리도서관</option>
+          <option value="intro">동대문구립도서관 통합</option>
+          <option value="custom">직접 입력 (URL)</option>
+        </select>
+      </div>
+      <div class="field hidden" id="fLibEnUrlField" style="margin-bottom:10px">
+        <input class="input" id="fLibEnUrl" placeholder="https://… 주소에 {query}를 넣어 주세요" autocomplete="off" spellcheck="false" inputmode="url">
+        <div class="hint">위와 같아요. <code>{query}</code>를 빼면 주소 끝에 제목을 붙이고, 비워 두면 기본 도서관에서 찾아요.</div>
+      </div>
+      <p class="lib-prev" id="libPreview"></p>
+    </div>
     <div class="jam-menu">
       <h3>잠수네 자료</h3>
       <p id="menuJamSt">아직 불러오지 않았어요</p>
@@ -1256,7 +1308,7 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '' } };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' } };
 let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', yunit: 'count', rec: { age: '0-2', sub: 'age' } };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
@@ -1310,7 +1362,7 @@ function load(){
       if(Array.isArray(p)) db.books = p.map(sanitize).filter(Boolean);
       else if(p && Array.isArray(p.books)){
         db.books = p.books.map(sanitize).filter(Boolean);
-        db.settings = Object.assign({ gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '' }, p.settings || {});
+        db.settings = Object.assign({ gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
@@ -2982,6 +3034,14 @@ function buildRecItem(r){
   ag.className = 'age';
   ag.textContent = ageLabel(r.age);
   meta.appendChild(tg); meta.appendChild(ag);
+  const lgb = document.createElement('button');
+  lgb.type = 'button';
+  lgb.className = 'rec-lib';
+  lgb.dataset.act = 'lib';
+  lgb.title = libName(r.lang) + '에서 찾기';
+  lgb.setAttribute('aria-label', r.title + ' — ' + libName(r.lang) + '에서 청구기호 찾기');
+  lgb.textContent = '🏛️ 도서관';
+  meta.appendChild(lgb);
   const au = document.createElement('div');
   au.className = 'rec-auth';
   au.textContent = r.author;
@@ -3056,6 +3116,14 @@ function renderWishList(){
       ag.textContent = ageLabel(w.age);
       meta.appendChild(ag);
     }
+    const lgb = document.createElement('button');
+    lgb.type = 'button';
+    lgb.className = 'rec-lib';
+    lgb.dataset.act = 'lib';
+    lgb.title = libName(w.lang) + '에서 찾기';
+    lgb.setAttribute('aria-label', w.title + ' — ' + libName(w.lang) + '에서 청구기호 찾기');
+    lgb.textContent = '🏛️ 도서관';
+    meta.appendChild(lgb);
     const au = document.createElement('div');
     au.className = 'rec-auth';
     au.textContent = w.author || '지은이 정보 없음';
@@ -3226,6 +3294,13 @@ $('#recLang').addEventListener('click', e => {
   if(b) setFilter(b.dataset.filter);
 });
 $('#recList').addEventListener('click', e => {
+  const lgb = e.target.closest('.rec-lib');
+  if(lgb){
+    const li = e.target.closest('.rec-item');
+    const rb = li ? recById(li.dataset.rid) : null;
+    if(rb) openLibrary(rb.lang, rb.title);
+    return;
+  }
   const btn = e.target.closest('.rec-btn');
   if(!btn) return;
   const item = e.target.closest('.rec-item');
@@ -3235,6 +3310,13 @@ $('#recList').addEventListener('click', e => {
   else if(btn.dataset.act === 'record') openBookRecord(r);
 });
 $('#wishList').addEventListener('click', e => {
+  const lgb = e.target.closest('.rec-lib');
+  if(lgb){
+    const li = e.target.closest('.wish-item');
+    const wb = li ? db.wishlist.find(x => x.id === li.dataset.wid) : null;
+    if(wb) openLibrary(wb.lang, wb.title);
+    return;
+  }
   const btn = e.target.closest('.rec-btn');
   if(!btn) return;
   const item = e.target.closest('.wish-item');
@@ -6083,6 +6165,112 @@ $('#menuReset').onclick = () => {
   toast('모든 기록을 지웠어요');
 };
 
+/* ---------- 도서관 청구기호 검색 (v2.6) ---------- */
+const LIB_PRESETS = {
+  dsn: { name: '답십리도서관', url: 'https://www.l4d.or.kr/dsn/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MF&searchKeyword={query}' },
+  intro: { name: '동대문구립도서관 통합', url: 'https://www.l4d.or.kr/intro/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchKeyword={query}' },
+  yelc: { name: '용두어린이영어도서관', url: 'https://www.l4d.or.kr/yelc/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MC&searchKeyword={query}' }
+};
+const LIB_DEFAULT = { ko: 'dsn', en: 'yelc' };
+function libMode(lang){
+  const key = lang === 'en' ? 'libEn' : 'libKo';
+  const v = String((db.settings && db.settings[key]) || '').trim();
+  if(v === 'custom') return 'custom';
+  if(LIB_PRESETS[v]) return v;
+  return LIB_DEFAULT[lang === 'en' ? 'en' : 'ko'];
+}
+function libCustomUrl(lang){
+  const key = lang === 'en' ? 'libEnUrl' : 'libKoUrl';
+  return String((db.settings && db.settings[key]) || '').trim();
+}
+function libTemplate(lang){
+  const m = libMode(lang);
+  if(m === 'custom'){
+    const u = libCustomUrl(lang);
+    if(u) return u;
+    return LIB_PRESETS[LIB_DEFAULT[lang === 'en' ? 'en' : 'ko']].url;
+  }
+  return LIB_PRESETS[m].url;
+}
+function libName(lang){
+  const m = libMode(lang);
+  if(m === 'custom' && libCustomUrl(lang)) return '직접 입력한 주소';
+  return LIB_PRESETS[m === 'custom' ? LIB_DEFAULT[lang === 'en' ? 'en' : 'ko'] : m].name;
+}
+/* 제목 끝의 시리즈·판본 메모를 덜어 낸다:
+   "엄마, 어디 계세요? (네버랜드 아기 그림책 시리즈)" → "엄마, 어디 계세요?" */
+function libCleanTitle(title){
+  let t = String(title == null ? '' : title);
+  try{ t = t.normalize('NFKC'); }catch(e){}
+  t = t.replace(/\s+/g, ' ').trim();
+  const tail = /\s*[\(\[\{（〈《「『【]\s*[^\(\)\[\]\{\}（）〈〉《》「」『』【】]{0,80}?\s*[\)\]\}）〉》」』】]\s*$/;
+  for(let i = 0; i < 4 && tail.test(t); i++){
+    const next = t.replace(tail, '').trim();
+    if(next.length < 2) break;
+    t = next;
+  }
+  t = t.replace(/[\s,·:;\-\/]+$/, '').trim();
+  return t;
+}
+function libSearchUrl(lang, title){
+  const q = libCleanTitle(title);
+  if(!q) return '';
+  const tpl = String(libTemplate(lang) || '').trim();
+  if(!tpl) return '';
+  const enc = encodeURIComponent(q);
+  if(tpl.indexOf('{query}') >= 0) return tpl.split('{query}').join(enc);
+  return tpl + enc;
+}
+function openLibrary(lang, title){
+  const url = libSearchUrl(lang, title);
+  if(!url){ toast('도서관에서 찾을 책 제목이 없어요'); return; }
+  if(!/^https?:\/\//i.test(url)){ toast('도서관 주소를 https://부터 다시 확인해 주세요'); return; }
+  try{ window.open(url, '_blank', 'noopener'); }
+  catch(e){ location.href = url; }
+}
+function syncLibSettings(){
+  const ko = $('#fLibKo'), en = $('#fLibEn');
+  if(!ko || !en) return;
+  ko.value = libMode('ko');
+  en.value = libMode('en');
+  const ku = $('#fLibKoUrl'), eu = $('#fLibEnUrl');
+  if(ku) ku.value = libCustomUrl('ko');
+  if(eu) eu.value = libCustomUrl('en');
+  const kf = $('#fLibKoUrlField'), ef = $('#fLibEnUrlField');
+  if(kf) kf.classList.toggle('hidden', ko.value !== 'custom');
+  if(ef) ef.classList.toggle('hidden', en.value !== 'custom');
+  syncLibPreview();
+}
+function syncLibPreview(){
+  const el = $('#libPreview');
+  if(!el) return;
+  const pretty = (u) => { try{ return decodeURIComponent(u); }catch(e){ return u; } };
+  const line = (lang, sample) => {
+    const nm = '<b>' + (lang === 'en' ? '영어책' : '한글책') + '</b> ' + escXML(libName(lang));
+    if(libMode(lang) !== 'custom' || !libCustomUrl(lang)) return nm;
+    return nm + '<br>' + escXML(pretty(libSearchUrl(lang, sample)));
+  };
+  el.innerHTML = line('ko', '구름빵') + '<br>' + line('en', 'Flotsam');
+}
+function saveLibUrl(lang){
+  const el = $('#fLib' + (lang === 'en' ? 'En' : 'Ko') + 'Url');
+  if(!el) return;
+  const v = String(el.value || '').trim();
+  if(v && !/^https?:\/\//i.test(v)){ toast('주소는 https://로 시작해 주세요'); syncLibSettings(); return; }
+  db.settings[lang === 'en' ? 'libEnUrl' : 'libKoUrl'] = v;
+  save();
+  syncLibSettings();
+  libRefreshViews();
+  toast(v ? '도서관 주소를 저장했어요' : '주소가 비어 기본 도서관에서 찾아요');
+}
+/* 도서관을 바꾸면 카드 단추의 안내 문구도 새 도서관 이름으로 바뀌게 다시 그린다 */
+function libRefreshViews(){
+  try{
+    if(view.ymode === 'rec') renderRec();
+    else if(view.ymode === 'jam') renderJam();
+  }catch(e){ console.warn('도서관 설정을 화면에 반영하지 못했어요', e); }
+}
+
 function openMenu(){
   const total = db.books.length;
   const ko = db.books.filter(b => b.lang === 'ko').length;
@@ -6101,6 +6289,7 @@ function openMenu(){
   $('#fNlProxy').value = db.settings.nlProxy || '';
   syncKakaoKeyState();
   syncNlKeyState();
+  syncLibSettings();
   jamSyncImp();
   if(!jam.ready) jamInit();
   openSheet('menuSheet');
@@ -6180,6 +6369,30 @@ $('#fNlProxy').addEventListener('change', e => {
 });
 $('#fKakaoKey').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); saveKakaoKey(); }
+});
+$('#fLibKo').addEventListener('change', e => {
+  const v = String(e.target.value || '');
+  db.settings.libKo = (v === 'custom' || LIB_PRESETS[v]) ? v : LIB_DEFAULT.ko;
+  save();
+  syncLibSettings();
+  libRefreshViews();
+  toast('한글책 도서관: ' + libName('ko'));
+});
+$('#fLibEn').addEventListener('change', e => {
+  const v = String(e.target.value || '');
+  db.settings.libEn = (v === 'custom' || LIB_PRESETS[v]) ? v : LIB_DEFAULT.en;
+  save();
+  syncLibSettings();
+  libRefreshViews();
+  toast('영어책 도서관: ' + libName('en'));
+});
+$('#fLibKoUrl').addEventListener('change', () => saveLibUrl('ko'));
+$('#fLibEnUrl').addEventListener('change', () => saveLibUrl('en'));
+$('#fLibKoUrl').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); }
+});
+$('#fLibEnUrl').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); }
 });
 
 /* =========================================================
@@ -6796,6 +7009,7 @@ function jamItemHtml(kind, it, rd, wish){
   h += '<div class="jam-acts">' +
     '<button type="button" class="rd" data-act="read">+ 읽었어요</button>' +
     '<button type="button" class="ws' + (wish ? ' on' : '') + '" data-act="wish">' + (wish ? '♥ 읽을 목록' : '♡ 읽을 목록') + '</button>' +
+    '<button type="button" class="lib" data-act="lib" title="' + escXML(libName(kind === 'en' ? 'en' : 'ko') + '에서 찾기') + '">🏛️ 도서관</button>' +
     '</div>';
   return h;
 }
@@ -7054,6 +7268,7 @@ $('#jamCard').addEventListener('click', e => {
     if(!it) return;
     if(act.dataset.act === 'read') jamLogRead(kind, it, itemEl);
     else if(act.dataset.act === 'wish') jamToggleWish(kind, it, itemEl);
+    else if(act.dataset.act === 'lib') openLibrary(kind === 'en' ? 'en' : 'ko', it[kind === 'ko' ? KO_T : EN_T]);
   }
 });
 $('#jamFileKo').addEventListener('change', e => {
@@ -7132,7 +7347,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.5',
+  version: '2.6',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -7301,6 +7516,25 @@ window.__rc = {
     },
     domCount: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item').length,
     domReadTitles: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item.read .jam-ti').map(e => e.textContent)
+  },
+  /* v2.6 도서관 청구기호 검색 확인용 */
+  libApi: {
+    settings: () => ({ ko: libMode('ko'), en: libMode('en'), koUrl: libCustomUrl('ko'), enUrl: libCustomUrl('en'), koName: libName('ko'), enName: libName('en') }),
+    set: (lang, mode, url) => {
+      const k = lang === 'en' ? 'En' : 'Ko';
+      db.settings['lib' + k] = (mode === 'custom' || LIB_PRESETS[mode]) ? mode : LIB_DEFAULT[lang === 'en' ? 'en' : 'ko'];
+      if(url != null) db.settings['lib' + k + 'Url'] = String(url).trim();
+      save(); syncLibSettings();
+      return { ko: libMode('ko'), en: libMode('en') };
+    },
+    clean: (t) => libCleanTitle(t),
+    url: (lang, t) => libSearchUrl(lang, t),
+    open: (lang, t) => openLibrary(lang, t),
+    buttons: () => ({
+      rec: $$('#recList .rec-item .rec-lib').length,
+      wish: $$('#wishList .wish-item .rec-lib').length,
+      jam: $$('#jamCard .jam-acts button[data-act="lib"]').length
+    })
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
