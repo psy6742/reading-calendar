@@ -6165,11 +6165,13 @@ $('#menuReset').onclick = () => {
   toast('모든 기록을 지웠어요');
 };
 
-/* ---------- 도서관 청구기호 검색 (v2.6) ---------- */
+/* ---------- 도서관 청구기호 검색 (v2.6.1) ----------
+   l4d.or.kr은 searchKey=ALL이 없으면 검색어를 ""로 보내 0건이 나온다.
+   searchType=SIMPLE&searchCategory=ALL 옆에 searchKey=ALL을 반드시 함께 넣는다. */
 const LIB_PRESETS = {
-  dsn: { name: '답십리도서관', url: 'https://www.l4d.or.kr/dsn/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MF&searchKeyword={query}' },
-  intro: { name: '동대문구립도서관 통합', url: 'https://www.l4d.or.kr/intro/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchKeyword={query}' },
-  yelc: { name: '용두어린이영어도서관', url: 'https://www.l4d.or.kr/yelc/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MC&searchKeyword={query}' }
+  dsn: { name: '답십리도서관', url: 'https://www.l4d.or.kr/dsn/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MF&searchKey=ALL&searchKeyword={query}' },
+  intro: { name: '동대문구립도서관 통합', url: 'https://www.l4d.or.kr/intro/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchKey=ALL&searchKeyword={query}' },
+  yelc: { name: '용두어린이영어도서관', url: 'https://www.l4d.or.kr/yelc/plusSearchResultList.do?searchType=SIMPLE&searchCategory=ALL&searchLibraryArr=MC&searchKey=ALL&searchKeyword={query}' }
 };
 const LIB_DEFAULT = { ko: 'dsn', en: 'yelc' };
 function libMode(lang){
@@ -7347,7 +7349,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6',
+  version: '2.6.1',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
