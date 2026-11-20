@@ -9627,8 +9627,8 @@ function arPump(){
         .then(j => {
           clearTimeout(timer);
           if(!j || j.ok !== true) return done({ bl: null, fail: true });
-          /* 중계가 제목을 주는지/안 주는지가 바뀌면 예전 캐시는 믿을 수 없다 — 한 번 비우고 새로 받는다 */
-          const mode = j.title ? 't' : 'n';
+          /* 중계가 제목·버전을 주는지 바뀌면 예전 캐시는 믿을 수 없다 — 한 번 비우고 새로 받는다 */
+          const mode = j.ver ? ('v' + String(j.ver)) : (j.title ? 't' : 'n');
           if(arModeGet() !== mode){
             arCache = Object.create(null);
             try{ localStorage.removeItem(AR_CACHE_KEY); }catch(e){}
