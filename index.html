@@ -478,6 +478,54 @@ textarea.input{resize:vertical;min-height:60px}
 .series-row .s-meta .pg{color:#7C8291}
 .series-row .s-badge{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#E7E4F4;color:#4A4370;margin-top:4px}
 .series-empty{padding:24px 8px;text-align:center;color:#9A958A;font-size:12.5px;font-weight:700;line-height:1.65}
+
+/* ---------- 전집 담기 방식 탭 · 목록 붙여넣기 (v2.6.10) ---------- */
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#F1EEE4;border-radius:14px;padding:4px;margin:0 0 14px}
+.mode-tab{border:0;background:transparent;border-radius:11px;padding:10px 4px;font-size:12.5px;font-weight:800;color:#8E897C;letter-spacing:-.25px;line-height:1.2}
+.mode-tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(30,41,59,.14)}
+.mode-tab:active{opacity:.8}
+#pasteList{min-height:96px;line-height:1.65;font-size:14px}
+.paste-count{font-size:12px;font-weight:800;color:#8E897C;background:#F6F4EC;border-radius:12px;padding:10px 12px;line-height:1.5}
+.save-bar .paste-count{margin:0 0 8px}
+.paste-count b{color:var(--ink);font-weight:800}
+.paste-count.warn{color:#B4574A;background:#FBF0EE}
+
+/* ---------- 내 책장 전집 묶음 → 낱권 보기 (v2.6.10) ---------- */
+.sh-set{background:linear-gradient(135deg,#F7F5FE,#FBF8F2);border-color:#E3DEF2}
+.sh-set.is-read{background:linear-gradient(135deg,#EEF5EA,#F8FBF3);border-color:#C9DDC6}
+.sh-set .sh-cov .set-mark{position:absolute;right:2px;top:2px;font-size:9px;line-height:1;background:rgba(255,255,255,.92);border-radius:5px;padding:2px 3px;box-shadow:0 1px 3px rgba(30,41,59,.14)}
+.sh-set .sh-nm{color:#3A3358}
+.sh-bar{height:7px;border-radius:99px;background:#EAE6DC;overflow:hidden;margin-top:8px}
+.sh-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8FA97B,#5C7044)}
+.sh-set .sh-bar{background:#E6E1F2}
+.sh-set .sh-bar i{background:linear-gradient(90deg,#A79BDD,#6F63A8)}
+.sh-set .sh-rec{background:#4B3F78}
+.sh-set .sh-edit{color:#6E639A;border-color:#E0DAF0}
+.sv-sum{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;font-weight:800;color:#8E897C;margin:0 0 10px;line-height:1.5}
+.sv-sum b{color:var(--ink)}
+.sv-sum .sep{color:#C6C0B1}
+.sv-tools{display:flex;gap:7px;align-items:stretch;margin-bottom:10px}
+.sv-tools .input{flex:1;min-width:0;padding:10px 12px;font-size:13.5px;border-radius:12px}
+.sv-chip{flex:0 0 auto;font-size:11.5px;font-weight:800;color:#6C7280;background:#F1EEE4;border:1.4px solid transparent;border-radius:12px;padding:0 11px;line-height:1.1}
+.sv-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sv-list{display:flex;flex-direction:column;gap:6px;padding-bottom:2px}
+.sv-row{display:flex;gap:8px;align-items:flex-start;padding:7px;border-radius:13px;background:#FBFAF6;border:1px solid #EEEAE0}
+.sv-row.is-read{background:#E9F3E9;border-color:#C2DBC2}
+.sv-no{flex:0 0 17px;font-size:10.5px;font-weight:800;color:#B0AA9B;text-align:right;padding-top:5px;font-variant-numeric:tabular-nums}
+.sv-cov{display:block;position:relative;width:32px;flex:0 0 auto;aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:var(--lav-soft);box-shadow:0 1px 4px rgba(30,41,59,.12)}
+.sv-cov img{width:100%;height:100%;object-fit:cover;display:block}
+.sv-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:12px;color:#B9B4D2}
+.sv-tx{flex:1;min-width:0;padding-top:1px}
+.sv-ttl{display:-webkit-box;text-align:left;background:none;padding:0;font-size:13px;font-weight:700;color:#2C3444;line-height:1.35;word-break:keep-all;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sv-row.is-read .sv-ttl{color:#3F5A32}
+.sv-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px;font-size:10.5px;font-weight:700;color:#9A958A}
+.sv-meta .sep{color:#C6C0B1}
+.sv-meta .rd{font-size:9.5px;font-weight:800;background:#DDEAD8;color:#4E6B3A;border-radius:5px;padding:2px 5px}
+.sv-acts{flex:0 0 auto;display:flex;align-items:center;gap:5px}
+.sv-btn{font-size:10.5px;font-weight:800;border-radius:9px;padding:8px 8px;line-height:1.1;white-space:nowrap}
+.sv-btn.rec{background:var(--ink);color:#fff}
+.sv-btn.ed{background:#fff;border:1.3px solid #E8E3D7;color:#7C8291}
+.sv-empty{padding:22px 8px;text-align:center;color:#9A958A;font-size:12.5px;font-weight:700;line-height:1.6}
 .series-empty .em{font-size:26px;display:block;margin-bottom:6px}
 @media(max-width:374px){
   .series-row .s-cov{width:30px}
@@ -1073,6 +1121,27 @@ select.input:focus{background-color:#fff}
   </div>
 </div>
 
+<!-- ===== 전집 낱권 보기 (v2.6.10) — 다른 시트보다 앞에 두어 기록·수정 시트가 위에 뜨게 한다 ===== -->
+<div class="sheet-wrap" id="seriesViewSheet" role="dialog" aria-modal="true" aria-labelledby="seriesViewTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="seriesViewTitle">전집</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <div class="sv-sum" id="svSum"></div>
+    <div class="sv-tools">
+      <input class="input" id="svSearch" placeholder="낱권 제목 찾기" autocomplete="off">
+      <button class="sv-chip" id="svUnread" type="button">안 읽은 책만</button>
+    </div>
+    <div class="sv-list" id="svList"></div>
+    <div class="save-bar">
+      <button class="btn line" id="btnSvClose" type="button" style="width:100%;padding:14px;border-radius:16px">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 내 책장 등록/수정 시트 ===== -->
 <div class="sheet-wrap" id="shelfSheet" role="dialog" aria-modal="true" aria-labelledby="shelfFormTitle">
   <div class="backdrop" data-close></div>
@@ -1087,6 +1156,12 @@ select.input:focus{background-color:#fff}
     <div class="field">
       <label for="sfName">이름 <span style="color:#C98B77">*</span></label>
       <input class="input" id="sfName" placeholder="예: 그레이트북스 안녕 마음아" maxlength="60" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="sfSeries">전집 이름 (선택)</label>
+      <input class="input" id="sfSeries" placeholder="예: 아람 그리스로마신화" maxlength="60" autocomplete="off">
+      <div class="hint">전집 낱권이면 적어 두세요. 내 책장에서 이 이름 하나로 묶여 보여요.</div>
     </div>
 
     <div class="field row2 author-pages">
@@ -1135,7 +1210,7 @@ select.input:focus{background-color:#fff}
   </div>
 </div>
 
-<!-- ===== 전집 한꺼번에 찾아 담기 (v2.6.9) ===== -->
+<!-- ===== 전집 한꺼번에 찾아 담기 (v2.6.9 · 목록 붙여넣기 v2.6.10) ===== -->
 <div class="sheet-wrap" id="seriesSheet" role="dialog" aria-modal="true" aria-labelledby="seriesTitle">
   <div class="backdrop" data-close></div>
   <div class="sheet">
@@ -1144,35 +1219,95 @@ select.input:focus{background-color:#fff}
       <h2 id="seriesTitle">전집 찾아 담기</h2>
       <button class="x" data-close aria-label="닫기">✕</button>
     </div>
-    <p class="sheet-note" style="margin:0 0 12px">전집 이름을 검색하면 권별 책이 한꺼번에 나와요. 담고 싶은 것만 골라 책장에 넣으세요.</p>
 
-    <div class="field">
-      <label>언어</label>
-      <div class="lang-toggle" id="seriesLang" role="tablist" aria-label="전집 언어">
-        <button class="lang-btn on" data-lang="ko" type="button" role="tab" aria-selected="true">한글</button>
-        <button class="lang-btn" data-lang="en" type="button" role="tab" aria-selected="false">영어</button>
+    <div class="mode-tabs" id="seriesMode" role="tablist" aria-label="전집 담기 방식">
+      <button class="mode-tab on" data-mode="search" type="button" role="tab" aria-selected="true">검색으로 찾기</button>
+      <button class="mode-tab" data-mode="paste" type="button" role="tab" aria-selected="false">목록 붙여넣기</button>
+    </div>
+
+    <div id="seriesPaneSearch">
+      <p class="sheet-note" style="margin:0 0 12px">전집 이름을 검색하면 권별 책이 한꺼번에 나와요. 담고 싶은 것만 골라 책장에 넣으세요.</p>
+
+      <div class="field">
+        <label>언어</label>
+        <div class="lang-toggle" id="seriesLang" role="tablist" aria-label="전집 언어">
+          <button class="lang-btn on" data-lang="ko" type="button" role="tab" aria-selected="true">한글</button>
+          <button class="lang-btn" data-lang="en" type="button" role="tab" aria-selected="false">영어</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="seriesSearch">찾을 전집 이름</label>
+        <div class="search-row">
+          <input class="input" id="seriesSearch" placeholder="예: 아람 자연이랑" autocomplete="off" enterkeyhint="search">
+          <button class="btn dark" id="btnSeriesSearch" type="button">검색</button>
+        </div>
+        <div class="hint" id="seriesHint">예: 아람 자연이랑 · 그레이트북스 안녕 마음아 · 웅진 호기심 도서관</div>
+        <div class="series-note hidden" id="seriesNote"></div>
+        <button class="btn sm line hidden" id="btnSeriesKey" type="button" style="margin-top:8px">설정에서 카카오 키 넣기</button>
+      </div>
+
+      <div class="field">
+        <label for="seriesName">전집 이름 (책장에 묶을 이름)</label>
+        <input class="input" id="seriesName" placeholder="예: 아람 자연이랑" maxlength="60" autocomplete="off">
+        <div class="hint">검색어로 채워 둘게요. 담은 낱권은 이 이름 하나로 내 책장에 묶여 보여요.</div>
+      </div>
+
+      <div class="series-bar hidden" id="seriesBar">
+        <button class="series-all" id="btnSeriesAll" type="button">전체 해제</button>
+        <span class="series-cnt" id="seriesCnt"></span>
+      </div>
+      <div class="series-list hidden" id="seriesList"></div>
+
+      <div class="save-bar">
+        <button class="btn dark" id="btnSeriesAdd" type="button" disabled style="width:100%;padding:15px;border-radius:16px">선택한 0권 책장에 담기</button>
       </div>
     </div>
 
-    <div class="field">
-      <label for="seriesSearch">전집 이름</label>
-      <div class="search-row">
-        <input class="input" id="seriesSearch" placeholder="예: 아람 자연이랑" autocomplete="off" enterkeyhint="search">
-        <button class="btn dark" id="btnSeriesSearch" type="button">검색</button>
+    <div id="seriesPanePaste" class="hidden">
+      <p class="sheet-note" style="margin:0 0 12px">낱권 제목을 한 줄에 하나씩 붙여넣으면 한 번에 책장에 담아요. 검색에 낱권이 없어도 괜찮아요.</p>
+
+      <button class="btn line" id="btnPasteFile" type="button" style="width:100%;padding:11px;border-radius:13px;margin-bottom:12px;font-size:13px">📥 파일로 한꺼번에 불러오기 (.json · .txt)</button>
+      <input type="file" id="pasteFileInput" accept=".txt,.json,application/json,text/plain" hidden>
+
+      <div class="field">
+        <label>언어</label>
+        <div class="lang-toggle" id="pasteLang" role="tablist" aria-label="붙여넣는 책 언어">
+          <button class="lang-btn on" data-lang="ko" type="button" role="tab" aria-selected="true">한글</button>
+          <button class="lang-btn" data-lang="en" type="button" role="tab" aria-selected="false">영어</button>
+        </div>
       </div>
-      <div class="hint" id="seriesHint">예: 아람 자연이랑 · 그레이트북스 안녕 마음아 · 웅진 호기심 도서관</div>
-      <div class="series-note hidden" id="seriesNote"></div>
-      <button class="btn sm line hidden" id="btnSeriesKey" type="button" style="margin-top:8px">설정에서 카카오 키 넣기</button>
-    </div>
 
-    <div class="series-bar hidden" id="seriesBar">
-      <button class="series-all" id="btnSeriesAll" type="button">전체 해제</button>
-      <span class="series-cnt" id="seriesCnt"></span>
-    </div>
-    <div class="series-list hidden" id="seriesList"></div>
+      <div class="field">
+        <label for="pasteSeries">전집 이름 (권장)</label>
+        <input class="input" id="pasteSeries" placeholder="예: 아람 그리스로마신화" maxlength="60" autocomplete="off">
+        <div class="hint">적어 두면 이 전집 하나로 묶여 보여요. 비워 두면 낱권이 하나씩 담겨요.</div>
+      </div>
 
-    <div class="save-bar">
-      <button class="btn dark" id="btnSeriesAdd" type="button" disabled style="width:100%;padding:15px;border-radius:16px">선택한 0권 책장에 담기</button>
+      <div class="field row2">
+        <div>
+          <label for="pastePublisher">출판사 (선택)</label>
+          <input class="input" id="pastePublisher" placeholder="예: 아람북스" maxlength="40" autocomplete="off">
+        </div>
+        <div>
+          <label for="pastePages">기본 쪽수 (선택)</label>
+          <div class="pages-wrap">
+            <input class="input" id="pastePages" inputmode="numeric" placeholder="예: 40" maxlength="5" autocomplete="off">
+            <span class="punit">쪽</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pasteList">낱권 목록</label>
+        <div class="hint" style="margin:-1px 0 7px">번호(<b>1.</b> <b>01)</b>)·기호(<b>•</b> <b>-</b>)는 지우고, 제목 뒤 <b>40쪽</b>·<b>40p</b>는 쪽수로 담아요.</div>
+        <textarea class="input" id="pasteList" rows="4" placeholder="한 줄에 책 제목 하나씩 붙여넣으세요&#10;예:&#10;1. 최고의 신 제우스&#10;2. 최고의 여신 헤라" autocomplete="off"></textarea>
+      </div>
+
+      <div class="save-bar">
+        <div class="paste-count" id="pasteCount">붙여넣으면 담을 권수를 세어 볼게요</div>
+        <button class="btn dark" id="btnPasteAdd" type="button" disabled style="width:100%;padding:15px;border-radius:16px">0권 책장에 담기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1627,6 +1762,8 @@ function sanitizeShelf(s){
     coverData: typeof s.coverData === 'string' ? s.coverData : '',
     /* v2.6.9: 전집에서 담은 책은 ISBN을 남겨 두었다가 쪽수를 나중에 채운다 */
     isbn: cleanIsbn(s.isbn || ''),
+    /* v2.6.10: 전집 낱권은 전집 이름으로 묶어 책장에서 한 장으로 보여 준다 */
+    series: String(s.series || '').replace(/\s+/g, ' ').trim().slice(0, 60),
     createdAt: Number(s.createdAt) || Date.now()
   };
 }
@@ -2398,6 +2535,42 @@ function shelfCoverFallback(name){
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 function shelfRecs(id){ return db.books.filter(b => b.shelfId === id); }
+/* v2.6.10: 책장 항목의 전집 이름을 묶음 키로 쓴다 */
+function seriesKeyOf(v){
+  return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().toLowerCase();
+}
+/* 낱권 하나가 읽혔는지 — 이 항목으로 남긴 기록이 있거나, 제목이 읽은 기록과 맞는다 */
+function shelfItemRead(s){
+  if(!s) return false;
+  if(shelfRecs(s.id).length) return true;
+  return isBookRead(s.name, s.author);
+}
+function seriesShelfItems(name){
+  const k = seriesKeyOf(name);
+  if(!k) return [];
+  return db.shelf.filter(s => seriesKeyOf(s.series) === k);
+}
+/* 책장 카드 하나가 어떤 모양인지 — 전집 이름이 있으면 한 장으로 묶는다 */
+function shelfCards(){
+  const groups = new Map();
+  db.shelf.forEach(s => {
+    const k = seriesKeyOf(s.series);
+    if(!k) return;
+    let g = groups.get(k);
+    if(!g){ g = { key: k, name: String(s.series).replace(/\s+/g, ' ').trim(), items: [] }; groups.set(k, g); }
+    g.items.push(s);
+  });
+  const cards = [];
+  const made = new Set();
+  db.shelf.forEach(s => {
+    const k = seriesKeyOf(s.series);
+    if(!k){ cards.push({ type: 'one', item: s }); return; }
+    if(made.has(k)) return;
+    made.add(k);
+    cards.push({ type: 'set', group: groups.get(k) });
+  });
+  return cards;
+}
 const SHELF_SUG = [
   { name: '그레이트북스 안녕 마음아', publisher: '그레이트북스', lang: 'ko' },
   { name: '아람 자연이랑', publisher: '아람', lang: 'ko' }
@@ -2406,11 +2579,11 @@ const SHELF_SUG = [
 function renderShelf(){
   const list = $('#shelfList');
   if(!list) return;
-  const badge = $('#shelfBadge');
-  if(badge) badge.textContent = db.shelf.length + '종';
   list.innerHTML = '';
 
   if(!db.shelf.length){
+    const badge = $('#shelfBadge');
+    if(badge) badge.textContent = '0종';
     const box = document.createElement('div');
     box.className = 'empty';
     box.innerHTML = '<div class="em">📚</div>' +
@@ -2450,12 +2623,20 @@ function renderShelf(){
   const now = new Date();
   const ym = now.getFullYear() + '-' + pad(now.getMonth() + 1);
   const frag = document.createDocumentFragment();
-  db.shelf.forEach(s => {
+  const cards = shelfCards();
+  const badge = $('#shelfBadge');
+  if(badge){
+    const sets = cards.filter(c => c.type === 'set').length;
+    badge.textContent = cards.length + '종' + (sets ? ' · 전집 ' + sets : '');
+  }
+  cards.forEach(c => {
+    if(c.type === 'set'){ frag.appendChild(shelfSetCard(c.group)); return; }
+    const s = c.item;
     const recs = shelfRecs(s.id);
     const mN = recs.filter(b => String(b.date).slice(0, 7) === ym).length;
 
     const item = document.createElement('div');
-    const isRead = isBookRead(s.name, s.author);
+    const isRead = shelfItemRead(s);
     item.className = 'sh-item' + (isRead ? ' is-read' : '');
     item.dataset.id = s.id;
 
@@ -2543,10 +2724,364 @@ function renderShelf(){
 
     body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(acts);
     item.appendChild(cov); item.appendChild(body);
+    /* v2.6.10: 진짜 표지가 없으면 화면에 들어올 때 표지를 찾아 채운다 */
+    if(!shelfCoverSrc(s)) shelfCovWatch(cov, s.lang, s.name, s.author, s.id);
     if(s.lang === 'en') arWatchCard(item, s.name, s.author);
     frag.appendChild(item);
   });
   list.appendChild(frag);
+}
+
+/* ---------- 전집 카드 (책장 → 전집 → 낱권, v2.6.10) ----------
+   전집 이름이 같은 낱권들은 한 장으로 묶어 보여 주고, 누르면 낱권 목록(#seriesViewSheet)을 연다. */
+function shelfSetCard(group){
+  const items = group.items;
+  const total = items.length;
+  const read = items.filter(s => shelfItemRead(s)).length;
+  const pubs = [];
+  items.forEach(s => { if(s.publisher && pubs.indexOf(s.publisher) < 0) pubs.push(s.publisher); });
+  const first = items.find(s => shelfCoverSrc(s)) || items[0];
+
+  const item = document.createElement('div');
+  item.className = 'sh-item sh-set' + (total > 0 && read >= total ? ' is-read' : '');
+  item.dataset.set = group.key;
+
+  const cov = document.createElement('button');
+  cov.type = 'button';
+  cov.className = 'sh-cov';
+  cov.setAttribute('aria-label', group.name + ' 낱권 보기');
+  cov.onclick = () => openSeriesView(group.name);
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.src = (first && shelfCoverSrc(first)) || shelfCoverFallback(first ? first.name : group.name);
+  img.onerror = () => { img.onerror = null; img.src = shelfCoverFallback(first ? first.name : group.name); };
+  cov.appendChild(img);
+  const mark = document.createElement('i');
+  mark.className = 'set-mark';
+  mark.textContent = '📚';
+  mark.setAttribute('aria-hidden', 'true');
+  cov.appendChild(mark);
+  /* 대표 표지가 없으면 첫 낱권 제목으로 표지를 불러와 함께 채운다 */
+  if(first && !shelfCoverSrc(first)) shelfCovWatch(cov, first.lang, first.name, first.author, first.id);
+
+  const body = document.createElement('div');
+  body.className = 'sh-body';
+  const nm = document.createElement('button');
+  nm.type = 'button';
+  nm.className = 'sh-nm';
+  nm.textContent = group.name;
+  nm.onclick = () => openSeriesView(group.name);
+
+  const meta = document.createElement('div');
+  meta.className = 'sh-meta';
+  const seens = {};
+  items.forEach(s => {
+    const lg = s.lang === 'en' ? 'en' : 'ko';
+    if(seens[lg]) return;
+    seens[lg] = 1;
+    const t = document.createElement('span');
+    t.className = 'tg ' + lg;
+    t.textContent = lg === 'ko' ? '한글' : '영어';
+    meta.appendChild(t);
+  });
+  if(pubs.length){
+    const d = document.createElement('span');
+    d.className = 'sep';
+    d.textContent = '·';
+    meta.appendChild(d);
+    const pb = document.createElement('span');
+    pb.className = 'pub';
+    pb.textContent = pubs.slice(0, 2).join(', ');
+    meta.appendChild(pb);
+  }
+  const cnt = document.createElement('div');
+  cnt.className = 'sh-cnt';
+  cnt.innerHTML = '총 <b>' + total + '권</b> · <b>' + read + '권</b> 읽음';
+
+  const bar = document.createElement('div');
+  bar.className = 'sh-bar';
+  const fill = document.createElement('i');
+  fill.style.width = Math.round((read / Math.max(1, total)) * 100) + '%';
+  bar.appendChild(fill);
+
+  const acts = document.createElement('div');
+  acts.className = 'sh-acts';
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'sh-rec';
+  open.textContent = '낱권 ' + total + '권 보기';
+  open.setAttribute('aria-label', group.name + ' 낱권 ' + total + '권 보기');
+  open.onclick = () => openSeriesView(group.name);
+  acts.appendChild(open);
+
+  body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(bar); body.appendChild(acts);
+  item.appendChild(cov); item.appendChild(body);
+  /* 카드 빈 곳을 눌러도 낱권 목록이 열린다 (안쪽 버튼은 따로 동작) */
+  item.addEventListener('click', e => {
+    if(e.target.closest('button')) return;
+    openSeriesView(group.name);
+  });
+  return item;
+}
+
+/* ---------- 전집 낱권 보기 시트 (v2.6.10) ---------- */
+let svSeries = '';
+let svQuery = '';
+let svUnread = false;
+
+function seriesViewOpen(){ return !!($('#seriesViewSheet') && $('#seriesViewSheet').classList.contains('open')); }
+function openSeriesView(name){
+  const items = seriesShelfItems(name);
+  if(!items.length){ toast('전집 낱권을 찾지 못했어요'); return false; }
+  svSeries = items[0].series;
+  svQuery = '';
+  svUnread = false;
+  if($('#svSearch')) $('#svSearch').value = '';
+  if($('#svUnread')){ $('#svUnread').classList.remove('on'); $('#svUnread').setAttribute('aria-pressed', 'false'); }
+  renderSeriesView();
+  openSheet('seriesViewSheet');
+  const sh = $('#seriesViewSheet') ? $('#seriesViewSheet .sheet') : null;
+  if(sh) sh.scrollTop = 0;
+  return true;
+}
+function renderSeriesView(){
+  const items = seriesShelfItems(svSeries);
+  const total = items.length;
+  const read = items.filter(s => shelfItemRead(s)).length;
+  const title = $('#seriesViewTitle');
+  if(title) title.textContent = svSeries || '전집';
+  const sum = $('#svSum');
+  if(sum){
+    const pubs = [];
+    items.forEach(s => { if(s.publisher && pubs.indexOf(s.publisher) < 0) pubs.push(s.publisher); });
+    const langs = [];
+    if(items.some(s => (s.lang === 'en' ? 'en' : 'ko') === 'ko')) langs.push('한글');
+    if(items.some(s => s.lang === 'en')) langs.push('영어');
+    let h = '<span><b>' + read + '/' + total + '권</b> 읽음</span>';
+    if(langs.length) h += '<span class="sep">·</span><span>' + langs.join('·') + '</span>';
+    if(pubs.length) h += '<span class="sep">·</span><span>' + escXML(pubs.slice(0, 2).join(', ')) + '</span>';
+    sum.innerHTML = h;
+  }
+  const list = $('#svList');
+  if(!list) return;
+  list.innerHTML = '';
+  const q = seriesNorm(svQuery);
+  const shown = items.filter(s => {
+    if(svUnread && shelfItemRead(s)) return false;
+    if(q && seriesNorm(s.name).indexOf(q) < 0) return false;
+    return true;
+  });
+  if(!shown.length){
+    const em = document.createElement('div');
+    em.className = 'sv-empty';
+    em.textContent = svUnread ? '안 읽은 낱권이 없어요' : (q ? '찾는 낱권이 없어요' : '낱권이 없어요');
+    list.appendChild(em);
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  shown.forEach(s => frag.appendChild(seriesViewRow(s, items.indexOf(s) + 1)));
+  list.appendChild(frag);
+}
+function seriesViewRow(s, no){
+  const read = shelfItemRead(s);
+  const row = document.createElement('div');
+  row.className = 'sv-row' + (read ? ' is-read' : '');
+  row.dataset.id = s.id;
+
+  const n = document.createElement('span');
+  n.className = 'sv-no';
+  n.textContent = String(no);
+  row.appendChild(n);
+
+  const cov = document.createElement('span');
+  cov.className = 'sv-cov';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.src = shelfCoverSrc(s) || shelfCoverFallback(s.name);
+  img.onerror = () => { cov.innerHTML = '<span class="ph">📚</span>'; };
+  cov.appendChild(img);
+  row.appendChild(cov);
+  /* 표지가 없으면 이 줄이 화면에 들어올 때 표지를 찾아 채운다 */
+  if(!shelfCoverSrc(s)) shelfCovWatch(cov, s.lang, s.name, s.author, s.id);
+
+  const tx = document.createElement('div');
+  tx.className = 'sv-tx';
+  const ttl = document.createElement('button');
+  ttl.type = 'button';
+  ttl.className = 'sv-ttl';
+  ttl.textContent = s.name;
+  ttl.onclick = () => openQuick(s.id);
+  tx.appendChild(ttl);
+
+  const meta = document.createElement('div');
+  meta.className = 'sv-meta';
+  if(read){
+    const rd = document.createElement('span');
+    rd.className = 'rd';
+    rd.textContent = '✓ 읽음';
+    meta.appendChild(rd);
+  }
+  const pg = toPages(s.pages);
+  if(pg){
+    const sp = document.createElement('span');
+    sp.textContent = pg + '쪽';
+    meta.appendChild(sp);
+  }
+  const recs = shelfRecs(s.id).length;
+  if(recs){
+    const d = document.createElement('span');
+    d.className = 'sep';
+    d.textContent = '·';
+    meta.appendChild(d);
+    const rc = document.createElement('span');
+    rc.textContent = '기록 ' + recs + '권';
+    meta.appendChild(rc);
+  }
+  if(s.lang === 'en'){
+    const arSlot = document.createElement('span');
+    arSlot.className = 'ar-slot';
+    arSlot.setAttribute('data-ar-slot', '1');
+    meta.appendChild(arSlot);
+  }
+  tx.appendChild(meta);
+  row.appendChild(tx);
+
+  const acts = document.createElement('div');
+  acts.className = 'sv-acts';
+  const rec = document.createElement('button');
+  rec.type = 'button';
+  rec.className = 'sv-btn rec';
+  rec.textContent = '+ 기록';
+  rec.setAttribute('aria-label', s.name + ' 기록하기');
+  rec.onclick = () => openQuick(s.id);
+  const ed = document.createElement('button');
+  ed.type = 'button';
+  ed.className = 'sv-btn ed';
+  ed.textContent = '수정';
+  ed.setAttribute('aria-label', s.name + ' 수정');
+  ed.onclick = () => openShelfForm(s.id);
+  acts.appendChild(rec);
+  acts.appendChild(ed);
+  row.appendChild(acts);
+
+  if(s.lang === 'en') arWatchCard(row, s.name, s.author);
+  return row;
+}
+
+/* ---------- 책장 표지 자동 채우기 (v2.6.10) ----------
+   v2.6.8의 잠수네 표지 방식 그대로: 카드가 화면에 들어올 때만(IntersectionObserver) 제목으로
+   표지 주소를 묻고, 받은 주소는 기기 표지 캐시와 책장 항목에 남겨 다시 묻지 않는다(주소 문자열만). */
+const SH_COV_MAX_REQ = 2;
+const SH_COV_GAP = 140;
+let shCovObs = null, shCovQ = [], shCovBusy = 0, shCovNextAt = 0, shCovTimer = 0, shCovSaveT = 0;
+const shCovByKey = new Map();
+
+function shCovStore(id, url){
+  if(!id || !url) return;
+  const s = db.shelf.find(x => x.id === id);
+  if(!s || s.cover || s.coverData) return;
+  s.cover = String(url);
+  if(shCovSaveT) return;
+  shCovSaveT = setTimeout(() => { shCovSaveT = 0; save(); }, 800);
+}
+function shCovApply(el, url, key){
+  if(!el || !el.isConnected) return;
+  const img = el.querySelector('img');
+  if(!img) return;
+  const cur = String(img.getAttribute('src') || '');
+  if(cur && cur.indexOf('data:') !== 0) return;   /* 이미 진짜 표지가 있다 */
+  const ph = cur || shelfCoverFallback(el.dataset.cvTitle || '');
+  img.onload = () => { img.onload = null; img.onerror = null; el.dataset.covReal = '1'; };
+  img.onerror = () => {
+    img.onerror = null; img.onload = null;
+    delete el.dataset.covReal;
+    img.src = ph;
+    if(key){ jamCovForget(key); jamCovMissAdd(key); }   /* 죽은 주소는 지우고 이번 방문에는 다시 묻지 않는다 */
+  };
+  img.src = url;
+}
+function shCovPump(){
+  if(shCovBusy >= SH_COV_MAX_REQ || !shCovQ.length) return;
+  const wait = shCovNextAt - Date.now();
+  if(wait > 0){
+    if(!shCovTimer) shCovTimer = setTimeout(() => { shCovTimer = 0; shCovPump(); }, wait);
+    return;
+  }
+  const job = shCovQ.shift();
+  shCovNextAt = Date.now() + SH_COV_GAP;
+  shCovBusy++;
+  Promise.resolve()
+    .then(() => jamCovLookup(job.kind, job.title, job.author))
+    .then(url => {
+      if(url){
+        jamCovPut(job.key, url);
+        (job.els || []).forEach(el => { shCovApply(el, url, job.key); if(el && el.dataset) shCovStore(el.dataset.cvId, url); });
+      }else{
+        jamCovMissAdd(job.key);
+      }
+    })
+    .catch(() => {})
+    .then(() => {
+      shCovByKey.delete(job.key);
+      (job.els || []).forEach(el => { if(el && el.dataset) el.dataset.covBusy = ''; });
+      shCovBusy = Math.max(0, shCovBusy - 1);
+      shCovPump();
+    });
+}
+function shCovQueue(el, kind, title, author, key){
+  if(el.dataset.covBusy === '1') return;
+  el.dataset.covBusy = '1';
+  const job = shCovByKey.get(key);
+  if(job){ job.els.push(el); return; }
+  const nj = { kind: kind, title: title, author: author, key: key, els: [el] };
+  shCovByKey.set(key, nj);
+  shCovQ.push(nj);
+  shCovPump();
+}
+function shCovObserver(){
+  if(shCovObs) return shCovObs;
+  if(typeof IntersectionObserver !== 'function') return null;
+  shCovObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      try{ shCovObs.unobserve(el); }catch(e){}
+      if(el.dataset.covBusy === '1') return;
+      const kind = el.dataset.cvKind === 'en' ? 'en' : 'ko';
+      const title = el.dataset.cvTitle || '';
+      const author = el.dataset.cvAuth || '';
+      if(!title) return;
+      const key = jamCovKey(kind, title, author);
+      const hit = jamCovGet(key);
+      if(hit){ shCovApply(el, hit, key); shCovStore(el.dataset.cvId, hit); return; }
+      if(jamCovMissed(key)) return;
+      shCovQueue(el, kind, title, author, key);
+    });
+  }, { rootMargin: '240px 0px' });
+  return shCovObs;
+}
+/* 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 */
+function shelfCovWatch(el, lang, title, author, id){
+  if(!el || !el.dataset) return;
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return;
+  const img = el.querySelector('img');
+  if(!img) return;
+  el.dataset.cvTitle = t;
+  el.dataset.cvAuth = String(author == null ? '' : author);
+  el.dataset.cvKind = lang === 'en' ? 'en' : 'ko';
+  el.dataset.cvId = String(id || '');
+  const cur = String(img.getAttribute('src') || '');
+  if(cur && cur.indexOf('data:') !== 0) return;   /* 진짜 표지가 이미 있다 */
+  const key = jamCovKey(el.dataset.cvKind, t, el.dataset.cvAuth);
+  const hit = jamCovGet(key);
+  if(hit){ shCovApply(el, hit, key); shCovStore(el.dataset.cvId, hit); return; }
+  if(jamCovMissed(key)) return;
+  const ob = shCovObserver();
+  if(ob) ob.observe(el);
+  else shCovQueue(el, el.dataset.cvKind, t, el.dataset.cvAuth, key);
 }
 
 /* ---------- 내 책장 등록/수정 ---------- */
@@ -2581,11 +3116,13 @@ function openShelfForm(id, preset){
       author: preset ? String(preset.author || '') : '',
       lang: preset ? (preset.lang === 'en' ? 'en' : 'ko') : '',
       publisher: preset ? String(preset.publisher || '') : '',
+      series: preset ? String(preset.series || '') : '',
       cover: '', coverData: ''
     };
   }
   $('#shelfFormTitle').textContent = cur ? '책장 항목 수정' : '전집/책 등록';
   $('#sfName').value = shelfDraft.name || '';
+  $('#sfSeries').value = shelfDraft.series || '';
   $('#sfAuthor').value = shelfDraft.author || '';
   $('#sfPages').value = toPages(shelfDraft.pages) ? String(toPages(shelfDraft.pages)) : '';
   $('#sfPublisher').value = shelfDraft.publisher || '';
@@ -2605,6 +3142,7 @@ function saveShelf(){
   if(!shelfDraft.lang){ toast('한글책 / 영어책을 골라 주세요'); return; }
   const author = $('#sfAuthor').value.trim();
   const publisher = $('#sfPublisher').value.trim();
+  const series = $('#sfSeries').value.replace(/\s+/g, ' ').trim();
   const dup = db.shelf.find(s => s.id !== shelfDraft.id && s.name === name && s.lang === shelfDraft.lang);
   if(dup){ toast('이미 책장에 있는 이름이에요'); return; }
   const item = sanitizeShelf({
@@ -2614,6 +3152,7 @@ function saveShelf(){
     pages: $('#sfPages').value,
     lang: shelfDraft.lang,
     publisher: publisher,
+    series: series,
     cover: shelfDraft.cover,
     coverData: shelfDraft.coverData,
     isbn: shelfDraft.isbn || '',   /* v2.6.9: 전집에서 담은 ISBN은 손으로 고쳐도 남긴다 */
@@ -2626,6 +3165,7 @@ function saveShelf(){
   save();
   render();
   closeSheet($('#shelfSheet'));
+  if(seriesViewOpen()) renderSeriesView();
   toast(i >= 0 ? '책장 항목을 수정했어요' : '‘' + item.name + '’' + particle(item.name, '을', '를') + ' 책장에 담았어요');
 }
 function deleteShelf(){
@@ -2643,6 +3183,10 @@ function deleteShelf(){
   save();
   render();
   closeSheet($('#shelfSheet'));
+  if(seriesViewOpen()){
+    if(seriesShelfItems(svSeries).length) renderSeriesView();
+    else closeSheet($('#seriesViewSheet'));
+  }
   toast('‘' + nm + '’' + particle(nm, '을', '를') + ' 책장에서 지웠어요' + (n ? ' · 기록 ' + n + '권은 그대로예요' : ''));
 }
 
@@ -3000,11 +3544,25 @@ function openSeriesSheet(){
   seriesBusy = false;
   const inp = $('#seriesSearch');
   if(inp) inp.value = '';
+  const nameEl = $('#seriesName');
+  if(nameEl) nameEl.value = '';
+  seriesNameAuto = '';
+  const ps = $('#pasteSeries');
+  if(ps) ps.value = '';
+  const pb = $('#pastePublisher');
+  if(pb) pb.value = '';
+  const pp = $('#pastePages');
+  if(pp) pp.value = '';
+  const pl = $('#pasteList');
+  if(pl) pl.value = '';
   $('#btnSeriesKey').classList.add('hidden');
   seriesSetNote('');
   setSeriesLang(seriesLang);
+  setPasteLang(pasteLang);
+  setSeriesMode(seriesMode);
+  refreshPasteCount();
   openSheet('seriesSheet');
-  setTimeout(() => { try{ $('#seriesSearch').focus(); }catch(e){} }, 260);
+  if(seriesMode === 'search') setTimeout(() => { try{ $('#seriesSearch').focus(); }catch(e){} }, 260);
 }
 function toggleSeriesAll(){
   const sel = seriesSelectable();
@@ -3019,6 +3577,13 @@ async function runSeriesSearch(q){
   if(seriesBusy) return seriesItems;
   seriesBusy = true;
   seriesQuery = query;
+  /* v2.6.10: 검색어를 ‘전집 이름(책장에 묶을 이름)’에 자동으로 채운다.
+     사용자가 직접 고쳐 둔 이름은 건드리지 않는다. */
+  const nameEl = $('#seriesName');
+  if(nameEl){
+    const cur = nameEl.value.trim();
+    if(!cur || cur === seriesNameAuto){ nameEl.value = query; seriesNameAuto = query; }
+  }
   const seq = ++seriesSeq;
   const lang = seriesLang;   /* 찾는 중에 언어를 바꾸면 그 결과는 버린다 */
   seriesItems = [];
@@ -3058,6 +3623,7 @@ async function runSeriesSearch(q){
 function addSeriesSelected(){
   const picked = seriesItems.filter(it => it.sel && !it.already);
   if(!picked.length){ toast('담을 책을 골라 주세요'); return 0; }
+  const seriesName = String(($('#seriesName') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 60);
   const added = [];
   picked.forEach(it => {
     const name = String(it.title || '').replace(/\s+/g, ' ').trim().slice(0, 60);
@@ -3066,7 +3632,7 @@ function addSeriesSelected(){
     const item = sanitizeShelf({
       id: uidS(), name: name, author: it.author, lang: seriesLang,
       publisher: it.publisher, pages: it.pages, cover: it.cover || '',
-      isbn: it.isbn || '', createdAt: Date.now()
+      isbn: it.isbn || '', series: seriesName, createdAt: Date.now()
     });
     if(!item) return;
     db.shelf.push(item);
@@ -3103,6 +3669,296 @@ async function seriesBackfillPages(items){
 }
 
 $('#btnSeriesFind').onclick = () => openSeriesSheet();
+
+/* ---------- 목록 붙여넣기 (v2.6.10) ----------
+   카카오 책 검색에 낱권이 하나도 없는 전집(예: 아람 그리스로마신화 30권)은
+   낱권 제목 목록을 그대로 붙여넣어 한 번에 책장에 담는다.
+   번호·글머리 기호는 지우되 숫자로 시작하는 제목(100층짜리 집)은 그대로 둔다. */
+let seriesMode = 'search';
+let pasteLang = 'ko';
+let seriesNameAuto = '';
+
+function setSeriesMode(mode){
+  seriesMode = mode === 'paste' ? 'paste' : 'search';
+  $$('#seriesMode .mode-tab').forEach(b => {
+    const on = b.dataset.mode === seriesMode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const sp = $('#seriesPaneSearch'), pp = $('#seriesPanePaste');
+  if(sp) sp.classList.toggle('hidden', seriesMode !== 'search');
+  if(pp) pp.classList.toggle('hidden', seriesMode !== 'paste');
+  if(seriesMode === 'paste') refreshPasteCount();
+  const sheet = $('#seriesSheet .sheet');
+  if(sheet) sheet.scrollTop = 0;
+}
+function setPasteLang(lang){
+  pasteLang = lang === 'en' ? 'en' : 'ko';
+  $$('#pasteLang .lang-btn').forEach(b => {
+    const on = b.dataset.lang === pasteLang;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  refreshPasteCount();
+}
+/* 한 줄에서 앞의 번호·기호만 걷어낸다.
+   ‘1. 제목’ ‘01) 제목’ ‘1 제목’ ‘- 제목’ ‘• 제목’은 지우고,
+   ‘100층짜리 집’처럼 숫자 뒤에 바로 글자가 오면 그대로 둔다. */
+function pasteStripPrefix(line){
+  let s = String(line == null ? '' : line).replace(/\u00A0/g, ' ').replace(/[\t\u3000]/g, ' ').trim();
+  if(!s) return '';
+  s = s.replace(/^[-–—•·∙▪◦‣*>»]+\s+/, '');        /* 글머리 기호 + 칸 */
+  s = s.replace(/^[•·∙▪◦‣]+/, '');                  /* 붙여 쓴 글머리 기호 */
+  s = s.replace(/^[\(\[]\s*\d{1,3}\s*[\)\]]\s*[\.\)]?\s*/, '');   /* (1) [1] */
+  s = s.replace(/^\d{1,3}\s*[\.\)\]]\s*/, '');     /* 1. 01) 3] */
+  s = s.replace(/^\d{1,3}\s+/, '');                  /* 1 제목 */
+  return s.trim();
+}
+/* 제목 뒤에 붙인 쪽수(40쪽 · 40p · (40페이지))를 떼어 낸다 */
+function pastePullPages(s){
+  const raw = String(s == null ? '' : s);
+  const m = /[\s,·|]*[\(\[]?\s*(\d{1,4})\s*(?:p|P|페이지|쪽)\s*[\)\]]?\s*$/.exec(raw);
+  if(!m) return { text: raw, pages: 0 };
+  const n = parseInt(m[1], 10);
+  if(!Number.isFinite(n) || n < 1 || n > 2000) return { text: raw, pages: 0 };
+  const text = raw.slice(0, m.index).trim();
+  if(!text) return { text: raw, pages: 0 };
+  return { text: text, pages: n };
+}
+function pasteParse(){
+  const ta = $('#pasteList');
+  const lang = pasteLang === 'en' ? 'en' : 'ko';
+  const defPages = toPages(($('#pastePages') || {}).value) || 0;
+  const lines = String((ta && ta.value) || '').split(/\r?\n/);
+  const seen = new Set();
+  const items = [];
+  let raw = 0, dupInList = 0;
+  lines.forEach(line => {
+    let s = pasteStripPrefix(line);
+    if(!s) return;
+    const pg = pastePullPages(s);
+    s = pg.text.replace(/\s+/g, ' ').trim();
+    if(!s) return;
+    raw++;
+    const k = seriesNorm(s);
+    if(!k) return;
+    if(seen.has(k)){ dupInList++; return; }
+    seen.add(k);
+    items.push({ name: s.slice(0, 60), pages: pg.pages || defPages || 0, lang: lang });
+  });
+  const fresh = [], inShelf = [];
+  items.forEach(it => {
+    const k = seriesNorm(it.name);
+    const hit = db.shelf.some(x => seriesNorm(x.name) === k && (x.lang === 'en' ? 'en' : 'ko') === it.lang);
+    (hit ? inShelf : fresh).push(it);
+  });
+  return { items: items, fresh: fresh, dupes: dupInList + inShelf.length, raw: raw, lang: lang };
+}
+function refreshPasteCount(){
+  const box = $('#pasteCount');
+  const btn = $('#btnPasteAdd');
+  const p = pasteParse();
+  if(box){
+    if(!p.raw){
+      box.textContent = '붙여넣으면 담을 권수를 세어 볼게요';
+    }else{
+      box.textContent = '인식된 책 ' + p.items.length + '권 · 중복 ' + p.dupes + '권 제외';
+    }
+    box.classList.toggle('warn', !!p.raw && !p.fresh.length);
+  }
+  if(btn){
+    btn.textContent = p.fresh.length + '권 책장에 담기';
+    btn.disabled = p.fresh.length === 0;
+  }
+  return p;
+}
+function addPasteBooks(){
+  const p = pasteParse();
+  if(!p.fresh.length){
+    toast(p.items.length ? '이미 책장에 있는 책이에요' : '붙여넣은 책이 없어요');
+    return 0;
+  }
+  const seriesName = String(($('#pasteSeries') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  const publisher = String(($('#pastePublisher') || {}).value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  const added = [];
+  p.fresh.forEach((it, i) => {
+    const item = sanitizeShelf({
+      id: uidS(), name: it.name, author: '', lang: it.lang,
+      publisher: publisher, pages: it.pages || null, series: seriesName,
+      createdAt: Date.now() + i
+    });
+    if(!item) return;
+    db.shelf.push(item);
+    added.push(item);
+  });
+  if(!added.length){ toast('담지 못했어요'); return 0; }
+  save();
+  render();
+  closeSheet($('#seriesSheet'));
+  toast(added.length + '권 책장에 담았어요');
+  return added.length;
+}
+$('#seriesMode').addEventListener('click', e => {
+  const b = e.target.closest('.mode-tab');
+  if(!b) return;
+  setSeriesMode(b.dataset.mode);
+});
+$('#pasteLang').addEventListener('click', e => {
+  const b = e.target.closest('.lang-btn');
+  if(!b) return;
+  setPasteLang(b.dataset.lang);
+});
+['#pasteList', '#pastePages', '#pasteSeries', '#pastePublisher'].forEach(sel => {
+  const el = $(sel);
+  if(el) el.addEventListener('input', refreshPasteCount);
+});
+$('#btnPasteAdd').onclick = () => addPasteBooks();
+
+/* ---------- 파일로 한꺼번에 불러오기 (v2.6.10) ----------
+   .json : [{ series, name(또는 title), author, publisher, lang, pages, cover }]
+   .txt  : [전집 이름] 또는 # 전집 이름 줄 뒤에 낱권 제목을 한 줄씩 */
+function shelfNormLang(v){
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  if(/^(en|eng|english|영어|영어책)$/.test(s)) return 'en';
+  if(/^(ko|kor|korean|한글|한글책|국문)$/.test(s)) return 'ko';
+  return '';
+}
+function shelfImportList(text){
+  const src = String(text == null ? '' : text).trim();
+  const out = [];
+  const pushObj = o => {
+    if(!o || typeof o !== 'object' || Array.isArray(o)) return;
+    const name = String(o.name || o.title || o['제목'] || '').replace(/\s+/g, ' ').trim();
+    if(!name) return;
+    out.push({
+      series: String(o.series || o.set || o.volume_set || o['전집'] || o['전집이름'] || '').replace(/\s+/g, ' ').trim(),
+      name: name,
+      author: String(o.author || o.writer || o['지은이'] || o['글'] || '').replace(/\s+/g, ' ').trim(),
+      publisher: String(o.publisher || o['출판사'] || '').replace(/\s+/g, ' ').trim(),
+      lang: shelfNormLang(o.lang || o['언어']),
+      pages: toPages(o.pages || o.page || o['쪽수']) || 0,
+      cover: String(o.cover || o.thumbnail || o['표지'] || '').trim()
+    });
+  };
+  /* 1) JSON (배열 또는 {items|books|shelf|list: [...]}) */
+  if(/^[\[{]/.test(src)){
+    let parsed = null;
+    try{ parsed = JSON.parse(src); }catch(e){ parsed = null; }
+    if(parsed){
+      let arr = parsed;
+      if(!Array.isArray(arr)) arr = parsed.items || parsed.books || parsed.shelf || parsed.list || parsed.volumes || [];
+      if(Array.isArray(arr)){
+        arr.forEach(pushObj);
+        if(out.length) return out;
+      }
+    }
+  }
+  /* 2) 줄 단위 텍스트 — [전집 이름] · # 전집 이름 | 출판사 | 40 | 한글 */
+  const cur = { series: '', publisher: '', lang: '', pages: 0 };
+  const readHeader = raw => {
+    const segs = String(raw || '').split('|').map(x => x.trim()).filter(Boolean);
+    cur.series = segs[0] || '';
+    cur.publisher = '';
+    cur.lang = '';
+    cur.pages = 0;
+    segs.slice(1).forEach(x => {
+      const lg = shelfNormLang(x);
+      if(lg){ cur.lang = lg; return; }
+      if(/^\d{1,4}\s*(?:쪽|p|페이지)?$/i.test(x)){
+        const n = parseInt(x, 10);
+        if(n >= 1 && n <= 2000){ cur.pages = n; return; }
+      }
+      cur.publisher = x;
+    });
+  };
+  String(text == null ? '' : text).split(/\r?\n/).forEach(line => {
+    const s = String(line).trim();
+    if(!s) return;
+    if(/^\[.+\]$/.test(s)){ readHeader(s.slice(1, -1)); return; }
+    if(/^#{1,6}\s*\S/.test(s)){ readHeader(s.replace(/^#+\s*/, '')); return; }
+    if(/^[-=*_~]{3,}$/.test(s)) return;              /* 구분선 */
+    let t = pasteStripPrefix(s);
+    if(!t) return;
+    const pg = pastePullPages(t);
+    t = pg.text.replace(/\s+/g, ' ').trim();
+    if(!t) return;
+    out.push({
+      series: cur.series, name: t.slice(0, 60), author: '',
+      publisher: cur.publisher, lang: cur.lang, pages: pg.pages || cur.pages || 0, cover: ''
+    });
+  });
+  return out;
+}
+function shelfImportApply(list){
+  const defLang = pasteLang === 'en' ? 'en' : 'ko';
+  const defPages = toPages(($('#pastePages') || {}).value) || 0;
+  const defPublisher = String(($('#pastePublisher') || {}).value || '').replace(/\s+/g, ' ').trim();
+  const added = [], sets = new Set();
+  let dupes = 0, bad = 0;
+  list.forEach((it, i) => {
+    const name = String(it.name || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if(!name){ bad++; return; }
+    const lang = it.lang === 'en' ? 'en' : (it.lang === 'ko' ? 'ko' : defLang);
+    const k = seriesNorm(name);
+    if(db.shelf.some(x => seriesNorm(x.name) === k && (x.lang === 'en' ? 'en' : 'ko') === lang)){ dupes++; return; }
+    const item = sanitizeShelf({
+      id: uidS(), name: name, author: it.author || '', lang: lang,
+      publisher: it.publisher || defPublisher, pages: it.pages || defPages || null,
+      cover: it.cover || '', series: it.series || '', createdAt: Date.now() + i
+    });
+    if(!item){ bad++; return; }
+    db.shelf.push(item);
+    added.push(item);
+    if(item.series) sets.add(seriesKeyOf(item.series));
+  });
+  if(!added.length){
+    toast(dupes ? '이미 책장에 있는 책이에요' : '파일에서 담을 책을 찾지 못했어요');
+    return { added: 0, dupes: dupes, series: 0, bad: bad };
+  }
+  save();
+  render();
+  closeSheet($('#seriesSheet'));
+  toast(added.length + '권' + (sets.size ? '(' + sets.size + '개 전집)' : '') + '을 책장에 담았어요');
+  return { added: added.length, dupes: dupes, series: sets.size, bad: bad };
+}
+function shelfImportText(text){
+  const list = shelfImportList(text);
+  if(!list.length){ toast('파일에서 책을 찾지 못했어요'); return { added: 0, dupes: 0, series: 0, bad: 0 }; }
+  return shelfImportApply(list);
+}
+function shelfReadFile(file){
+  return new Promise((res, rej) => {
+    try{
+      if(file && typeof file.text === 'function'){ file.text().then(res).catch(rej); return; }
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result || ''));
+      fr.onerror = () => rej(fr.error || new Error('read'));
+      fr.readAsText(file, 'utf-8');
+    }catch(e){ rej(e); }
+  });
+}
+$('#btnPasteFile').onclick = () => $('#pasteFileInput').click();
+$('#pasteFileInput').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  if(f.size > 3 * 1024 * 1024){ toast('파일이 너무 커요 (3MB 이하)'); return; }
+  try{
+    const text = await shelfReadFile(f);
+    shelfImportText(text);
+  }catch(err){
+    console.warn(err);
+    toast('파일을 읽지 못했어요');
+  }
+});
+$('#svSearch').addEventListener('input', e => { svQuery = e.target.value; renderSeriesView(); });
+$('#svUnread').onclick = () => {
+  svUnread = !svUnread;
+  $('#svUnread').classList.toggle('on', svUnread);
+  $('#svUnread').setAttribute('aria-pressed', svUnread ? 'true' : 'false');
+  renderSeriesView();
+};
+$('#btnSvClose').onclick = () => closeSheet($('#seriesViewSheet'));
 $('#btnSeriesKey').onclick = () => openKeySettings();
 $('#seriesLang').addEventListener('click', e => {
   const b = e.target.closest('.lang-btn');
@@ -3256,12 +4112,14 @@ function saveQuick(){
   if(view.child !== 'all' && kids.indexOf(view.child) < 0) view.child = 'all';
   render();
   closeSheet($('#quickSheet'));
+  if(seriesViewOpen()) renderSeriesView();
   toast('기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일' + (sub ? ' ' + sub : ''), '되돌리기', () => {
     const i = db.books.findIndex(b => b.id === rec.id);
     if(i < 0) return;
     db.books.splice(i, 1);
     save();
     render();
+    if(seriesViewOpen()) renderSeriesView();
     toast('되돌렸어요');
   });
 }
@@ -9066,7 +9924,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.9',
+  version: '2.6.10',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -9099,6 +9957,7 @@ window.__rc = {
   shelfApi: {
     list: () => db.shelf.map(s => ({
       id: s.id, name: s.name, author: s.author, lang: s.lang, publisher: s.publisher, pages: toPages(s.pages),
+      series: s.series || '',
       cover: s.coverData ? 'data' : (s.cover ? 'url' : 'auto'),
       recs: shelfRecs(s.id).length
     })),
@@ -9142,7 +10001,60 @@ window.__rc = {
     toggleAll: () => { toggleSeriesAll(); return seriesSelectedCount(); },
     add: () => addSeriesSelected(),
     shelf: () => db.shelf.map(s => ({ name: s.name, lang: s.lang, pages: toPages(s.pages) || 0,
-      isbn: s.isbn || '', cover: !!s.cover, coverData: !!s.coverData, author: s.author || '', publisher: s.publisher || '' }))
+      isbn: s.isbn || '', cover: !!s.cover, coverData: !!s.coverData, author: s.author || '', publisher: s.publisher || '', series: s.series || '' })),
+    /* v2.6.10 목록 붙여넣기·파일 불러오기 확인용 */
+    mode: m => { setSeriesMode(m); return seriesMode; },
+    paste: {
+      lang: l => { setPasteLang(l); return pasteLang; },
+      fill: (text, opt) => {
+        if($('#pasteList')) $('#pasteList').value = String(text == null ? '' : text);
+        const o = opt || {};
+        const has = k => Object.prototype.hasOwnProperty.call(o, k);
+        if(has('series') && $('#pasteSeries')) $('#pasteSeries').value = String(o.series || '');
+        if(has('publisher') && $('#pastePublisher')) $('#pastePublisher').value = String(o.publisher || '');
+        if(has('pages') && $('#pastePages')) $('#pastePages').value = String(o.pages || '');
+        refreshPasteCount();
+        return pasteParse();
+      },
+      count: () => pasteParse(),
+      label: () => ({
+        count: ($('#pasteCount') || {}).textContent || '',
+        button: ($('#btnPasteAdd') || {}).textContent || '',
+        disabled: !!($('#btnPasteAdd') && $('#btnPasteAdd').disabled)
+      }),
+      add: () => addPasteBooks(),
+      importText: t => shelfImportText(t),
+      parseFile: t => shelfImportList(t)
+    },
+    view: {
+      open: name => openSeriesView(name),
+      close: () => closeSheet($('#seriesViewSheet')),
+      search: q => { svQuery = String(q || ''); if($('#svSearch')) $('#svSearch').value = svQuery; renderSeriesView(); },
+      unread: v => { svUnread = !!v; if($('#svUnread')) $('#svUnread').classList.toggle('on', svUnread); renderSeriesView(); },
+      state: () => ({
+        open: seriesViewOpen(), series: svSeries,
+        title: ($('#seriesViewTitle') || {}).textContent || '',
+        sum: ($('#svSum') || {}).textContent || '',
+        rows: $$('#svList .sv-row').length,
+        readRows: $$('#svList .sv-row.is-read').length,
+        names: $$('#svList .sv-row .sv-ttl').map(e => e.textContent),
+        covers: $$('#svList .sv-row .sv-cov img').map(e => String(e.getAttribute('src') || '').slice(0, 60))
+      })
+    },
+    cards: () => $$('#shelfList .sh-item').map(e => ({
+      set: e.dataset.set || '',
+      name: (e.querySelector('.sh-nm') || {}).textContent || '',
+      cnt: (e.querySelector('.sh-cnt') || {}).textContent || '',
+      isSet: e.classList.contains('sh-set')
+    })),
+    cardClick: i => {
+      const card = $$('#shelfList .sh-item')[i];
+      if(!card) return false;
+      const btn = card.querySelector('.sh-rec') || card.querySelector('.sh-nm');
+      if(!btn) return false;
+      btn.click();
+      return true;
+    }
   },
   /* v1.8 책 추천·읽을 목록 확인용 */
   recApi: {
