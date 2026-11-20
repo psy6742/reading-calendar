@@ -1835,6 +1835,9 @@ const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A
 const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
 /* v2.6.18: 전집(시리즈) 항목에 붙는 낱권 목록 [{title, author, publisher}]. 예전에 불러온 자료에는 없어 undefined다. */
 const EN_S = 8;
+/* v2.6.21: 잠수네 영어 급수가 J0(글자 없는 그림책)인지 — 그런 책에는 유튜브 음원 단추를 달지 않는다 */
+function jamJ0Level(v){ return String(v == null ? '' : v).trim().toUpperCase() === 'J0'; }
+function jamItemJ0(it){ return !!it && jamJ0Level(it[EN_L]); }
 let jamIdx = null;          // 읽은 책 색인: 제목 키 → {지은이, 잠수네 급수}들 (db.books가 바뀌면 다시 만든다)
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
@@ -1951,10 +1954,12 @@ function sanitizeShelf(s){
   };
 }
 
-/* ---------- 영어책 유튜브 읽어 주기 음원 (v2.6.20) ----------
+/* ---------- 영어책 유튜브 읽어 주기 음원 (v2.6.20 · v2.6.21) ----------
    주소 하나를 책 제목으로 기억(db.audioMap)해 두면 그 책이 나오는 어느 화면에서든
    🔊 음원을 눌렀을 때 같은 영상이 열린다. 주소가 없으면 제목 + 'read aloud'를
-   조회수 순으로 찾아 주는 유튜브 검색 주소를 연다. */
+   조회수 순으로 찾아 주는 유튜브 검색 주소를 연다.
+   v2.6.21: ORT(옥스퍼드 리딩 트리) 책은 제목만으로 찾으면 엉뚱한 영상이 나온다
+   — 전집·메모·제목·지은이에 ORT 흔적이 있으면 검색어 앞에 'ORT '를 붙인다. */
 const AUDIO_MAX = 400;
 function audioUrlClean(v){
   let u = String(v == null ? '' : v).trim();
@@ -1989,13 +1994,33 @@ function audioOwnUrl(title, itemAudioUrl){
   return audioUrlClean(audioMapObj()[jamNorm(t)]);
 }
 function audioHasOwn(title, itemAudioUrl){ return !!audioOwnUrl(title, itemAudioUrl); }
-function audioSearchUrl(title){
-  const q = String(title == null ? '' : title).trim();
+/* v2.6.21: ORT(Oxford Reading Tree) 책인지 — 전집 이름·메모·제목·지은이 어디에 있든 본다
+   (책장 항목은 제목이 name에 들어 있어 name도 함께 본다) */
+const ORT_RE = /\bORT\b|oxford\s+reading\s+tree|roderick\s+hunt|alex\s+brychta/i;
+function isOrtBook(obj, extraTitle){
+  const o = (obj && typeof obj === 'object' && !Array.isArray(obj)) ? obj : {};
+  const parts = [o.series, o.note, o.title, o.name, o.author, extraTitle];
+  for(let i = 0; i < parts.length; i++){
+    const v = String(parts[i] == null ? '' : parts[i]).trim();
+    if(v && ORT_RE.test(v)) return true;
+  }
+  return false;
+}
+/* 유튜브에 넣을 검색어 앞부분 — ORT 책이면 'ORT '를 붙인다.
+   제목이 이미 ORT·Oxford Reading Tree라고 말하고 있으면 겹쳐 붙이지 않는다. */
+function audioQueryTitle(title, bookMeta){
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return '';
+  if(/^ort\b/i.test(t) || /oxford\s+reading\s+tree/i.test(t)) return t;
+  return isOrtBook(bookMeta, t) ? 'ORT ' + t : t;
+}
+function audioSearchUrl(title, bookMeta){
+  const q = audioQueryTitle(title, bookMeta);
   return 'https://www.youtube.com/results?search_query=' +
     encodeURIComponent((q ? q + ' ' : '') + 'read aloud') + '&sp=CAMSAhAB';
 }
-function resolveAudioUrl(title, itemAudioUrl){
-  return audioOwnUrl(title, itemAudioUrl) || audioSearchUrl(title);
+function resolveAudioUrl(title, itemAudioUrl, bookMeta){
+  return audioOwnUrl(title, itemAudioUrl) || audioSearchUrl(title, bookMeta);
 }
 /* 주소를 저장(빈 값이면 지움) — 항목과 제목별 기억(db.audioMap)에 함께 남겨
    같은 책이 나오는 잠수네·책장·추천·기록 어디서든 같은 영상이 열리게 한다. */
@@ -2012,8 +2037,8 @@ function setBookAudioUrl(title, url, itemObj){
   if(itemObj && typeof itemObj === 'object') itemObj.audioUrl = clean;
   return clean;
 }
-function audioOpen(title, itemAudioUrl){
-  const url = resolveAudioUrl(title, itemAudioUrl);
+function audioOpen(title, itemAudioUrl, bookMeta){
+  const url = resolveAudioUrl(title, itemAudioUrl, bookMeta);
   try{
     const w = window.open(url, '_blank', 'noopener');
     if(w){ try{ w.opener = null; }catch(e){} }
@@ -2026,24 +2051,27 @@ function audioOpen(title, itemAudioUrl){
 function audioPillPaint(b){
   if(!b) return;
   const t = b.dataset.audTitle || '';
+  /* v2.6.21: 실제로 찾을 검색어(ORT 책이면 앞에 'ORT ')를 안내에 그대로 쓴다 */
+  const q = b.dataset.audQ || t;
   const own = audioHasOwn(t, b.dataset.audUrl || '');
   b.classList.toggle('mine', own);
   b.textContent = own ? '🔊 내 음원' : '🔊 음원';
-  b.title = own ? '저장한 유튜브 음원 열기' : '유튜브에서 ‘' + t + ' read aloud’ 찾기';
+  b.title = own ? '저장한 유튜브 음원 열기' : '유튜브에서 ‘' + q + ' read aloud’ 찾기';
   b.setAttribute('aria-label', t + (own ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기'));
 }
 function audioRefreshDom(){
   $$('.aud-btn[data-aud-title]').forEach(audioPillPaint);
 }
-/* 카드에 붙는 🔊 단추 (DOM으로 그리는 카드용) */
-function audioPill(title, itemAudioUrl){
+/* 카드에 붙는 🔊 단추 (DOM으로 그리는 카드용). bookMeta는 ORT 판별에 쓴다. */
+function audioPill(title, itemAudioUrl, bookMeta){
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'aud-btn';
   b.dataset.audTitle = String(title == null ? '' : title);
   b.dataset.audUrl = String(itemAudioUrl || '');
+  b.dataset.audQ = audioQueryTitle(title, bookMeta);
   audioPillPaint(b);
-  b.onclick = e => { if(e && e.stopPropagation) e.stopPropagation(); audioOpen(title, itemAudioUrl); };
+  b.onclick = e => { if(e && e.stopPropagation) e.stopPropagation(); audioOpen(title, itemAudioUrl, bookMeta); };
   return b;
 }
 /* 🎬 주소 넣기 단추 */
@@ -2059,10 +2087,12 @@ function audioEditBtn(title, itemObj, after){
 }
 /* 음원 주소 시트 — 카드의 🎬·상세의 ‘음원 주소’에서 연다 */
 let audioTarget = null;
-function audioCurHtml(title, itemAudioUrl){
+function audioCurHtml(title, itemAudioUrl, bookMeta){
   const own = audioOwnUrl(title, itemAudioUrl);
   if(own) return '<b>내 음원</b> · ' + escXML(own);
-  return '아직 넣은 주소가 없어요 · 제목으로 ‘read aloud’를 찾아 열어요';
+  /* v2.6.21: ORT 책은 실제 검색어(‘ORT … read aloud’)를 그대로 보여 준다 */
+  const q = audioQueryTitle(title, bookMeta);
+  return '아직 넣은 주소가 없어요 · ‘' + escXML(q ? q + ' read aloud' : 'read aloud') + '’를 찾아 열어요';
 }
 function openAudioSheet(title, itemObj, after){
   const t = String(title == null ? '' : title).trim();
@@ -2073,7 +2103,7 @@ function openAudioSheet(title, itemObj, after){
   const input = $('#audioUrlInput');
   if(input) input.value = audioOwnUrl(t, itemObj && itemObj.audioUrl) || '';
   const cur = $('#audioCur');
-  if(cur) cur.innerHTML = audioCurHtml(t, itemObj && itemObj.audioUrl);
+  if(cur) cur.innerHTML = audioCurHtml(t, itemObj && itemObj.audioUrl, itemObj);
   openSheet('audioSheet');
   const sh = $('#audioSheet .sheet');
   if(sh) sh.scrollTop = 0;
@@ -2102,7 +2132,7 @@ $('#btnAudioOpen').onclick = () => {
   if(!audioTarget) return;
   const raw = String(($('#audioUrlInput') || {}).value || '').trim();
   const own = raw ? audioUrlClean(raw) : (audioTarget.item && audioTarget.item.audioUrl) || '';
-  audioOpen(audioTarget.title, own);
+  audioOpen(audioTarget.title, own, audioTarget.item);
 };
 $('#audioUrlInput').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); audioSaveSheet(false); }
@@ -2110,7 +2140,7 @@ $('#audioUrlInput').addEventListener('keydown', e => {
 $('#audioUrlInput').addEventListener('input', () => {
   if(!audioTarget) return;
   const cur = $('#audioCur');
-  if(cur) cur.innerHTML = audioCurHtml(audioTarget.title, ($('#audioUrlInput') || {}).value || '');
+  if(cur) cur.innerHTML = audioCurHtml(audioTarget.title, ($('#audioUrlInput') || {}).value || '', audioTarget.item);
 });
 
 /* ---------- 아이(자녀) ---------- */
@@ -3114,7 +3144,7 @@ function renderShelf(){
       arSlot.setAttribute('data-ar-slot', '1');
       meta.appendChild(arSlot);
       /* v2.6.20: 영어책은 🔊 음원(유튜브)·🎬 주소 단추를 카드에 바로 둔다 */
-      meta.appendChild(audioPill(s.name, s.audioUrl));
+      meta.appendChild(audioPill(s.name, s.audioUrl, s));
       meta.appendChild(audioEditBtn(s.name, s, () => {
         const f = $('#shAudioUrl');
         if(f && shelfDraft && shelfDraft.id === s.id) f.value = audioOwnUrl(s.name, s.audioUrl) || '';
@@ -3417,7 +3447,7 @@ function seriesViewRow(s, no){
     arSlot.setAttribute('data-ar-slot', '1');
     meta.appendChild(arSlot);
     /* v2.6.20: 영어책 낱권은 🔊 음원으로 유튜브에서 듣는다 (주소는 제목을 눌러 수정 창에서) */
-    meta.appendChild(audioPill(s.name, s.audioUrl));
+    meta.appendChild(audioPill(s.name, s.audioUrl, s));
   }
   tx.appendChild(meta);
   row.appendChild(tx);
@@ -5544,7 +5574,7 @@ function buildRecItem(r){
   ag.textContent = ageLabel(r.age);
   meta.appendChild(tg); meta.appendChild(ag);
   /* v2.6.20: 영어책은 카드에서 바로 유튜브 읽어 주기를 들을 수 있다 */
-  if(r.lang === 'en') meta.appendChild(audioPill(r.title, ''));
+  if(r.lang === 'en') meta.appendChild(audioPill(r.title, '', r));
   if(rd){
     const rdb = document.createElement('span');
     rdb.className = 'rec-rd';
@@ -5670,7 +5700,7 @@ function renderWishList(){
     arSlot.setAttribute('data-ar-slot', '');
     meta.appendChild(arSlot);
     /* v2.6.20: 영어책은 카드에서 바로 유튜브 읽어 주기를 들을 수 있다 */
-    if(w.lang === 'en') meta.appendChild(audioPill(w.title, ''));
+    if(w.lang === 'en') meta.appendChild(audioPill(w.title, '', w));
     if(rd){
       const rdb = document.createElement('span');
       rdb.className = 'rec-rd';
@@ -8365,11 +8395,11 @@ function openDetail(id){
       const own = audioHasOwn(b.title, b.audioUrl);
       play.classList.toggle('mine', own);
       play.textContent = own ? '🔊 음원 듣기 · 내 음원' : '🔊 음원 듣기';
-      play.title = own ? '저장한 유튜브 영상 열기' : '유튜브에서 read aloud 찾기';
+      play.title = own ? '저장한 유튜브 영상 열기' : '유튜브에서 ‘' + audioQueryTitle(b.title, b) + ' read aloud’ 찾기';
       play.setAttribute('aria-label', b.title + (own ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기'));
     };
     paintAud();
-    play.onclick = () => audioOpen(b.title, b.audioUrl);
+    play.onclick = () => audioOpen(b.title, b.audioUrl, b);
     const aedit = document.createElement('button');
     aedit.type = 'button';
     aedit.className = 'aud-edit2';
@@ -10777,9 +10807,11 @@ function jamItemHtml(kind, it, rd, wish){
     '<span class="tg cat">' + escXML(cg) + '</span>';
   /* v2.6.20: 영어책은 모두 🔊 음원을 눌러 유튜브에서 바로 들을 수 있고, 🎬로 그 책만의 주소를 넣어 둔다
      (잠수네 원본의 음원 표시는 위의 ‘음원 있음’ 거르기에 그대로 쓴다) */
-  if(kind === 'en'){
+  if(kind === 'en' && !jamItemJ0(it)){
     const hasOwn = audioHasOwn(title, '');
-    h += '<button type="button" class="aud-btn' + (hasOwn ? ' mine' : '') + '" data-act="audio" data-aud-title="' + escXML(title) + '" data-aud-url="" aria-label="' +
+    /* v2.6.21: 실제 검색어(ORT 책이면 앞에 'ORT ')를 단추에 남겨 둔다 */
+    const aq = audioQueryTitle(title, it);
+    h += '<button type="button" class="aud-btn' + (hasOwn ? ' mine' : '') + '" data-act="audio" data-aud-title="' + escXML(title) + '" data-aud-url="" data-aud-q="' + escXML(aq) + '" aria-label="' +
       escXML(title + (hasOwn ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기')) + '">' + (hasOwn ? '🔊 내 음원' : '🔊 음원') + '</button>' +
       '<button type="button" class="aud-ed" data-act="audioedit" aria-label="' + escXML(title + ' 유튜브 음원 주소 넣기') + '" title="유튜브 음원 주소 넣기">🎬</button>';
   }
@@ -10951,7 +10983,7 @@ function jamLogRead(kind, it, el){
 /* ---------- 잠수네 전집 낱권 보기 (v2.6.18) ----------
    영어 베스트의 '… 시리즈' 카드를 누르면 그 전집의 낱권을 한 장에서 펼쳐 본다.
    책장의 전집 시트(#seriesViewSheet)와 같은 모양이고, 여기서 바로 기록·읽을 목록·도서관까지 된다. */
-let jsTitle = '', jsAuthor = '', jsItems = null;
+let jsTitle = '', jsAuthor = '', jsLevel = '', jsItems = null;
 let jsQ = '';
 let jsUnread = false;
 let jsCovObs = null;
@@ -10961,6 +10993,8 @@ function jamSeriesOpen(kind, it){
   if(!items){ toast('낱권 목록이 없는 항목이에요'); return false; }
   jsTitle = String(it[EN_T] || '');
   jsAuthor = String(it[EN_A] || '');
+  /* v2.6.21: 전집 자체의 급수를 기억해 두었다가 낱권 음원 단추를 달지 결정한다 */
+  jsLevel = String(it[EN_L] || '').trim();
   jsItems = items;
   jsQ = '';
   jsUnread = false;
@@ -11069,12 +11103,15 @@ function jamSeriesRow(x, i, rd){
   arSlot.className = 'ar-slot';
   arSlot.setAttribute('data-ar-slot', '1');
   meta.appendChild(arSlot);
-  /* v2.6.20: 낱권도 🔊 음원으로 듣고 🎬로 그 책만의 주소를 넣어 둔다 (두 단추는 함께 줄바꿈) */
-  const aPair = document.createElement('span');
-  aPair.className = 'aud-pair';
-  aPair.appendChild(audioPill(x.title, ''));
-  aPair.appendChild(audioEditBtn(x.title, null));
-  meta.appendChild(aPair);
+  /* v2.6.20: 낱권도 🔊 음원으로 듣고 🎬로 그 책만의 주소를 넣어 둔다 (두 단추는 함께 줄바꿈)
+     v2.6.21: 전집이 J0(글자 없는 그림책)이면 달지 않는다 */
+  if(!jamJ0Level(jsLevel)){
+    const aPair = document.createElement('span');
+    aPair.className = 'aud-pair';
+    aPair.appendChild(audioPill(x.title, '', { title: x.title, author: x.author, series: jsTitle }));
+    aPair.appendChild(audioEditBtn(x.title, null));
+    meta.appendChild(aPair);
+  }
   const rdb = document.createElement('span');
   rdb.className = 'rec-rd jam-sv-rd' + (rd ? '' : ' hidden');
   rdb.textContent = '✓ 읽음';
@@ -11394,9 +11431,9 @@ $('#jamCard').addEventListener('click', e => {
     else if(act.dataset.act === 'wish') jamToggleWish(kind, it, itemEl);
     else if(act.dataset.act === 'series') jamSeriesOpen(kind, it);
     else if(act.dataset.act === 'lib') openLibrary(kind === 'en' ? 'en' : 'ko', it[kind === 'ko' ? KO_T : EN_T]);
-    /* v2.6.20: 영어책의 🔊 음원(유튜브 열기)·🎬(주소 넣기) */
-    else if(act.dataset.act === 'audio' && kind === 'en') audioOpen(it[EN_T], '');
-    else if(act.dataset.act === 'audioedit' && kind === 'en') openAudioSheet(it[EN_T], null);
+    /* v2.6.20: 영어책의 🔊 음원(유튜브 열기)·🎬(주소 넣기) · v2.6.21: J0은 단추가 없다 */
+    else if(act.dataset.act === 'audio' && kind === 'en' && !jamItemJ0(it)) audioOpen(it[EN_T], '', it);
+    else if(act.dataset.act === 'audioedit' && kind === 'en' && !jamItemJ0(it)) openAudioSheet(it[EN_T], null);
     return;
   }
   /* v2.6.18: 낱권이 붙은 전집 카드는 카드 빈 곳을 눌러도 낱권 목록이 열린다 (안쪽 버튼은 따로 동작) */
@@ -11497,7 +11534,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.20',
+  version: '2.6.21',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11588,10 +11625,12 @@ window.__rc = {
     isRead: (title, author, lv) => isBookRead(title, author, lv),
     shelfRead: id => { const s = db.shelf.find(x => x.id === id); return s ? shelfItemRead(s) : false; }
   },
-  /* v2.6.20 영어책 유튜브 음원 확인용 */
+  /* v2.6.20 영어책 유튜브 음원 확인용 · v2.6.21 ORT 접두어 */
   audioApi: {
-    resolve: (title, itemAudioUrl) => resolveAudioUrl(title, itemAudioUrl),
-    search: title => audioSearchUrl(title),
+    resolve: (title, itemAudioUrl, meta) => resolveAudioUrl(title, itemAudioUrl, meta),
+    search: (title, meta) => audioSearchUrl(title, meta),
+    isOrt: (obj, extraTitle) => isOrtBook(obj, extraTitle),
+    query: (title, meta) => audioQueryTitle(title, meta),
     set: (title, url, itemId) => {
       const obj = itemId ? (db.shelf.find(x => x.id === itemId) || db.books.find(x => x.id === itemId)) : null;
       const clean = setBookAudioUrl(title, url, obj);
