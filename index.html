@@ -446,8 +446,6 @@ textarea.input{resize:vertical;min-height:60px}
 .sh-meta .pub{font-size:11px;font-weight:700;color:#9A958A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .sh-meta .auth{font-size:11px;font-weight:700;color:#7C8291;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .sh-meta .sep{font-size:11px;font-weight:700;color:#C6C0B1;flex:0 0 auto}
-/* v2.6.9: 내 책장에도 읽음 표시 (기록이 있는 책) */
-.sh-meta .rec-rd{font-size:9.5px;padding:2px 6px;letter-spacing:-.2px}
 .sh-cnt{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:6px}
 .sh-cnt b{color:#5B6270;font-weight:800}
 .sh-acts{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
@@ -536,7 +534,6 @@ textarea.input{resize:vertical;min-height:60px}
 .sv-row.is-read .sv-ttl{color:#3F5A32}
 .sv-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px;font-size:10.5px;font-weight:700;color:#9A958A}
 .sv-meta .sep{color:#C6C0B1}
-.sv-meta .rd{font-size:9.5px;font-weight:800;background:#DDEAD8;color:#4E6B3A;border-radius:5px;padding:2px 5px}
 .sv-acts{flex:0 0 auto;display:flex;align-items:center;gap:5px}
 .sv-btn{font-size:10.5px;font-weight:800;border-radius:9px;padding:8px 8px;line-height:1.1;white-space:nowrap}
 .sv-btn.rec{background:var(--ink);color:#fff}
@@ -2829,13 +2826,7 @@ function renderShelf(){
       pb.textContent = s.publisher;
       meta.appendChild(pb);
     }
-    /* v2.6.9: 기록이 있는 책은 추천·잠수네와 같은 ‘✓ 읽음’ 표시 (AR 지수 옆에 나란히) */
-    if(isRead){
-      const rd = document.createElement('span');
-      rd.className = 'rec-rd';
-      rd.textContent = '✓ 읽음';
-      meta.appendChild(rd);
-    }
+    /* v2.6.17: 제목 아래 ‘✓ 읽음’ 배지는 뺐다 — 오른쪽 ‘✓ 읽음’ 버튼이 같은 상태를 보여 준다 */
     /* v2.6.7: 영어 책장 항목에 AR 지수 (지수는 카드를 다 조립한 뒤에 붙인다) */
     if(s.lang === 'en'){
       const arSlot = document.createElement('span');
@@ -3117,12 +3108,7 @@ function seriesViewRow(s, no){
 
   const meta = document.createElement('div');
   meta.className = 'sv-meta';
-  if(read){
-    const rd = document.createElement('span');
-    rd.className = 'rd';
-    rd.textContent = '✓ 읽음';
-    meta.appendChild(rd);
-  }
+  /* v2.6.17: 제목 아래 ‘✓ 읽음’ 배지는 뺐다 — 오른쪽 ‘✓ 읽음’ 버튼이 같은 상태를 보여 준다 */
   const pg = toPages(s.pages);
   if(pg){
     const sp = document.createElement('span');
@@ -10741,7 +10727,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.16',
+  version: '2.6.17',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
