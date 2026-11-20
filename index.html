@@ -1368,7 +1368,7 @@ const JAM_EN_CATS = ['그림책', '리더스북', '그림책 같은 리더스북
 const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A = 7, KO_O = 8, KO_Q = 9, KO_K = 10;
 /* 영어: [분류, 급수, 제목, 지은이, 한글제목, 음원, 검색용, 제목맞춤키] */
 const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
-let jamIdx = null;          // 읽은 책 제목 색인 (db.books가 바뀌면 다시 만든다)
+let jamIdx = null;          // 읽은 책 색인: 제목 키 → 지은이들 (db.books가 바뀌면 다시 만든다)
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
 const DEFAULT_KID_NAME = '우리 아이';
@@ -6669,21 +6669,52 @@ function jamItemKeys(kind, it){
   }
   return k;
 }
+/* 지은이 맞추기 (v2.6.3)
+   띄어쓰기·문장부호·대소문자를 모두 없애 같은 사람인지 비교한다.
+   ('Jeff Mack' = 'jeffmack', '박정선' = '박 정선') */
+function jamNormAuthor(a){
+  let t = String(a == null ? '' : a);
+  try{ t = t.normalize('NFKC'); }catch(e){}
+  t = t.toLowerCase();
+  t = t.replace(/[\[\]\{\}\(\)（）〈〉《》「」『』【】·:;,\!\?\.'"`~\-–—_\/\\|&+#@*※…]/g, '');
+  t = t.replace(/\s+/g, '');
+  return t;
+}
+/* 읽은 기록 색인: 제목 맞춤 키 → 그 책을 읽은 기록들의 지은이(없으면 '') */
 function jamReadIdx(){
   if(jamIdx) return jamIdx;
-  const s = new Set();
+  const m = new Map();
   db.books.forEach(b => {
     const t = b && b.title;
     if(!t) return;
-    jamKeysFor(t).forEach(k => s.add(k));
+    const a = jamNormAuthor(b.author);
+    jamKeysFor(t).forEach(k => {
+      let s = m.get(k);
+      if(!s){ s = new Set(); m.set(k, s); }
+      s.add(a);
+    });
   });
-  jamIdx = s;
-  return s;
+  jamIdx = m;
+  return m;
 }
+/* 제목과 지은이를 함께 본다 (v2.6.3).
+   같은 제목의 다른 책(전래동화·번역본 등)을 읽음으로 잘못 잡지 않도록,
+   양쪽에 지은이가 적혀 있으면 지은이까지 맞아야 읽음이다.
+   한쪽이라도 지은이가 비어 있으면(지은이 없이 적은 기록 등) 제목만으로 본다. */
 function jamIsRead(kind, it){
-  const s = jamReadIdx();
+  const m = jamReadIdx();
+  const itA = jamNormAuthor(it[kind === 'ko' ? KO_A : EN_A]);
   const keys = jamItemKeys(kind, it);
-  for(let i = 0; i < keys.length; i++){ if(s.has(keys[i])) return true; }
+  for(let i = 0; i < keys.length; i++){
+    const rec = m.get(keys[i]);
+    if(!rec) continue;
+    let hit = false;
+    rec.forEach(ra => {
+      if(hit) return;
+      if(!ra || !itA || ra.indexOf(itA) >= 0 || itA.indexOf(ra) >= 0) hit = true;
+    });
+    if(hit) return true;
+  }
   return false;
 }
 function jamWishSet(){
@@ -7177,7 +7208,6 @@ function jamFilter(kind){
   if(!cat) return out;
   const f = jam.f[kind];
   const q = String(f.q || '').trim().toLowerCase();
-  const idx = jamReadIdx();
   const items = cat.items;
   for(let i = 0; i < items.length; i++){
     const it = items[i];
@@ -7193,9 +7223,7 @@ function jamFilter(kind){
       if(f.audio === 'yes' && it[EN_AU] !== true) continue;
       if(q && String(it[EN_Q]).indexOf(q) < 0) continue;
     }
-    const a = jamItemKeys(kind, it);
-    let rd = false;
-    for(let k = 0; k < a.length; k++){ if(idx.has(a[k])){ rd = true; break; } }
+    const rd = jamIsRead(kind, it);
     if(f.read === 'yes' && !rd) continue;
     if(f.read === 'no' && rd) continue;
     if(rd) out.read++;
@@ -7282,14 +7310,9 @@ function jamRenderList(kind, reset){
 }
 function jamCountRead(kind){
   const st = jam.list[kind];
-  const idx = jamReadIdx();
   let n = 0;
   for(let i = 0; i < st.items.length; i++){
-    const it = st.items[i];
-    const keys = jamItemKeys(kind, it);
-    for(let k = 0; k < keys.length; k++){
-      if(idx.has(keys[k])){ n++; break; }
-    }
+    if(jamIsRead(kind, st.items[i])) n++;
   }
   st.read = n;
 }
@@ -7563,7 +7586,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.2',
+  version: '2.6.3',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
