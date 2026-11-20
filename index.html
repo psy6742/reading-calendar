@@ -526,6 +526,15 @@ textarea.input{resize:vertical;min-height:60px}
 .sv-btn.rec{background:var(--ink);color:#fff}
 .sv-btn.ed{background:#fff;border:1.3px solid #E8E3D7;color:#7C8291}
 .sv-empty{padding:22px 8px;text-align:center;color:#9A958A;font-size:12.5px;font-weight:700;line-height:1.6}
+/* v2.6.11: 전집 통째로 지우기 — 닫기 위에 조용히 놓는 위험 버튼과 확인 줄 */
+.sv-del-btn{display:block;width:100%;padding:10px 10px;margin-bottom:8px;border-radius:13px;background:#fff;border:1.4px solid #F0D8D2;color:#B4574A;font-size:12px;font-weight:800;line-height:1.2}
+.sv-del-btn:active{background:#FBEAE7}
+.sv-del-confirm[hidden],.sv-del-btn[hidden]{display:none}
+.sv-del-confirm{margin-bottom:8px;padding:11px 12px 10px;border-radius:14px;background:#FBEAE7;border:1px solid #F0D8D2}
+.sv-del-msg{margin:0 0 9px;font-size:12px;font-weight:800;color:#8E4A40;line-height:1.55;white-space:pre-line}
+.sv-del-acts{display:flex;gap:7px}
+.sv-del-acts .btn{flex:1;padding:11px 8px;font-size:12.5px;border-radius:12px;border:1.5px solid #EDE7DB;background:#fff;color:#6C7280}
+.sv-del-acts .btn.danger{background:#fff;border-color:#E9C2B9;color:#B4574A}
 .series-empty .em{font-size:26px;display:block;margin-bottom:6px}
 @media(max-width:374px){
   .series-row .s-cov{width:30px}
@@ -1137,6 +1146,15 @@ select.input:focus{background-color:#fff}
     </div>
     <div class="sv-list" id="svList"></div>
     <div class="save-bar">
+      <!-- v2.6.11: 이 전집을 책장에서 통째로 지우기(한 번 묻고 지운다) -->
+      <div class="sv-del-confirm" id="svDelConfirm" role="alertdialog" aria-live="polite" hidden>
+        <p class="sv-del-msg" id="svDelMsg"></p>
+        <div class="sv-del-acts">
+          <button class="btn line" id="btnSvDelCancel" type="button">취소</button>
+          <button class="btn danger" id="btnSvDelYes" type="button">모두 지우기</button>
+        </div>
+      </div>
+      <button class="sv-del-btn" id="btnSvDelete" type="button">🗑️ 이 전집 지우기</button>
       <button class="btn line" id="btnSvClose" type="button" style="width:100%;padding:14px;border-radius:16px">닫기</button>
     </div>
   </div>
@@ -2839,12 +2857,58 @@ function openSeriesView(name){
   svUnread = false;
   if($('#svSearch')) $('#svSearch').value = '';
   if($('#svUnread')){ $('#svUnread').classList.remove('on'); $('#svUnread').setAttribute('aria-pressed', 'false'); }
+  svResetDelete();
   renderSeriesView();
   openSheet('seriesViewSheet');
   const sh = $('#seriesViewSheet') ? $('#seriesViewSheet .sheet') : null;
   if(sh) sh.scrollTop = 0;
   return true;
 }
+/* ---------- 전집 통째로 지우기 (v2.6.11) ----------
+   책장에서만 지운다. db.books(달력 기록)는 건드리지 않는다. */
+let svDelArmed = false;
+function svResetDelete(){
+  svDelArmed = false;
+  const box = $('#svDelConfirm');
+  if(box) box.hidden = true;
+  const btn = $('#btnSvDelete');
+  if(btn) btn.hidden = false;
+}
+function svAskDelete(){
+  const n = seriesShelfItems(svSeries).length;
+  if(!n){ toast('지울 낱권이 없어요'); return false; }
+  svDelArmed = true;
+  const msg = $('#svDelMsg');
+  if(msg) msg.textContent = '‘' + svSeries + '’ 전집의 ' + n + '권을 책장에서 모두 지울까요?\n(달력에 이미 기록한 독서 내역은 지워지지 않아요)';
+  const box = $('#svDelConfirm');
+  if(box) box.hidden = false;
+  /* 확인을 묻는 동안에는 처음 버튼을 감춰 두 번 눌러 지워지는 일이 없게 한다 */
+  const start = $('#btnSvDelete');
+  if(start) start.hidden = true;
+  const yes = $('#btnSvDelYes');
+  if(yes && yes.focus) yes.focus();
+  return true;
+}
+function svCancelDelete(){
+  svResetDelete();
+  const btn = $('#btnSvDelete');
+  if(btn && btn.focus) btn.focus();
+}
+function svDeleteSeries(){
+  if(!svDelArmed) return false;
+  const key = seriesKeyOf(svSeries);
+  const name = svSeries;
+  const n = seriesShelfItems(name).length;
+  svResetDelete();
+  if(!n){ toast('지울 낱권이 없어요'); return false; }
+  db.shelf = db.shelf.filter(s => seriesKeyOf(s.series) !== key);
+  save();
+  closeSheet($('#seriesViewSheet'));
+  render();
+  toast('‘' + name + '’ ' + n + '권을 책장에서 지웠어요');
+  return true;
+}
+
 function renderSeriesView(){
   const items = seriesShelfItems(svSeries);
   const total = items.length;
@@ -3958,7 +4022,10 @@ $('#svUnread').onclick = () => {
   $('#svUnread').setAttribute('aria-pressed', svUnread ? 'true' : 'false');
   renderSeriesView();
 };
-$('#btnSvClose').onclick = () => closeSheet($('#seriesViewSheet'));
+$('#btnSvClose').onclick = () => { svResetDelete(); closeSheet($('#seriesViewSheet')); };
+$('#btnSvDelete').onclick = () => { if(svDelArmed) svDeleteSeries(); else svAskDelete(); };
+$('#btnSvDelCancel').onclick = () => svCancelDelete();
+$('#btnSvDelYes').onclick = () => svDeleteSeries();
 $('#btnSeriesKey').onclick = () => openKeySettings();
 $('#seriesLang').addEventListener('click', e => {
   const b = e.target.closest('.lang-btn');
@@ -8492,6 +8559,14 @@ function jamKeysFor(t){
   const raw = String(t == null ? '' : t);
   push(raw);
   push(jamBase(raw));
+  /* v2.6.11: 책벌레 기록은 앞에 단계 이름이 콜론으로 붙는다
+     ('More Stories C: Stuck in the Mud'). 책장에는 콜론 뒤 제목만 있어 서로 맞지 않았으므로,
+     콜론 뒤 제목도 맞춤 키로 넣는다. 지은이가 양쪽에 있으면 isBookRead가 지은이까지 확인한다. */
+  const ci = raw.lastIndexOf(':');
+  if(ci >= 0){
+    const tail = raw.slice(ci + 1).trim();
+    if(tail && jamNorm(tail).length >= 3){ push(tail); push(jamBase(tail)); }
+  }
   return out;
 }
 /* 맞춤 키는 언제나 지금 제목에서 새로 만든다.
@@ -9924,7 +9999,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.10',
+  version: '2.6.11',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -9979,6 +10054,12 @@ window.__rc = {
     books: (id) => shelfRecs(id).map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: b.childIds.slice() })),
     covers: () => db.shelf.map(s => shelfCoverSrc(s) || shelfCoverFallback(s.name))
   },
+  /* v2.6.11 책벌레 기록과 책장 제목 맞춤 확인용 */
+  readApi: {
+    keys: t => jamKeysFor(t),
+    isRead: (title, author, lv) => isBookRead(title, author, lv),
+    shelfRead: id => { const s = db.shelf.find(x => x.id === id); return s ? shelfItemRead(s) : false; }
+  },
   /* v2.6.9 전집 한꺼번에 찾아 담기 확인용 */
   seriesApi: {
     open: () => { openSeriesSheet(); return true; },
@@ -10031,6 +10112,20 @@ window.__rc = {
       close: () => closeSheet($('#seriesViewSheet')),
       search: q => { svQuery = String(q || ''); if($('#svSearch')) $('#svSearch').value = svQuery; renderSeriesView(); },
       unread: v => { svUnread = !!v; if($('#svUnread')) $('#svUnread').classList.toggle('on', svUnread); renderSeriesView(); },
+      /* v2.6.11 전집 통째로 지우기 확인용 */
+      del: {
+        ask: () => svAskDelete(),
+        cancel: () => { svCancelDelete(); return true; },
+        confirm: () => svDeleteSeries(),
+        state: () => ({
+          armed: svDelArmed,
+          boxShown: !!($('#svDelConfirm') && !$('#svDelConfirm').hidden),
+          button: ($('#btnSvDelete') || {}).textContent || '',
+          msg: ($('#svDelMsg') || {}).textContent || '',
+          yes: ($('#btnSvDelYes') || {}).textContent || '',
+          cancel: ($('#btnSvDelCancel') || {}).textContent || ''
+        })
+      },
       state: () => ({
         open: seriesViewOpen(), series: svSeries,
         title: ($('#seriesViewTitle') || {}).textContent || '',
