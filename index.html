@@ -658,6 +658,32 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-meta .tg.lv{background:var(--lav);color:#3A3F58;font-size:10.5px;border-radius:6px}
 .rec-meta .tg.cat{background:#F1EEE4;color:#8E897C;font-size:10.5px;border-radius:6px;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec-meta .tg.audio{background:#E9EFF7;color:#48627F;font-size:10.5px;border-radius:999px;padding:2px 7px}
+/* v2.6.20: 영어책 유튜브 읽어 주기(음원) — 카드의 🔊 단추와 🎬 주소 단추 */
+.aud-btn{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;cursor:pointer;font-family:inherit;
+  font-size:10.5px;font-weight:800;line-height:1.25;letter-spacing:-.2px;white-space:nowrap;
+  color:#48627F;background:#E9EFF7;border:1px solid #D6E1EE;border-radius:999px;padding:2px 8px}
+.aud-btn:active{background:#DBE5F2;transform:translateY(1px)}
+/* 내 유튜브 주소를 넣어 둔 책은 초록으로 구분 */
+.aud-btn.mine{color:#3F7A52;background:#EAF4EC;border-color:#CFE5D4}
+.aud-ed{flex:0 0 auto;cursor:pointer;font-family:inherit;font-size:10.5px;font-weight:800;line-height:1.25;
+  color:#6C7280;background:#F4F1E8;border:1px solid #E4DFD2;border-radius:999px;padding:2px 7px}
+.aud-ed:active{background:#EDE8DC;transform:translateY(1px)}
+.sh-meta .aud-btn,.sh-meta .aud-ed{font-size:9.5px;padding:2px 6px}
+.sv-meta .aud-btn,.sv-meta .aud-ed{font-size:9.5px;padding:1px 6px}
+/* 🔊·🎬는 한 건으로 줄바꿈되게 묶는 칸 */
+.aud-pair{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto}
+/* 상세 시트의 음원 줄 */
+.detail-audio{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.detail-audio .aud-play{font-family:inherit;font-size:12.5px;font-weight:800;color:#fff;background:#48627F;
+  border-radius:999px;padding:11px 16px;line-height:1.1;box-shadow:0 2px 7px rgba(30,41,59,.16)}
+.detail-audio .aud-play.mine{background:#3F7A52}
+.detail-audio .aud-play:active{transform:translateY(1px)}
+.detail-audio .aud-edit2{font-family:inherit;font-size:12px;font-weight:800;color:#5F6673;background:#fff;
+  border:1.4px solid #E4DFD2;border-radius:999px;padding:11px 14px;line-height:1.1}
+.detail-audio .aud-edit2:active{transform:translateY(1px)}
+/* 음원 주소 시트 */
+.aud-cur{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11.5px;font-weight:700;color:#8E897C;margin-top:2px}
+.aud-cur b{color:#3F7A52;font-weight:800}
 /* 읽음 표시 — 추천·잠수네 같은 붉은 알약 */
 .rec-rd{flex:0 0 auto;font-size:10.5px;font-weight:800;line-height:1.25;color:#B4271D;background:#FBE3DE;border-radius:999px;padding:2px 7px;white-space:nowrap;letter-spacing:-.2px}
 /* v2.6.4: 영어책 AR 지수 — 누르면 arbookfind.com */
@@ -1110,6 +1136,13 @@ select.input:focus{background-color:#fff}
       </div>
     </div>
 
+    <!-- v2.6.20: 영어책 유튜브 음원 주소 (영어책일 때만 보인다) -->
+    <div class="field hidden" id="fAudioField">
+      <label for="fAudioUrl">유튜브 음원 주소 (선택)</label>
+      <input class="input" id="fAudioUrl" placeholder="https://youtu.be/..." maxlength="400" autocomplete="off" spellcheck="false" inputmode="url">
+      <div class="hint">책을 읽어 주는 유튜브 영상 주소를 넣어 두면 <b>🔊 음원</b>이 그 영상으로 열려요. 비워 두면 제목으로 ‘read aloud’를 찾아 줘요.</div>
+    </div>
+
     <label class="toggle-row" id="saveToShelfRow" for="chkSaveShelf">
       <input type="checkbox" id="chkSaveShelf">
       <span>이 책을 내 책장에도 저장</span>
@@ -1274,6 +1307,13 @@ select.input:focus{background-color:#fff}
     <div class="field">
       <label for="sfPublisher">출판사 (선택)</label>
       <input class="input" id="sfPublisher" placeholder="예: 그레이트북스" maxlength="40" autocomplete="off">
+    </div>
+
+    <!-- v2.6.20: 영어책을 읽어 주는 유튜브 음원 주소 -->
+    <div class="field">
+      <label for="shAudioUrl">유튜브 음원 주소 (선택)</label>
+      <input class="input" id="shAudioUrl" placeholder="https://youtu.be/..." maxlength="400" autocomplete="off" spellcheck="false" inputmode="url">
+      <div class="hint">영어책을 읽어 주는 유튜브 영상 주소를 넣어 두면 카드의 <b>🔊 음원</b>이 그 영상으로 열려요. 비워 두면 제목으로 ‘read aloud’를 찾아 줘요.</div>
     </div>
 
     <div class="field">
@@ -1542,6 +1582,32 @@ select.input:focus{background-color:#fff}
   </div>
 </div>
 
+<!-- ===== 영어책 유튜브 음원 주소 (v2.6.20) ===== -->
+<div class="sheet-wrap" id="audioSheet" role="dialog" aria-modal="true" aria-labelledby="audioTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="audioTitle">🔊 유튜브 음원 주소</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <p class="sheet-note" id="audioBook" style="margin:0 0 12px;font-weight:800;color:#2C3444"></p>
+    <div class="field">
+      <label for="audioUrlInput">유튜브 주소 (선택)</label>
+      <input class="input" id="audioUrlInput" placeholder="https://youtu.be/..." maxlength="400" autocomplete="off" spellcheck="false" inputmode="url">
+      <div class="hint">주소를 비워 두면 제목으로 ‘read aloud’를 조회수 순으로 찾아 열어요.</div>
+    </div>
+    <div class="aud-cur" id="audioCur"></div>
+    <div class="save-bar">
+      <button class="btn dark" id="btnAudioSave" type="button" style="width:100%;padding:15px;border-radius:16px">저장</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn line" id="btnAudioOpen" type="button" style="flex:1">🔊 지금 열어 보기</button>
+        <button class="btn line" id="btnAudioClear" type="button" style="flex:1">주소 지우기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 아이 관리 시트 ===== -->
 <div class="sheet-wrap" id="kidSheet" role="dialog" aria-modal="true" aria-labelledby="kidTitle">
   <div class="backdrop" data-close></div>
@@ -1745,7 +1811,7 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', arProxyUrl: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' } };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], audioMap: {}, settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', arProxyUrl: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' } };
 let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', yunit: 'count', rec: { age: '0-2', sub: 'age' } };
 /* v2.6.14: 추천 화면에서 사용자가 연령 칩을 직접 눌렀는지.
    누르기 전에는 지금 보는 아이의 생년월일 나이에 맞는 칩을 저절로 고른다. */
@@ -1808,6 +1874,8 @@ function load(){
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
+        /* v2.6.20: 영어책 유튜브 음원 주소(제목별) */
+        db.audioMap = audioMapClean(p.audioMap);
         if(Number(p.version) > 1) db.version = Math.max(db.version, 3);
       }
     }
@@ -1848,6 +1916,8 @@ function sanitize(b){
     imp: b.imp ? String(b.imp).slice(0, 80) : '',
     publisher: b.publisher ? String(b.publisher).slice(0, 60) : '',
     note: b.note ? String(b.note).slice(0, 160) : '',
+    /* v2.6.20: 이 책만의 유튜브 음원 주소 (없으면 제목으로 찾는다) */
+    audioUrl: audioUrlClean(b.audioUrl),
     createdAt: Number(b.createdAt) || Date.now()
   };
 }
@@ -1875,9 +1945,173 @@ function sanitizeShelf(s){
     noCover: s.noCover === true && !String(s.cover || '') && !String(s.coverData || ''),
     /* v2.6.16: 달력 기록 없이 카드에서 바로 표시한 ‘읽음’ */
     readDone: s.readDone === true,
+    /* v2.6.20: 이 책만의 유튜브 음원 주소 (없으면 제목으로 찾는다) */
+    audioUrl: audioUrlClean(s.audioUrl),
     createdAt: Number(s.createdAt) || Date.now()
   };
 }
+
+/* ---------- 영어책 유튜브 읽어 주기 음원 (v2.6.20) ----------
+   주소 하나를 책 제목으로 기억(db.audioMap)해 두면 그 책이 나오는 어느 화면에서든
+   🔊 음원을 눌렀을 때 같은 영상이 열린다. 주소가 없으면 제목 + 'read aloud'를
+   조회수 순으로 찾아 주는 유튜브 검색 주소를 연다. */
+const AUDIO_MAX = 400;
+function audioUrlClean(v){
+  let u = String(v == null ? '' : v).trim();
+  if(!u || u.length > AUDIO_MAX) return '';
+  if(/^\/\//.test(u)) u = 'https:' + u;
+  /* 주소창에서 복사한 youtube.com/… 처럼 http를 빠뜨린 경우를 받아 준다 */
+  else if(/^(youtu\.be|(www\.|m\.|music\.)?youtube\.com)(\/|$)/i.test(u)) u = 'https://' + u;
+  if(!/^https?:\/\//i.test(u)) return '';
+  if(/\s/.test(u)) return '';
+  return u;
+}
+function audioMapClean(src){
+  const out = {};
+  if(!src || typeof src !== 'object' || Array.isArray(src)) return out;
+  Object.keys(src).forEach(k => {
+    const key = String(k == null ? '' : k).trim();
+    const u = audioUrlClean(src[k]);
+    if(key && u) out[key] = u;
+  });
+  return out;
+}
+function audioMapObj(){
+  if(!db.audioMap || typeof db.audioMap !== 'object' || Array.isArray(db.audioMap)) db.audioMap = {};
+  return db.audioMap;
+}
+/* 이 책에 이미 정해 둔 주소 (책·책장 항목의 audioUrl → 제목별 audioMap 순) */
+function audioOwnUrl(title, itemAudioUrl){
+  const own = audioUrlClean(itemAudioUrl);
+  if(own) return own;
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return '';
+  return audioUrlClean(audioMapObj()[jamNorm(t)]);
+}
+function audioHasOwn(title, itemAudioUrl){ return !!audioOwnUrl(title, itemAudioUrl); }
+function audioSearchUrl(title){
+  const q = String(title == null ? '' : title).trim();
+  return 'https://www.youtube.com/results?search_query=' +
+    encodeURIComponent((q ? q + ' ' : '') + 'read aloud') + '&sp=CAMSAhAB';
+}
+function resolveAudioUrl(title, itemAudioUrl){
+  return audioOwnUrl(title, itemAudioUrl) || audioSearchUrl(title);
+}
+/* 주소를 저장(빈 값이면 지움) — 항목과 제목별 기억(db.audioMap)에 함께 남겨
+   같은 책이 나오는 잠수네·책장·추천·기록 어디서든 같은 영상이 열리게 한다. */
+function setBookAudioUrl(title, url, itemObj){
+  const t = String(title == null ? '' : title).trim();
+  const raw = String(url == null ? '' : url).trim();
+  const clean = raw ? audioUrlClean(raw) : '';
+  if(raw && !clean) return '';
+  if(t){
+    const map = audioMapObj();
+    const k = jamNorm(t);
+    if(clean) map[k] = clean; else delete map[k];
+  }
+  if(itemObj && typeof itemObj === 'object') itemObj.audioUrl = clean;
+  return clean;
+}
+function audioOpen(title, itemAudioUrl){
+  const url = resolveAudioUrl(title, itemAudioUrl);
+  try{
+    const w = window.open(url, '_blank', 'noopener');
+    if(w){ try{ w.opener = null; }catch(e){} }
+    else toast('새 창이 막혔어요. 다시 한 번 눌러 주세요');
+  }catch(e){
+    toast('음원 주소를 열지 못했어요');
+  }
+  return url;
+}
+function audioPillPaint(b){
+  if(!b) return;
+  const t = b.dataset.audTitle || '';
+  const own = audioHasOwn(t, b.dataset.audUrl || '');
+  b.classList.toggle('mine', own);
+  b.textContent = own ? '🔊 내 음원' : '🔊 음원';
+  b.title = own ? '저장한 유튜브 음원 열기' : '유튜브에서 ‘' + t + ' read aloud’ 찾기';
+  b.setAttribute('aria-label', t + (own ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기'));
+}
+function audioRefreshDom(){
+  $$('.aud-btn[data-aud-title]').forEach(audioPillPaint);
+}
+/* 카드에 붙는 🔊 단추 (DOM으로 그리는 카드용) */
+function audioPill(title, itemAudioUrl){
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'aud-btn';
+  b.dataset.audTitle = String(title == null ? '' : title);
+  b.dataset.audUrl = String(itemAudioUrl || '');
+  audioPillPaint(b);
+  b.onclick = e => { if(e && e.stopPropagation) e.stopPropagation(); audioOpen(title, itemAudioUrl); };
+  return b;
+}
+/* 🎬 주소 넣기 단추 */
+function audioEditBtn(title, itemObj, after){
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'aud-ed';
+  b.textContent = '🎬';
+  b.title = '유튜브 음원 주소 넣기';
+  b.setAttribute('aria-label', String(title == null ? '' : title) + ' 유튜브 음원 주소 넣기');
+  b.onclick = e => { if(e && e.stopPropagation) e.stopPropagation(); openAudioSheet(title, itemObj, after); };
+  return b;
+}
+/* 음원 주소 시트 — 카드의 🎬·상세의 ‘음원 주소’에서 연다 */
+let audioTarget = null;
+function audioCurHtml(title, itemAudioUrl){
+  const own = audioOwnUrl(title, itemAudioUrl);
+  if(own) return '<b>내 음원</b> · ' + escXML(own);
+  return '아직 넣은 주소가 없어요 · 제목으로 ‘read aloud’를 찾아 열어요';
+}
+function openAudioSheet(title, itemObj, after){
+  const t = String(title == null ? '' : title).trim();
+  if(!t) return false;
+  audioTarget = { title: t, item: itemObj || null, after: (typeof after === 'function' ? after : null) };
+  const nm = $('#audioBook');
+  if(nm) nm.textContent = '📕 ' + t;
+  const input = $('#audioUrlInput');
+  if(input) input.value = audioOwnUrl(t, itemObj && itemObj.audioUrl) || '';
+  const cur = $('#audioCur');
+  if(cur) cur.innerHTML = audioCurHtml(t, itemObj && itemObj.audioUrl);
+  openSheet('audioSheet');
+  const sh = $('#audioSheet .sheet');
+  if(sh) sh.scrollTop = 0;
+  setTimeout(() => { try{ if(input) input.focus(); }catch(e){} }, 260);
+  return true;
+}
+function audioSaveSheet(clear){
+  if(!audioTarget) return false;
+  const raw = clear ? '' : String(($('#audioUrlInput') || {}).value || '').trim();
+  if(raw && !audioUrlClean(raw)){
+    toast('유튜브 주소를 확인해 주세요 (https://youtu.be/… 또는 https://www.youtube.com/…)');
+    return false;
+  }
+  const tgt = audioTarget;
+  const clean = setBookAudioUrl(tgt.title, raw, tgt.item);
+  save();
+  closeSheet($('#audioSheet'));
+  audioRefreshDom();
+  if(tgt.after){ try{ tgt.after(!!clean); }catch(e){} }
+  toast(clean ? '음원 주소를 저장했어요' : '음원 주소를 지웠어요 · 제목으로 찾아 열어요');
+  return true;
+}
+$('#btnAudioSave').onclick = () => audioSaveSheet(false);
+$('#btnAudioClear').onclick = () => audioSaveSheet(true);
+$('#btnAudioOpen').onclick = () => {
+  if(!audioTarget) return;
+  const raw = String(($('#audioUrlInput') || {}).value || '').trim();
+  const own = raw ? audioUrlClean(raw) : (audioTarget.item && audioTarget.item.audioUrl) || '';
+  audioOpen(audioTarget.title, own);
+};
+$('#audioUrlInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); audioSaveSheet(false); }
+});
+$('#audioUrlInput').addEventListener('input', () => {
+  if(!audioTarget) return;
+  const cur = $('#audioCur');
+  if(cur) cur.innerHTML = audioCurHtml(audioTarget.title, ($('#audioUrlInput') || {}).value || '');
+});
 
 /* ---------- 아이(자녀) ---------- */
 function uidC(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -2879,6 +3113,12 @@ function renderShelf(){
       arSlot.className = 'ar-slot sh-ar';
       arSlot.setAttribute('data-ar-slot', '1');
       meta.appendChild(arSlot);
+      /* v2.6.20: 영어책은 🔊 음원(유튜브)·🎬 주소 단추를 카드에 바로 둔다 */
+      meta.appendChild(audioPill(s.name, s.audioUrl));
+      meta.appendChild(audioEditBtn(s.name, s, () => {
+        const f = $('#shAudioUrl');
+        if(f && shelfDraft && shelfDraft.id === s.id) f.value = audioOwnUrl(s.name, s.audioUrl) || '';
+      }));
     }
     const cnt = document.createElement('div');
     cnt.className = 'sh-cnt';
@@ -3176,6 +3416,8 @@ function seriesViewRow(s, no){
     arSlot.className = 'ar-slot';
     arSlot.setAttribute('data-ar-slot', '1');
     meta.appendChild(arSlot);
+    /* v2.6.20: 영어책 낱권은 🔊 음원으로 유튜브에서 듣는다 (주소는 제목을 눌러 수정 창에서) */
+    meta.appendChild(audioPill(s.name, s.audioUrl));
   }
   tx.appendChild(meta);
   row.appendChild(tx);
@@ -3406,6 +3648,8 @@ function openShelfForm(id, preset){
   $('#sfAuthor').value = shelfDraft.author || '';
   $('#sfPages').value = toPages(shelfDraft.pages) ? String(toPages(shelfDraft.pages)) : '';
   $('#sfPublisher').value = shelfDraft.publisher || '';
+  /* v2.6.20: 이 책에 넣어 둔 유튜브 음원 주소 (없으면 비어 있다) */
+  if($('#shAudioUrl')) $('#shAudioUrl').value = audioOwnUrl(shelfDraft.name, shelfDraft.audioUrl) || '';
   sfSearchClear();
   if($('#sfSearchQ')) $('#sfSearchQ').value = shelfDraft.name || '';
   const del = $('#btnShelfDelete');
@@ -3425,6 +3669,13 @@ function saveShelf(){
   const author = $('#sfAuthor').value.trim();
   const publisher = $('#sfPublisher').value.trim();
   const series = $('#sfSeries').value.replace(/\s+/g, ' ').trim();
+  /* v2.6.20: 유튜브 음원 주소는 비우거나 유튜브 주소일 때만 받는다 */
+  const audioRaw = String(($('#shAudioUrl') || {}).value || '').trim();
+  if(audioRaw && !audioUrlClean(audioRaw)){
+    toast('유튜브 주소를 확인해 주세요 (https://youtu.be/… 또는 https://www.youtube.com/…)');
+    if($('#shAudioUrl')) $('#shAudioUrl').focus();
+    return;
+  }
   const dup = db.shelf.find(s => s.id !== shelfDraft.id && s.name === name && s.lang === shelfDraft.lang);
   if(dup){ toast('이미 책장에 있는 이름이에요'); return; }
   const item = sanitizeShelf({
@@ -3440,12 +3691,15 @@ function saveShelf(){
     noCover: shelfDraft.noCover === true,   /* v2.6.11: 지운 표지를 자동으로 다시 채우지 않는다 */
     isbn: shelfDraft.isbn || '',   /* v2.6.9: 전집에서 담은 ISBN은 손으로 고쳐도 남긴다 */
     readDone: shelfDraft.readDone === true,   /* v2.6.16: 카드에서 표시한 읽음은 수정해도 남긴다 */
+    audioUrl: audioRaw ? audioUrlClean(audioRaw) : '',   /* v2.6.20: 유튜브 음원 주소 */
     createdAt: shelfDraft.createdAt || Date.now()
   });
   if(!item){ toast('저장하지 못했어요'); return; }
   const i = db.shelf.findIndex(s => s.id === item.id);
   if(i >= 0) db.shelf[i] = item;
   else db.shelf.push(item);
+  /* v2.6.20: 같은 책이 나오는 잠수네·추천·기록에서도 같은 영상이 열리게 제목별로도 기억한다 */
+  setBookAudioUrl(item.name, item.audioUrl, item);
   save();
   render();
   closeSheet($('#shelfSheet'));
@@ -4561,6 +4815,9 @@ $('#btnQuickFull').onclick = () => {
   draft.cover = s.cover || shelfCoverFallback(s.name);
   draft.coverData = s.coverData;
   $('#fTitle').value = s.name + (sub ? ' ' + sub : '');
+  /* v2.6.20: 책장 항목의 유튜브 음원 주소도 기록 창으로 가져온다 */
+  if($('#fAudioUrl')) $('#fAudioUrl').value = audioOwnUrl(s.name, s.audioUrl) || '';
+  syncFormAudio();
   $$('#langToggle .lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === s.lang));
   draftKids = kids.filter(id => kidById(id));
   if(draftKids.length) renderKidPick();
@@ -5286,6 +5543,8 @@ function buildRecItem(r){
   ag.className = 'age';
   ag.textContent = ageLabel(r.age);
   meta.appendChild(tg); meta.appendChild(ag);
+  /* v2.6.20: 영어책은 카드에서 바로 유튜브 읽어 주기를 들을 수 있다 */
+  if(r.lang === 'en') meta.appendChild(audioPill(r.title, ''));
   if(rd){
     const rdb = document.createElement('span');
     rdb.className = 'rec-rd';
@@ -5410,6 +5669,8 @@ function renderWishList(){
     arSlot.className = 'ar-slot';
     arSlot.setAttribute('data-ar-slot', '');
     meta.appendChild(arSlot);
+    /* v2.6.20: 영어책은 카드에서 바로 유튜브 읽어 주기를 들을 수 있다 */
+    if(w.lang === 'en') meta.appendChild(audioPill(w.title, ''));
     if(rd){
       const rdb = document.createElement('span');
       rdb.className = 'rec-rd';
@@ -5888,6 +6149,12 @@ function setLang(l){
   if(!draft) return;
   draft.lang = l;
   $$('#langToggle .lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === l));
+  syncFormAudio();
+}
+/* v2.6.20: 유튜브 음원 주소 칸은 영어책일 때만 보인다 */
+function syncFormAudio(){
+  const f = $('#fAudioField');
+  if(f) f.classList.toggle('hidden', !draft || draft.lang !== 'en');
 }
 $('#langToggle').addEventListener('click', e => {
   const b = e.target.closest('.lang-btn');
@@ -5972,6 +6239,9 @@ function openForm(dateStr, book){
   setPagesNote('');
   draft.isbn = draft.isbn || '';
   draft.publisher = draft.publisher || '';
+  /* v2.6.20: 이 책에 넣어 둔 유튜브 음원 주소 (영어책일 때만 칸이 보인다) */
+  if($('#fAudioUrl')) $('#fAudioUrl').value = audioOwnUrl(draft.title, draft.audioUrl) || '';
+  syncFormAudio();
   showScanNotice('');
   /* 앞선 검색이 늦게 도착해 새 시트를 덮지 않도록 무효화한다 */
   searchSeq += 1;
@@ -6005,6 +6275,14 @@ $('#btnSave').onclick = () => {
     : draftKids.slice();
   if(!kids.length){ toast('누가 읽었는지 골라 주세요'); return; }
 
+  /* v2.6.20: 유튜브 음원 주소는 비우거나 유튜브 주소일 때만 받는다 */
+  const audioRaw = String(($('#fAudioUrl') || {}).value || '').trim();
+  if(audioRaw && !audioUrlClean(audioRaw)){
+    toast('유튜브 주소를 확인해 주세요 (https://youtu.be/… 또는 https://www.youtube.com/…)');
+    if($('#fAudioUrl')) $('#fAudioUrl').focus();
+    return;
+  }
+
   const prevRec = draft.id ? db.books.find(x => x.id === draft.id) : null;
   const rec = sanitize({
     id: draft.id || uid(),
@@ -6025,12 +6303,16 @@ $('#btnSave').onclick = () => {
     publisher: draft.publisher || '',
     note: draft.note || '',
     imp: draft.imp || '',
+    /* v2.6.20: 이 기록의 유튜브 음원 주소 */
+    audioUrl: audioRaw ? audioUrlClean(audioRaw) : '',
     createdAt: draft.createdAt || Date.now()
   });
 
   const i = db.books.findIndex(b => b.id === rec.id);
   if(i >= 0) db.books[i] = rec;
   else db.books.push(rec);
+  /* v2.6.20: 같은 책이 나오는 다른 화면에서도 같은 영상이 열리게 제목별로도 기억한다 */
+  setBookAudioUrl(rec.title, rec.audioUrl, rec);
 
   // 새로 직접 입력한 책을 책장에도 담기
   let shelfAdded = false;
@@ -8072,6 +8354,33 @@ function openDetail(id){
     body.appendChild(dn);
   }
 
+  /* v2.6.20: 영어책 — 🔊 음원 듣기와 🎬 음원 주소 바꾸기 */
+  if(b.lang === 'en'){
+    const arow = document.createElement('div');
+    arow.className = 'detail-audio';
+    const play = document.createElement('button');
+    play.type = 'button';
+    play.className = 'aud-play';
+    const paintAud = () => {
+      const own = audioHasOwn(b.title, b.audioUrl);
+      play.classList.toggle('mine', own);
+      play.textContent = own ? '🔊 음원 듣기 · 내 음원' : '🔊 음원 듣기';
+      play.title = own ? '저장한 유튜브 영상 열기' : '유튜브에서 read aloud 찾기';
+      play.setAttribute('aria-label', b.title + (own ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기'));
+    };
+    paintAud();
+    play.onclick = () => audioOpen(b.title, b.audioUrl);
+    const aedit = document.createElement('button');
+    aedit.type = 'button';
+    aedit.className = 'aud-edit2';
+    aedit.textContent = '🎬 음원 주소';
+    aedit.setAttribute('aria-label', b.title + ' 유튜브 음원 주소 바꾸기');
+    aedit.onclick = () => openAudioSheet(b.title, b, paintAud);
+    arow.appendChild(play); arow.appendChild(aedit);
+    body.appendChild(arow);
+    audioRefreshDom();
+  }
+
   const actions = document.createElement('div');
   actions.className = 'detail-actions';
   const edit = document.createElement('button');
@@ -8521,6 +8830,8 @@ function exportPayload(){
     children: db.children,
     shelf: db.shelf,
     wishlist: db.wishlist,
+    /* v2.6.20: 영어책 유튜브 음원 주소(제목별)도 함께 백업한다 */
+    audioMap: audioMapObj(),
     books: db.books
   };
 }
@@ -8624,6 +8935,15 @@ function importJson(text){
       wishAdded++;
     });
   }
+  /* v2.6.20: 백업의 유튜브 음원 주소를 합쳐 온다 (기기에 이미 있는 주소는 그대로 둔다) */
+  const inAudio = audioMapClean((!Array.isArray(parsed) && parsed) ? parsed.audioMap : null);
+  let audioAdded = 0;
+  const am = audioMapObj();
+  Object.keys(inAudio).forEach(k => {
+    if(am[k]) return;
+    am[k] = inAudio[k];
+    audioAdded++;
+  });
   const keyOf = b => b.date + '|' + b.title.trim().toLowerCase() + '|' + b.lang + '|' + (b.childIds || []).slice().sort().join(',');
   const ids = new Set(db.books.map(b => b.id));
   const keys = new Set(db.books.map(keyOf));
@@ -8645,7 +8965,8 @@ function importJson(text){
   const kidNote = kidsAdded ? ' · 아이 ' + kidsAdded + '명 추가' : '';
   const shelfNote = shelfAdded ? ' · 책장 ' + shelfAdded + '종 추가' : '';
   const wishNote = wishAdded ? ' · 읽을 목록 ' + wishAdded + '권 추가' : '';
-  toast(added + '권 가져왔어요' + kidNote + shelfNote + wishNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
+  const audioNote = audioAdded ? ' · 음원 주소 ' + audioAdded + '개 추가' : '';
+  toast(added + '권 가져왔어요' + kidNote + shelfNote + wishNote + audioNote + (dup ? ' · 중복 ' + dup + '권은 건너뜀' : '') + (bad ? ' · 잘못된 항목 ' + bad : ''));
   closeSheet($('#menuSheet'));
 }
 
@@ -10454,7 +10775,14 @@ function jamItemHtml(kind, it, rd, wish){
   h += '<div class="rec-meta"><span class="tg ' + (kind === 'en' ? 'en' : 'ko') + '">' + (kind === 'en' ? '영어' : '한글') + '</span>' +
     '<span class="tg lv">' + escXML(lv) + '</span>' +
     '<span class="tg cat">' + escXML(cg) + '</span>';
-  if(kind === 'en' && it[EN_AU] === true) h += '<span class="tg audio">🔊 음원</span>';
+  /* v2.6.20: 영어책은 모두 🔊 음원을 눌러 유튜브에서 바로 들을 수 있고, 🎬로 그 책만의 주소를 넣어 둔다
+     (잠수네 원본의 음원 표시는 위의 ‘음원 있음’ 거르기에 그대로 쓴다) */
+  if(kind === 'en'){
+    const hasOwn = audioHasOwn(title, '');
+    h += '<button type="button" class="aud-btn' + (hasOwn ? ' mine' : '') + '" data-act="audio" data-aud-title="' + escXML(title) + '" data-aud-url="" aria-label="' +
+      escXML(title + (hasOwn ? ' 저장한 유튜브 음원 열기' : ' 유튜브에서 read aloud 찾기')) + '">' + (hasOwn ? '🔊 내 음원' : '🔊 음원') + '</button>' +
+      '<button type="button" class="aud-ed" data-act="audioedit" aria-label="' + escXML(title + ' 유튜브 음원 주소 넣기') + '" title="유튜브 음원 주소 넣기">🎬</button>';
+  }
   /* v2.6.18: 전집(시리즈) 카드에는 낱권 수와 읽은 권수를 배지로 보여 준다 */
   const subs = kind === 'en' ? jamEnItems(it) : null;
   if(subs){
@@ -10741,6 +11069,12 @@ function jamSeriesRow(x, i, rd){
   arSlot.className = 'ar-slot';
   arSlot.setAttribute('data-ar-slot', '1');
   meta.appendChild(arSlot);
+  /* v2.6.20: 낱권도 🔊 음원으로 듣고 🎬로 그 책만의 주소를 넣어 둔다 (두 단추는 함께 줄바꿈) */
+  const aPair = document.createElement('span');
+  aPair.className = 'aud-pair';
+  aPair.appendChild(audioPill(x.title, ''));
+  aPair.appendChild(audioEditBtn(x.title, null));
+  meta.appendChild(aPair);
   const rdb = document.createElement('span');
   rdb.className = 'rec-rd jam-sv-rd' + (rd ? '' : ' hidden');
   rdb.textContent = '✓ 읽음';
@@ -11060,6 +11394,9 @@ $('#jamCard').addEventListener('click', e => {
     else if(act.dataset.act === 'wish') jamToggleWish(kind, it, itemEl);
     else if(act.dataset.act === 'series') jamSeriesOpen(kind, it);
     else if(act.dataset.act === 'lib') openLibrary(kind === 'en' ? 'en' : 'ko', it[kind === 'ko' ? KO_T : EN_T]);
+    /* v2.6.20: 영어책의 🔊 음원(유튜브 열기)·🎬(주소 넣기) */
+    else if(act.dataset.act === 'audio' && kind === 'en') audioOpen(it[EN_T], '');
+    else if(act.dataset.act === 'audioedit' && kind === 'en') openAudioSheet(it[EN_T], null);
     return;
   }
   /* v2.6.18: 낱권이 붙은 전집 카드는 카드 빈 곳을 눌러도 낱권 목록이 열린다 (안쪽 버튼은 따로 동작) */
@@ -11160,7 +11497,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.19',
+  version: '2.6.20',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11250,6 +11587,33 @@ window.__rc = {
     keys: t => jamKeysFor(t),
     isRead: (title, author, lv) => isBookRead(title, author, lv),
     shelfRead: id => { const s = db.shelf.find(x => x.id === id); return s ? shelfItemRead(s) : false; }
+  },
+  /* v2.6.20 영어책 유튜브 음원 확인용 */
+  audioApi: {
+    resolve: (title, itemAudioUrl) => resolveAudioUrl(title, itemAudioUrl),
+    search: title => audioSearchUrl(title),
+    set: (title, url, itemId) => {
+      const obj = itemId ? (db.shelf.find(x => x.id === itemId) || db.books.find(x => x.id === itemId)) : null;
+      const clean = setBookAudioUrl(title, url, obj);
+      save();
+      audioRefreshDom();
+      return clean;
+    },
+    get: title => audioOwnUrl(title, null),
+    map: () => Object.assign({}, audioMapObj()),
+    pillLabels: () => $$('.aud-btn').map(b => ({ title: b.dataset.audTitle || '', text: b.textContent, mine: b.classList.contains('mine') })).slice(0, 12),
+    sheet: {
+      open: (title, itemId) => openAudioSheet(title, itemId ? (db.shelf.find(x => x.id === itemId) || db.books.find(x => x.id === itemId) || null) : null),
+      state: () => ({
+        open: !!($('#audioSheet') && $('#audioSheet').classList.contains('open')),
+        title: ($('#audioBook') || {}).textContent || '',
+        value: ($('#audioUrlInput') || {}).value || '',
+        cur: ($('#audioCur') || {}).textContent || ''
+      }),
+      save: () => audioSaveSheet(false),
+      clear: () => audioSaveSheet(true),
+      close: () => closeSheet($('#audioSheet'))
+    }
   },
   /* v2.6.9 전집 한꺼번에 찾아 담기 확인용 */
   seriesApi: {
