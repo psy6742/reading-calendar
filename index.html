@@ -510,7 +510,9 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-note{display:flex;justify-content:space-between;gap:8px;margin:12px 2px 0;font-size:12px;font-weight:700;color:#9A958A}
 .rec-note b{color:#5B6270}
 .rec-list,.wish-list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
-.rec-item,.wish-item{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
+/* v2.6.4: 추천·잠수네가 같은 책 카드를 쓴다 */
+.rec-item,.jam-item,.wish-item{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
+.rec-item.read,.jam-item.read{background:#FDF8F6;border-color:#F2DED8}
 .rec-cov{position:relative;width:54px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13)}
 .rec-cov img{width:100%;height:100%;object-fit:cover}
 .rec-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
@@ -521,6 +523,22 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-meta .tg.ko{background:var(--ko-bg);color:var(--ko)}
 .rec-meta .tg.en{background:var(--en-bg);color:var(--en)}
 .rec-meta .age{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#F1EDF7;color:#6B5C82;flex:0 0 auto}
+/* 잠수네 수준·분류·음원 (v2.6.4 통일) */
+.rec-meta .tg.lv{background:var(--lav);color:#3A3F58;font-size:10.5px;border-radius:6px}
+.rec-meta .tg.cat{background:#F1EEE4;color:#8E897C;font-size:10.5px;border-radius:6px;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-meta .tg.audio{background:#E9EFF7;color:#48627F;font-size:10.5px;border-radius:999px;padding:2px 7px}
+/* 읽음 표시 — 추천·잠수네 같은 붉은 알약 */
+.rec-rd{flex:0 0 auto;font-size:10.5px;font-weight:800;line-height:1.25;color:#B4271D;background:#FBE3DE;border-radius:999px;padding:2px 7px;white-space:nowrap;letter-spacing:-.2px}
+/* v2.6.4: 영어책 AR 지수 — 누르면 arbookfind.com */
+.ar-rd{flex:0 0 auto;display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;line-height:1.25;
+  color:#1F4E79;background:#E7F0F8;border:1px solid #C9DDEE;border-radius:999px;padding:1px 7px;white-space:nowrap;
+  text-decoration:none;letter-spacing:-.2px}
+.ar-rd:active{background:#D9E8F4}
+/* 읽은 책 찾기 안의 AR */
+.ar-slot{display:inline-flex;align-items:center}
+.find-ar{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px}
+.find-ar.hidden{display:none}
+.find-ar-lb{font-size:11px;font-weight:800;color:#8E897C;letter-spacing:-.2px}
 .rec-auth{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec-reason{font-size:11.5px;font-weight:600;color:#6C7280;line-height:1.5;margin-top:5px;word-break:keep-all}
 .rec-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
@@ -532,7 +550,22 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-btn.dark{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 2px 7px rgba(30,41,59,.16)}
 .rec-btn:active{transform:translateY(1px)}
 .rec-btn.del{background:#FBEAE7;border-color:#F3D9D3;color:#B4574A}
-/* v2.6: 카드에서 도서관 청구기호를 바로 찾는 단추 */
+/* v2.6.4: 추천·잠수네 공용 3단 버튼 줄 (+ 읽었어요 | ♡ 읽을 목록 | 🏛️ 도서관) */
+.card-acts{display:flex;gap:6px;flex-wrap:nowrap;margin-top:9px}
+.card-acts button{
+  flex:1 1 0;min-width:0;border-radius:10px;padding:8px 5px;font-size:11.5px;font-weight:800;
+  line-height:1.12;letter-spacing:-.2px;white-space:nowrap;border:1.5px solid #E4DFD2;background:#fff;color:#5F6673;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.card-acts button.rd{border-color:#D9E8CB;background:#F4F9EE;color:#4F6B3B}
+.card-acts button.ws.on{border-color:#F0D9CF;background:#FBF0EC;color:#A8563F}
+.card-acts button.lib{border-color:#E4DFD2;background:#F4F1E8;color:#4B5262}
+.card-acts button:active{transform:translateY(1px)}
+/* 아주 좁은 화면(≤370px)에서는 버튼 글자가 잘리지 않게 조금 접는다 */
+@media (max-width:374px){
+  .card-acts button{font-size:10.5px;padding:8px 3px;letter-spacing:-.4px}
+}
+/* v2.6: 카드에서 도서관 청구기호를 바로 찾는 단추 (읽을 목록 카드) */
 .rec-lib{
   margin-left:auto;flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;
   font-size:11px;font-weight:800;line-height:1;letter-spacing:-.2px;white-space:nowrap;
@@ -603,22 +636,11 @@ textarea.input{resize:vertical;min-height:60px}
 .jam-sum .rd{color:#B4271D;font-weight:800}
 .jam-sum .sep{opacity:.5}
 .jam-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.jam-item{padding:11px 12px;border-radius:15px;background:#FBFAF6;border:1px solid #EEEAE0}
-.jam-item.read{background:#FDF8F6;border-color:#F2DED8}
-.jam-row1{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px}
-.jam-lv{font-size:10.5px;font-weight:800;color:#3A3F58;background:var(--lav);border-radius:6px;padding:2px 6px}
-.jam-cat{font-size:10.5px;font-weight:800;color:#8E897C;background:#F1EEE4;border-radius:6px;padding:2px 6px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jam-readb{margin-left:auto;flex:0 0 auto;font-size:10.5px;font-weight:800;color:#B4271D;background:#FBE3DE;border-radius:999px;padding:2px 7px;white-space:nowrap}
-.jam-audio{flex:0 0 auto;font-size:10.5px;font-weight:800;color:#48627F;background:#E9EFF7;border-radius:999px;padding:2px 7px;white-space:nowrap}
-.jam-ti{font-size:14px;font-weight:800;letter-spacing:-.25px;line-height:1.35;word-break:keep-all}
-.jam-au{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:2px}
+/* v2.6.4: 잠수네 카드도 추천과 같은 공용 카드(.rec-item·.rec-*)를 쓴다. 아래는 옛 이름을 남긴 자리 */
+.jam-ti{font-size:14px;font-weight:800;line-height:1.36;color:#2C3444;letter-spacing:-.2px;word-break:keep-all}
+.jam-au{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:5px}
 .jam-au i{font-style:normal;color:#B6B0A2}
-.jam-mt{font-size:10.5px;font-weight:700;color:#B0AA9C;margin-top:3px}
-.jam-acts{display:flex;gap:6px;margin-top:9px}
-.jam-acts button{flex:1 1 0;min-width:0;border-radius:10px;padding:7px 6px;font-size:11.5px;font-weight:800;border:1.5px solid #E4DFD2;background:#fff;color:#5F6673}
-.jam-acts button.rd{border-color:#D9E8CB;background:#F4F9EE;color:#4F6B3B}
-.jam-acts button.ws.on{border-color:#F0D9CF;background:#FBF0EC;color:#A8563F}
-.jam-acts button.lib{border-color:#E4DFD2;background:#F4F1E8;color:#4B5262;white-space:nowrap}
+.jam-mt{font-size:11.5px;font-weight:600;color:#6C7280;line-height:1.5;margin-top:5px;word-break:keep-all}
 .jam-more{width:100%;margin-top:10px;border-radius:12px;padding:11px;font-size:12.5px;font-weight:800;color:#5F6673;background:#F4F1E8;border:1px solid #EAE5D8}
 .jam-empty{padding:20px 6px;text-align:center;font-size:12.5px;font-weight:700;line-height:1.6;color:#9A958A}
 .jam-onb h3{font-size:14px;font-weight:800;letter-spacing:-.25px;word-break:keep-all}
@@ -1300,6 +1322,16 @@ select.input:focus{background-color:#fff}
       <input class="input" id="fNlProxy" placeholder="비워 두면 nl.go.kr을 바로 불러요" autocomplete="off" spellcheck="false">
       <div class="hint">국립중앙도서관 API는 브라우저에서 바로 부를 수 있게 열려 있어요(응답에 <code>Access-Control-Allow-Origin: *</code> 포함). 그래도 막히는 네트워크에서만 중계 주소를 넣으세요. 주소에 <code>{isbn}</code>·<code>{key}</code>를 쓰면 그 자리에 값이 들어가요.</div>
     </div>
+    <div class="field" style="margin-top:16px">
+      <label for="fArProxy">AR 점수 중계 주소 · Cloudflare (선택)</label>
+      <input class="input" id="fArProxy" placeholder="https://ar-proxy.내아이디.workers.dev" autocomplete="off" spellcheck="false" inputmode="url">
+      <div class="key-row">
+        <button class="btn sm dark" id="btnArSave" type="button">저장</button>
+        <button class="btn sm line" id="btnArClear" type="button">삭제</button>
+        <span class="key-state" id="arProxyState">등록되지 않음</span>
+      </div>
+      <div class="hint">영어책 카드에 <b>AR 1.5</b>처럼 arbookfind.com의 AR 지수를 함께 보여 줘요. arbookfind.com은 브라우저에서 바로 부를 수 없어서 Cloudflare Worker 중계 주소가 필요해요. 비워 두면 AR 표시 없이 그대로 동작해요.</div>
+    </div>
     <p class="sheet-note" style="margin-top:14px">기록·내 책장·읽을 목록은 이 브라우저(localStorage)에 저장되고, JSON 백업에도 함께 담겨요. 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 주세요.</p>
   </div>
 </div>
@@ -1349,7 +1381,7 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' } };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', arProxyUrl: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' } };
 let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', yunit: 'count', rec: { age: '0-2', sub: 'age' } };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
@@ -1403,7 +1435,7 @@ function load(){
       if(Array.isArray(p)) db.books = p.map(sanitize).filter(Boolean);
       else if(p && Array.isArray(p.books)){
         db.books = p.books.map(sanitize).filter(Boolean);
-        db.settings = Object.assign({ gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' }, p.settings || {});
+        db.settings = Object.assign({ gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '', arProxyUrl: '', libKo: 'dsn', libEn: 'yelc', libKoUrl: '', libEnUrl: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
@@ -2902,7 +2934,10 @@ const CURATED = [
 
 function recById(id){ return CURATED.find(r => r.id === id) || null; }
 function recsFor(age, filter){
-  return CURATED.filter(r => r.age === age && (filter === 'all' || r.lang === filter));
+  const out = CURATED.filter(r => r.age === age && (filter === 'all' || r.lang === filter));
+  // v2.6.4: '전체'에서는 한글책을 위에, 영어책을 아래에 모아 보여준다(각 언어 안의 순서는 그대로)
+  if(filter === 'all') out.sort((a, b) => (a.lang === 'en' ? 1 : 0) - (b.lang === 'en' ? 1 : 0));
+  return out;
 }
 
 /* ---------- 읽을 목록 데이터 ---------- */
@@ -3052,6 +3087,14 @@ function findRowEl(g){
   badge.className = 'rbadge ' + (g.lang === 'en' ? 'en' : 'ko');
   badge.textContent = g.lang === 'en' ? '영어' : '한글';
   row.appendChild(badge);
+  /* v2.6.4: 영어책은 영어 배지 옆에 AR 지수 */
+  if(g.lang === 'en'){
+    const slot = document.createElement('span');
+    slot.className = 'ar-slot';
+    slot.setAttribute('data-ar-slot', '1');
+    row.appendChild(slot);
+    arWatchCard(row, g.title, g.author);
+  }
   return row;
 }
 function findHeading(text){
@@ -3101,7 +3144,22 @@ function renderFind(){
   }
   if(!groups.length){
     const label = (text && !/^\d{9,13}[Xx]?$/.test(text)) ? text : '';
-    box.appendChild(findEmpty(label));
+    const empty = findEmpty(label);
+    /* v2.6.4: 읽은 기록이 없어도 영어 제목이면 AR 지수를 찾아 보여 준다(빌리기 전 확인용) */
+    const arQ = String(findScan.title || label || '').trim();
+    if(arEnabled() && arQ && /[a-zA-Z]/.test(arQ)){
+      const row = document.createElement('div');
+      row.className = 'find-ar hidden';
+      const lb = document.createElement('span');
+      lb.className = 'find-ar-lb';
+      lb.textContent = 'AR 지수';
+      const slot = document.createElement('span');
+      slot.setAttribute('data-ar-slot', '1');
+      row.appendChild(lb); row.appendChild(slot);
+      empty.appendChild(row);
+      arWatchCard(empty, arQ, '');
+    }
+    box.appendChild(empty);
     return;
   }
   groups.slice(0, 40).forEach(g => box.appendChild(findRowEl(g)));
@@ -3152,7 +3210,9 @@ function renderAgeChips(){
     b.dataset.age = a.k;
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-selected', view.rec.age === a.k ? 'true' : 'false');
-    b.textContent = a.label + ' ' + n;
+    // v2.6.4: 칩에는 연령 이름만 보이고, 권수는 화면 읽기용 이름표로만 남긴다
+    b.setAttribute('aria-label', a.label + ' ' + n + '권');
+    b.textContent = a.label;
     box.appendChild(b);
   });
   // 선택한 연령대가 보이도록 가로 스크롤 위치를 맞춘다
@@ -3219,8 +3279,9 @@ function renderRecList(){
 }
 
 function buildRecItem(r){
+  const rd = isBookRead(r.title, r.author);
   const item = document.createElement('div');
-  item.className = 'rec-item';
+  item.className = 'rec-item' + (rd ? ' read' : '');
   item.dataset.rid = r.id;
   item.appendChild(buildRecCover(r));
 
@@ -3238,40 +3299,49 @@ function buildRecItem(r){
   ag.className = 'age';
   ag.textContent = ageLabel(r.age);
   meta.appendChild(tg); meta.appendChild(ag);
-  const lgb = document.createElement('button');
-  lgb.type = 'button';
-  lgb.className = 'rec-lib';
-  lgb.dataset.act = 'lib';
-  lgb.title = libName(r.lang) + '에서 찾기';
-  lgb.setAttribute('aria-label', r.title + ' — ' + libName(r.lang) + '에서 청구기호 찾기');
-  lgb.textContent = '🏛️ 도서관';
-  meta.appendChild(lgb);
+  if(rd){
+    const rdb = document.createElement('span');
+    rdb.className = 'rec-rd';
+    rdb.textContent = '✓ 읽음';
+    meta.appendChild(rdb);
+  }
   const au = document.createElement('div');
   au.className = 'rec-auth';
   au.textContent = r.author;
   const rs = document.createElement('div');
   rs.className = 'rec-reason';
   rs.textContent = r.reason;
+
+  /* v2.6.4: 잠수네 카드와 같은 3단 버튼 줄 */
   const acts = document.createElement('div');
-  acts.className = 'rec-acts';
+  acts.className = 'card-acts';
+
+  const rb = document.createElement('button');
+  rb.type = 'button';
+  rb.className = 'rec-btn rd';
+  rb.dataset.act = 'read';
+  rb.textContent = '+ 읽었어요';
 
   const inWish = !!wishFind(r);
   const wb = document.createElement('button');
   wb.type = 'button';
-  wb.className = 'rec-btn' + (inWish ? ' on' : '');
+  wb.className = 'rec-btn ws' + (inWish ? ' on' : '');
   wb.dataset.act = 'wish';
   wb.setAttribute('aria-pressed', inWish ? 'true' : 'false');
-  wb.textContent = inWish ? '✓ 읽을 목록에 있음' : '+ 읽을 목록';
+  wb.textContent = inWish ? '✓ 읽을 목록' : '♡ 읽을 목록';
 
-  const rb = document.createElement('button');
-  rb.type = 'button';
-  rb.className = 'rec-btn dark';
-  rb.dataset.act = 'record';
-  rb.textContent = '바로 기록';
+  const lgb = document.createElement('button');
+  lgb.type = 'button';
+  lgb.className = 'rec-btn lib';
+  lgb.dataset.act = 'lib';
+  lgb.title = libName(r.lang) + '에서 찾기';
+  lgb.setAttribute('aria-label', r.title + ' — ' + libName(r.lang) + '에서 청구기호 찾기');
+  lgb.textContent = '🏛️ 도서관';
 
-  acts.appendChild(wb); acts.appendChild(rb);
+  acts.appendChild(rb); acts.appendChild(wb); acts.appendChild(lgb);
   body.appendChild(nm); body.appendChild(meta); body.appendChild(au); body.appendChild(rs); body.appendChild(acts);
   item.appendChild(body);
+  if(r.lang === 'en') arWatchCard(item, r.title, r.author);
   return item;
 }
 
@@ -3492,20 +3562,15 @@ $('#recLang').addEventListener('click', e => {
   if(b) setFilter(b.dataset.filter);
 });
 $('#recList').addEventListener('click', e => {
-  const lgb = e.target.closest('.rec-lib');
-  if(lgb){
-    const li = e.target.closest('.rec-item');
-    const rb = li ? recById(li.dataset.rid) : null;
-    if(rb) openLibrary(rb.lang, rb.title);
-    return;
-  }
   const btn = e.target.closest('.rec-btn');
   if(!btn) return;
   const item = e.target.closest('.rec-item');
   const r = item ? recById(item.dataset.rid) : null;
   if(!r) return;
-  if(btn.dataset.act === 'wish') toggleWish(r);
-  else if(btn.dataset.act === 'record') openBookRecord(r);
+  const act = btn.dataset.act;
+  if(act === 'wish') toggleWish(r);
+  else if(act === 'read') openBookRecord(r);
+  else if(act === 'lib') openLibrary(r.lang, r.title);
 });
 $('#wishList').addEventListener('click', e => {
   const lgb = e.target.closest('.rec-lib');
@@ -6492,6 +6557,9 @@ function openMenu(){
   $('#fKakaoKey').value = db.settings.kakaoKey || '';
   $('#fNlKey').value = db.settings.nlKey || '';
   $('#fNlProxy').value = db.settings.nlProxy || '';
+  const arEl = $('#fArProxy');
+  if(arEl) arEl.value = db.settings.arProxyUrl || '';
+  syncArProxyState();
   syncKakaoKeyState();
   syncNlKeyState();
   syncLibSettings();
@@ -6521,6 +6589,37 @@ function clearNlKey(){
   save();
   syncNlKeyState();
   toast('국립중앙도서관 인증키를 지웠어요');
+}
+/* ---------- AR 중계 주소 (v2.6.4) ---------- */
+function syncArProxyState(){
+  const el = $('#arProxyState');
+  const v = arProxy();
+  if(!el) return;
+  el.className = 'key-state' + (v ? ' ok' : '');
+  el.textContent = v ? '등록됨' : '등록되지 않음';
+}
+function saveArProxy(){
+  const el = $('#fArProxy');
+  let v = el ? String(el.value || '').trim() : '';
+  if(v && !/^https?:\/\//i.test(v)) v = 'https://' + v;
+  v = v.replace(/\/+$/, '');
+  db.settings.arProxyUrl = v;
+  if(el) el.value = v;
+  save();
+  syncArProxyState();
+  arResetWatch();
+  render();
+  toast(v ? 'AR 중계 주소를 저장했어요 · 영어책을 보면 AR 지수를 찾아요' : 'AR 중계 주소를 지웠어요');
+}
+function clearArProxy(){
+  const el = $('#fArProxy');
+  if(el) el.value = '';
+  db.settings.arProxyUrl = '';
+  save();
+  syncArProxyState();
+  arResetWatch();
+  render();
+  toast('AR 중계 주소를 지웠어요');
 }
 function openKeySettings(){
   /* 기록 입력 시트는 그대로 두고 그 위에 설정 시트를 연다 — 입력하던 내용이 날아가지 않는다 */
@@ -6564,6 +6663,14 @@ $('#btnKakaoSave').onclick = saveKakaoKey;
 $('#btnKakaoClear').onclick = clearKakaoKey;
 $('#btnNlSave').onclick = saveNlKey;
 $('#btnNlClear').onclick = clearNlKey;
+$('#btnArSave').onclick = saveArProxy;
+$('#btnArClear').onclick = clearArProxy;
+$('#fArProxy').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); saveArProxy(); }
+});
+$('#fArProxy').addEventListener('change', () => {
+  if(!db.settings.arProxyUrl) syncArProxyState();
+});
 $('#fNlKey').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); saveNlKey(); }
 });
@@ -6697,14 +6804,22 @@ function jamReadIdx(){
   jamIdx = m;
   return m;
 }
-/* 제목과 지은이를 함께 본다 (v2.6.3).
+/* 제목과 지은이를 함께 본다 (v2.6.3 · v2.6.4에서 잠수네·추천 공용으로 뺌).
    같은 제목의 다른 책(전래동화·번역본 등)을 읽음으로 잘못 잡지 않도록,
    양쪽에 지은이가 적혀 있으면 지은이까지 맞아야 읽음이다.
    한쪽이라도 지은이가 비어 있으면(지은이 없이 적은 기록 등) 제목만으로 본다. */
-function jamIsRead(kind, it){
+function isBookRead(title, author){
+  const t = String(title == null ? '' : title);
+  if(!t.trim()) return false;
   const m = jamReadIdx();
-  const itA = jamNormAuthor(it[kind === 'ko' ? KO_A : EN_A]);
-  const keys = jamItemKeys(kind, it);
+  const itA = jamNormAuthor(author);
+  const ck = 'i|' + t;
+  let keys = jamKeyCache.get(ck);
+  if(!keys){
+    keys = jamKeysFor(t);
+    if(jamKeyCache.size > 20000) jamKeyCache.clear();
+    jamKeyCache.set(ck, keys);
+  }
   for(let i = 0; i < keys.length; i++){
     const rec = m.get(keys[i]);
     if(!rec) continue;
@@ -6716,6 +6831,171 @@ function jamIsRead(kind, it){
     if(hit) return true;
   }
   return false;
+}
+/* 잠수네 목록 항목은 제목·지은이 칸 이름만 다르므로 공용 판정에 그대로 넘긴다. */
+function jamIsRead(kind, it){
+  return isBookRead(it[kind === 'ko' ? KO_T : EN_T], it[kind === 'ko' ? KO_A : EN_A]);
+}
+
+/* ---------- AR 지수 (v2.6.4) ----------
+   arbookfind.com은 브라우저에서 바로 부를 수 없어 Cloudflare Worker 중계 주소를 설정에서 받는다.
+   영어책 카드가 화면에 들어올 때만(IntersectionObserver) 한 번씩 묻고, 답은 기기에 영구 저장한다. */
+const AR_CACHE_KEY = 'readingCalendar.ar.v1';
+const AR_MAX_REQ = 2;
+let arCache = null;
+let arQueue = [];
+let arBusy = 0;
+let arObs = null;
+let arSaveT = 0;
+
+function arProxy(){ return String((db.settings && db.settings.arProxyUrl) || '').trim(); }
+function arEnabled(){ return !!arProxy(); }
+/* 검색용 제목 다듬기: 끝의 (시리즈명)·대괄호·판본 표시를 뺀다 */
+function arCleanTitle(t){
+  let s = jamBase(String(t == null ? '' : t));
+  s = s.replace(/\[[^\]]*\]/g, ' ').replace(/[\(（][^\)）]*[\)）]\s*$/, ' ');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+}
+function arKeyOf(title, author){ return jamNorm(title) + '|' + jamNormAuthor(author); }
+function arLoad(){
+  if(arCache) return arCache;
+  arCache = Object.create(null);
+  try{
+    const raw = localStorage.getItem(AR_CACHE_KEY);
+    const p = raw ? JSON.parse(raw) : null;
+    if(p && typeof p === 'object' && !Array.isArray(p)) arCache = p;
+  }catch(e){}
+  return arCache;
+}
+function arPersist(){
+  if(arSaveT) return;
+  arSaveT = setTimeout(() => {
+    arSaveT = 0;
+    try{
+      const keys = Object.keys(arCache || {});
+      // 너무 커지면 오래된 것부터 정리한다
+      if(keys.length > 4000){ keys.slice(0, keys.length - 4000).forEach(k => { delete arCache[k]; }); }
+      localStorage.setItem(AR_CACHE_KEY, JSON.stringify(arCache));
+    }catch(e){}
+  }, 400);
+}
+function arHas(title, author){
+  const c = arLoad();
+  const k = arKeyOf(title, author);
+  return Object.prototype.hasOwnProperty.call(c, k) ? c[k] : null;
+}
+function arPut(title, author, val){
+  const c = arLoad();
+  c[arKeyOf(title, author)] = val;
+  arPersist();
+}
+function arPump(){
+  while(arBusy < AR_MAX_REQ && arQueue.length){
+    const job = arQueue.shift();
+    const base = arProxy();
+    if(!base){ job.resolve({ bl: null, fail: true }); continue; }
+    arBusy++;
+    const url = base + (base.indexOf('?') >= 0 ? '&' : '?') +
+      'q=' + encodeURIComponent(job.title) + '&author=' + encodeURIComponent(job.author || '');
+    let ctrl = null, timer = null;
+    const done = v => { arBusy = Math.max(0, arBusy - 1); job.resolve(v); arPump(); };
+    try{ ctrl = new AbortController(); }catch(e){}
+    timer = setTimeout(() => { try{ if(ctrl) ctrl.abort(); }catch(e){} }, 9000);
+    try{
+      fetch(url, ctrl ? { signal: ctrl.signal, mode: 'cors' } : undefined)
+        .then(r => r.ok ? r.json() : null)
+        .then(j => {
+          clearTimeout(timer);
+          if(!j || j.ok !== true) return done({ bl: null, fail: true });
+          done({ bl: j.bl == null ? null : String(j.bl), il: j.il ? String(j.il) : '',
+                 pts: j.pts ? String(j.pts) : '', cover: j.cover ? String(j.cover) : '',
+                 url: j.url ? String(j.url) : '' });
+        })
+        .catch(() => { clearTimeout(timer); done({ bl: null, fail: true }); });
+    }catch(e){ clearTimeout(timer); done({ bl: null, fail: true }); }
+  }
+}
+function arLookup(title, author){
+  const hit = arHas(title, author);
+  if(hit) return Promise.resolve(hit);
+  return new Promise(resolve => {
+    arQueue.push({ title: arCleanTitle(title), author: String(author || ''), resolve });
+    arPump();
+  }).then(v => {
+    if(v && !v.fail) arPut(title, author, v);   // 못 물어본 것은 저장하지 않고 다음에 다시 시도
+    return v || { bl: null, fail: true };
+  });
+}
+function arObserve(){
+  if(arObs) return arObs;
+  if(typeof IntersectionObserver !== 'function') return null;
+  arObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      try{ arObs.unobserve(el); }catch(e){}
+      arApply(el);
+    });
+  }, { rootMargin: '240px 0px' });
+  return arObs;
+}
+function arApply(el){
+  if(!el || !el.dataset) return;
+  const title = el.dataset.arTitle || '';
+  const author = el.dataset.arAuth || '';
+  if(!title) return;
+  const hit = arHas(title, author);
+  if(hit){ arPaint(el, hit); return; }
+  if(el.dataset.arBusy === '1') return;
+  el.dataset.arBusy = '1';
+  arLookup(title, author).then(v => {
+    el.dataset.arBusy = '';
+    if(v && !v.fail) arPaint(el, v);
+  });
+}
+function arPaint(el, v){
+  if(!el || !v) return;
+  const box = el.querySelector('[data-ar-slot]') || el.querySelector('.rec-meta');
+  if(box && v.bl && !box.querySelector('.ar-rd')){
+    const a = document.createElement('a');
+    a.className = 'ar-rd';
+    a.href = v.url || ('https://www.arbookfind.com/default.aspx?q=' + encodeURIComponent(el.dataset.arTitle || ''));
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const extra = [v.il ? 'IL ' + v.il : '', v.pts ? v.pts + '점' : ''].filter(Boolean).join(' · ');
+    a.title = 'arbookfind.com에서 보기' + (extra ? ' · ' + extra : '');
+    a.setAttribute('aria-label', 'AR ' + v.bl + ' — arbookfind.com에서 보기');
+    a.textContent = 'AR ' + v.bl;
+    box.appendChild(a);
+    const holder = box.closest('.find-ar');
+    if(holder) holder.classList.remove('hidden');
+  }
+  if(v.cover){
+    const img = el.querySelector('.rec-cov img');
+    const src = img ? String(img.getAttribute('src') || '') : '';
+    if(img && (!src || src.indexOf('data:') === 0)){
+      img.onerror = () => { img.onerror = null; img.src = recFallback({ title: el.dataset.arTitle || '' }); };
+      img.src = v.cover;
+    }
+  }
+}
+/* 카드가 영어책이면 관찰 목록에 올린다 */
+function arWatchCard(el, title, author){
+  if(!arEnabled() || !el || !el.dataset) return;
+  el.dataset.arTitle = String(title || '');
+  el.dataset.arAuth = String(author || '');
+  const hit = arHas(title, author);
+  if(hit){ arPaint(el, hit); return; }
+  const ob = arObserve();
+  if(ob) ob.observe(el);
+  else arApply(el);   // IntersectionObserver가 없으면 바로 시도
+}
+function arResetWatch(){
+  if(arObs){ try{ arObs.disconnect(); }catch(e){} }
+  arObs = null;
+  arQueue = [];
+  arBusy = 0;
 }
 function jamWishSet(){
   const s = new Set();
@@ -7231,30 +7511,35 @@ function jamFilter(kind){
   }
   return out;
 }
+/* v2.6.4: 잠수네 카드도 추천 카드와 같은 모양(표지 · 태그 · 제목 · 지은이 · 3단 버튼)으로 그린다 */
 function jamItemHtml(kind, it, rd, wish){
   const title = it[kind === 'ko' ? KO_T : EN_T];
   const author = it[kind === 'ko' ? KO_A : EN_A];
   const lv = it[kind === 'ko' ? KO_L : EN_L];
   const cg = it[kind === 'ko' ? KO_C : EN_C];
-  let h = '<div class="jam-row1"><span class="jam-lv">' + escXML(lv) + '</span>' +
-    '<span class="jam-cat">' + escXML(cg) + '</span>';
-  if(kind === 'en' && it[EN_AU] === true) h += '<span class="jam-audio">🔊 음원</span>';
-  if(rd) h += '<span class="jam-readb">✅ 읽음</span>';
+  let h = '<div class="rec-cov"><img alt="" loading="lazy" src="' + escXML(recFallback({ title: jamBase(String(title)) })) + '"></div>';
+  h += '<div class="rec-body">';
+  h += '<div class="rec-meta"><span class="tg ' + (kind === 'en' ? 'en' : 'ko') + '">' + (kind === 'en' ? '영어' : '한글') + '</span>' +
+    '<span class="tg lv">' + escXML(lv) + '</span>' +
+    '<span class="tg cat">' + escXML(cg) + '</span>';
+  if(kind === 'en' && it[EN_AU] === true) h += '<span class="tg audio">🔊 음원</span>';
+  if(rd) h += '<span class="rec-rd">✓ 읽음</span>';
   h += '</div>';
-  h += '<p class="jam-ti">' + escXML(title) + '</p>';
+  h += '<div class="rec-nm jam-ti">' + escXML(title) + '</div>';
   if(kind === 'ko'){
     const orig = it[KO_O];
-    h += '<p class="jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (orig ? ' <i>· 원제 ' + escXML(orig) + '</i>' : '') + '</p>';
-    h += '<p class="jam-mt">' + escXML(it[KO_S]) + ' · 플랜 ' + it[KO_P] + ' · ' + it[KO_M] + '월 ' + it[KO_W] + '주</p>';
+    h += '<div class="rec-auth jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (orig ? ' <i>· 원제 ' + escXML(orig) + '</i>' : '') + '</div>';
+    h += '<div class="rec-reason jam-mt">' + escXML(it[KO_S]) + ' · 플랜 ' + escXML(it[KO_P]) + ' · ' + escXML(it[KO_M]) + '월 ' + escXML(it[KO_W]) + '주</div>';
   }else{
     const ko = it[EN_K];
-    h += '<p class="jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (ko ? ' <i>· ' + escXML(ko) + '</i>' : '') + '</p>';
+    h += '<div class="rec-auth jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (ko ? ' <i>· ' + escXML(ko) + '</i>' : '') + '</div>';
   }
-  h += '<div class="jam-acts">' +
-    '<button type="button" class="rd" data-act="read">+ 읽었어요</button>' +
-    '<button type="button" class="ws' + (wish ? ' on' : '') + '" data-act="wish">' + (wish ? '♥ 읽을 목록' : '♡ 읽을 목록') + '</button>' +
-    '<button type="button" class="lib" data-act="lib" title="' + escXML(libName(kind === 'en' ? 'en' : 'ko') + '에서 찾기') + '">🏛️ 도서관</button>' +
+  h += '<div class="card-acts">' +
+    '<button type="button" class="rec-btn rd" data-act="read">+ 읽었어요</button>' +
+    '<button type="button" class="rec-btn ws' + (wish ? ' on' : '') + '" data-act="wish">' + (wish ? '✓ 읽을 목록' : '♡ 읽을 목록') + '</button>' +
+    '<button type="button" class="rec-btn lib" data-act="lib" title="' + escXML(libName(kind === 'en' ? 'en' : 'ko') + '에서 찾기') + '">🏛️ 도서관</button>' +
     '</div>';
+  h += '</div>';
   return h;
 }
 function jamSyncSum(kind){
@@ -7293,6 +7578,7 @@ function jamRenderList(kind, reset){
       el.className = 'jam-item' + (rd ? ' read' : '');
       el.dataset.i = String(i);
       el.innerHTML = jamItemHtml(kind, it, rd, wish.has((kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(it[kind === 'ko' ? KO_T : EN_T])));
+      if(kind === 'en') arWatchCard(el, it[EN_T], it[EN_A]);
       frag.appendChild(el);
     }
     listEl.appendChild(frag);
@@ -7321,7 +7607,7 @@ function jamSetWishDom(el, on){
   const b = el.querySelector('button[data-act="wish"]');
   if(!b) return;
   b.classList.toggle('on', !!on);
-  b.textContent = on ? '♥ 읽을 목록' : '♡ 읽을 목록';
+  b.textContent = on ? '✓ 읽을 목록' : '♡ 읽을 목록';
 }
 function jamToggleWish(kind, it, el){
   const title = it[kind === 'ko' ? KO_T : EN_T];
@@ -7364,11 +7650,11 @@ function jamLogRead(kind, it, el){
   if(jam.f[kind].read === ''){
     if(el){
       el.classList.add('read');
-      const r1 = el.querySelector('.jam-row1');
-      if(r1 && !r1.querySelector('.jam-readb')){
+      const r1 = el.querySelector('.rec-meta');
+      if(r1 && !r1.querySelector('.rec-rd')){
         const b = document.createElement('span');
-        b.className = 'jam-readb';
-        b.textContent = '✅ 읽음';
+        b.className = 'rec-rd';
+        b.textContent = '✓ 읽음';
         r1.appendChild(b);
       }
     }
@@ -7586,7 +7872,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.3',
+  version: '2.6.4',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -7648,6 +7934,9 @@ window.__rc = {
     setAge: (k) => { if(AGE_LABEL[k]){ view.rec.age = k; renderRec(); } },
     setSub: (s) => { setViewMode(s === 'wish' ? 'wish' : 'rec'); },
     domTitles: () => $$('#recList .rec-item .rec-nm').map(e => e.textContent),
+    readTitles: () => $$('#recList .rec-item.read .rec-nm').map(e => e.textContent),
+    ageChipLabels: () => $$('#ageChips .age-chip').map(e => e.textContent),
+    isRead: (title, author) => isBookRead(title, author),
     domWishTitles: () => $$('#wishList .wish-item .rec-nm').map(e => e.textContent),
     wish: (rid) => { const r = recById(rid); return r ? (addToWish(r) || null) : null; },
     wishRemove: (id) => removeFromWish(id),
@@ -7791,10 +8080,33 @@ window.__rc = {
     url: (lang, t) => libSearchUrl(lang, t),
     open: (lang, t) => openLibrary(lang, t),
     buttons: () => ({
-      rec: $$('#recList .rec-item .rec-lib').length,
+      rec: $$('#recList .rec-item .rec-btn[data-act="lib"]').length,
       wish: $$('#wishList .wish-item .rec-lib').length,
-      jam: $$('#jamCard .jam-acts button[data-act="lib"]').length
+      jam: $$('#jamCard .card-acts button[data-act="lib"]').length
     })
+  },
+  /* v2.6.4 AR 지수 확인용 */
+  arApi: {
+    proxy: () => arProxy(),
+    set: (url) => {
+      let v = String(url || '').trim();
+      if(v && !/^https?:\/\//i.test(v)) v = 'https://' + v;
+      db.settings.arProxyUrl = v.replace(/\/+$/, '');
+      save(); arResetWatch(); render();
+      return arProxy();
+    },
+    clear: () => {
+      arCache = Object.create(null);
+      try{ localStorage.removeItem(AR_CACHE_KEY); }catch(e){}
+      db.settings.arProxyUrl = '';
+      save(); arResetWatch(); render();
+    },
+    cache: () => Object.assign({}, arLoad()),
+    cached: (t, a) => arHas(t, a),
+    clean: (t) => arCleanTitle(t),
+    pending: () => ({ queue: arQueue.length, busy: arBusy }),
+    badges: (root) => $$((root || '#recList') + ' .ar-rd').map(a => ({ text: a.textContent, href: a.getAttribute('href') })),
+    watched: (root) => $$((root || '#recList') + ' [data-ar-title]').length
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
