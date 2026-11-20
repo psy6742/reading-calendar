@@ -258,6 +258,13 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .input::placeholder{color:#B7B2A5}
 textarea.input{resize:vertical;min-height:60px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* ---------- 쪽수 입력 (v2.4) ---------- */
+.row2.author-pages{grid-template-columns:minmax(0,1fr) 104px}
+.pages-wrap{position:relative;display:block}
+.pages-wrap .input{padding-right:30px}
+.pages-wrap .punit{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:800;color:#A8A294;pointer-events:none}
+.pages-note{color:#6C8A54 !important;margin-top:5px}
+.res .rbadge.pages{background:#EDF2E6;color:#4E6B3A}
 .search-row{display:flex;gap:8px;align-items:stretch}
 .search-row .input{flex:1;min-width:0}
 .search-row .btn{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:3px}
@@ -485,6 +492,8 @@ textarea.input{resize:vertical;min-height:60px}
 .rec-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .rec-title{display:flex;align-items:center;gap:8px;min-width:0}
 .rec-title h2{font-size:18px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.seg.unit{display:inline-flex;margin:11px 0 0;padding:3px;gap:2px}
+.seg.unit button{flex:0 0 auto;padding:6px 14px;font-size:12px;letter-spacing:-.2px}
 .seg.sub{background:#EDE9DD;margin:13px 0 0}
 .seg.sub button{padding:9px 4px;font-size:13px}
 .seg.lang{margin-top:10px}
@@ -625,6 +634,10 @@ textarea.input{resize:vertical;min-height:60px}
         </div>
       </div>
       <div class="month-sub" id="yearSub"></div>
+      <div class="seg unit" id="yearUnit" role="tablist" aria-label="연간 그래프 단위">
+        <button data-unit="count" class="on" role="tab" aria-selected="true">권수</button>
+        <button data-unit="pages" role="tab" aria-selected="false">쪽수</button>
+      </div>
       <div class="year-grid" id="yearGrid"></div>
       <div class="year-foot">
         <span class="lg"><i class="ko"></i>한글<i class="en"></i>영어</span>
@@ -731,10 +744,20 @@ textarea.input{resize:vertical;min-height:60px}
       <input class="input" id="fTitle" placeholder="책 제목을 입력하거나 검색해서 골라 주세요" autocomplete="off">
     </div>
 
-    <div class="field">
-      <label for="fAuthor">지은이</label>
-      <input class="input" id="fAuthor" placeholder="예: 백희나" autocomplete="off">
+    <div class="field row2 author-pages">
+      <div>
+        <label for="fAuthor">지은이</label>
+        <input class="input" id="fAuthor" placeholder="예: 백희나" autocomplete="off">
+      </div>
+      <div>
+        <label for="fPages">쪽수 (선택)</label>
+        <div class="pages-wrap">
+          <input class="input" id="fPages" inputmode="numeric" placeholder="예: 32" maxlength="5" autocomplete="off">
+          <span class="punit">쪽</span>
+        </div>
+      </div>
     </div>
+    <div class="hint pages-note hidden" id="pagesNote"></div>
 
     <div class="field">
       <label>표지</label>
@@ -807,9 +830,18 @@ textarea.input{resize:vertical;min-height:60px}
       <input class="input" id="sfName" placeholder="예: 그레이트북스 안녕 마음아" maxlength="60" autocomplete="off">
     </div>
 
-    <div class="field">
-      <label for="sfAuthor">지은이 (선택)</label>
-      <input class="input" id="sfAuthor" placeholder="예: 백희나" maxlength="40" autocomplete="off">
+    <div class="field row2 author-pages">
+      <div>
+        <label for="sfAuthor">지은이 (선택)</label>
+        <input class="input" id="sfAuthor" placeholder="예: 백희나" maxlength="40" autocomplete="off">
+      </div>
+      <div>
+        <label for="sfPages">쪽수 (선택)</label>
+        <div class="pages-wrap">
+          <input class="input" id="sfPages" inputmode="numeric" placeholder="예: 32" maxlength="5" autocomplete="off">
+          <span class="punit">쪽</span>
+        </div>
+      </div>
     </div>
 
     <div class="field">
@@ -1043,6 +1075,21 @@ textarea.input{resize:vertical;min-height:60px}
       </div>
       <div class="hint">카카오 책 검색 키를 넣으면 국내 도서·아동책 검색이 훨씬 정확해져요. <a href="https://developers.kakao.com/console/app" target="_blank" rel="noopener">developers.kakao.com</a>에서 무료 REST API 키를 발급받아 붙여 넣으면 돼요.<br>알라딘은 2026년 10월에 API 서비스를 끝내서, 국내 도서 검색은 카카오 키로 연결했어요.</div>
     </div>
+    <div class="field" style="margin-top:16px">
+      <label for="fNlKey">국립중앙도서관 ISBN 인증키 (선택)</label>
+      <input class="input" id="fNlKey" placeholder="인증키를 붙여 넣어 주세요" autocomplete="off" spellcheck="false">
+      <div class="key-row">
+        <button class="btn sm dark" id="btnNlSave" type="button">저장</button>
+        <button class="btn sm line" id="btnNlClear" type="button">삭제</button>
+        <span class="key-state" id="nlKeyState">등록되지 않음</span>
+      </div>
+      <div class="hint">키를 넣으면 국내 책의 <b>쪽수</b>를 국립중앙도서관 서지정보에서 찾아 자동으로 채워요. <a href="https://www.nl.go.kr/NL/contents/N31101030500.do" target="_blank" rel="noopener">nl.go.kr</a>에서 무료 인증키를 받을 수 있어요. 키가 없어도 Open Library에서 영어책 쪽수는 찾아 줘요.</div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label for="fNlProxy">서지 중계 주소 (선택)</label>
+      <input class="input" id="fNlProxy" placeholder="비워 두면 nl.go.kr을 바로 불러요" autocomplete="off" spellcheck="false">
+      <div class="hint">국립중앙도서관 API는 브라우저에서 바로 부를 수 있게 열려 있어요(응답에 <code>Access-Control-Allow-Origin: *</code> 포함). 그래도 막히는 네트워크에서만 중계 주소를 넣으세요. 주소에 <code>{isbn}</code>·<code>{key}</code>를 쓰면 그 자리에 값이 들어가요.</div>
+    </div>
     <p class="sheet-note" style="margin-top:14px">기록·내 책장·읽을 목록은 이 브라우저(localStorage)에 저장되고, JSON 백업에도 함께 담겨요. 브라우저 데이터를 지우면 사라지니 가끔 JSON으로 백업해 주세요.</p>
   </div>
 </div>
@@ -1073,14 +1120,35 @@ const todayISO = iso(new Date());
 const escXML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- 상태 ---------- */
-let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '' } };
-let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', rec: { age: '0-2', sub: 'age' } };
+let db = { version: 2, children: [], books: [], shelf: [], wishlist: [], settings: { gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '' } };
+let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: todayISO, filter: 'all', child: 'all', ymode: 'month', yunit: 'count', rec: { age: '0-2', sub: 'age' } };
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
 const DEFAULT_KID_NAME = '우리 아이';
+
+/* ---------- 쪽수 (v2.4) ----------
+   기록·책장 항목에 선택 항목으로 붙는다. 모르면 null로 두고 통계에서는 0으로 더한다. */
+const PAGES_MAX = 20000;
+function toPages(v){
+  if(v === null || v === undefined || v === '') return null;
+  const list = Array.isArray(v) ? v : [v];
+  for(let i = 0; i < list.length; i++){
+    const s = String(list[i] == null ? '' : list[i]);
+    if(/unpaged|면수\s*복잡/i.test(s)) continue;          /* 쪽수 없는 책 */
+    const m = s.replace(/[,\s]/g, '').match(/\d+/);
+    if(!m) continue;
+    const n = parseInt(m[0], 10);
+    if(!Number.isFinite(n) || n < 1 || n > PAGES_MAX) continue;
+    if(n === 1 && /(책|vol|권)/i.test(s)) continue;        /* "1책"·"1 v."는 1권 표기 */
+    return n;
+  }
+  return null;
+}
+function pagesOf(b){ return toPages(b && b.pages) || 0; }
+function fmtNum(n){ return Number(n || 0).toLocaleString('ko-KR'); }
 
 /* ---------- 저장 ---------- */
 function load(){
@@ -1091,7 +1159,7 @@ function load(){
       if(Array.isArray(p)) db.books = p.map(sanitize).filter(Boolean);
       else if(p && Array.isArray(p.books)){
         db.books = p.books.map(sanitize).filter(Boolean);
-        db.settings = Object.assign({ gbKey: '', kakaoKey: '' }, p.settings || {});
+        db.settings = Object.assign({ gbKey: '', kakaoKey: '', nlKey: '', nlProxy: '' }, p.settings || {});
         if(Array.isArray(p.children)) db.children = p.children.map(sanitizeChild).filter(Boolean);
         if(Array.isArray(p.shelf)) db.shelf = p.shelf.map(sanitizeShelf).filter(Boolean);
         if(Array.isArray(p.wishlist)) db.wishlist = p.wishlist.map(sanitizeWish).filter(Boolean);
@@ -1122,6 +1190,7 @@ function sanitize(b){
     date: date,
     title: title,
     author: String(b.author || '').trim(),
+    pages: toPages(b.pages),
     lang: b.lang === 'en' ? 'en' : 'ko',
     isbn: String(b.isbn || '').replace(/[^0-9Xx]/g, ''),
     cover: typeof b.cover === 'string' ? b.cover : '',
@@ -1142,6 +1211,7 @@ function sanitizeShelf(s){
     id: s.id ? String(s.id) : uidS(),
     name: name,
     author: String(s.author || '').trim().slice(0, 40),
+    pages: toPages(s.pages),
     lang: s.lang === 'en' ? 'en' : 'ko',
     publisher: String(s.publisher || '').trim().slice(0, 40),
     cover: typeof s.cover === 'string' ? s.cover : '',
@@ -1389,8 +1459,9 @@ function renderMonth(){
   });
   const scoped = monthBooks.filter(matchChild);
   const shown = scoped.filter(b => view.filter === 'all' || b.lang === view.filter);
+  const shownPages = shown.reduce((n, b) => n + pagesOf(b), 0);
 
-  $('#monthTotal').textContent = '총 ' + shown.length + '권';
+  $('#monthTotal').textContent = '총 ' + shown.length + '권' + (shownPages ? ' · ' + fmtNum(shownPages) + '쪽' : '');
 
   const koN = scoped.filter(b => b.lang === 'ko').length;
   const enN = scoped.filter(b => b.lang === 'en').length;
@@ -1449,6 +1520,13 @@ function applyViewSeg(){
     : (view.ymode === 'rec' ? 'rec' : 'month'));
   $$('#viewSeg button').forEach(b => {
     const on = b.dataset.view === mode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+}
+function syncYearUnit(){
+  $$('#yearUnit button').forEach(b => {
+    const on = (b.dataset.unit === 'pages') === (view.yunit === 'pages');
     b.classList.toggle('on', on);
     b.setAttribute('aria-selected', on ? 'true' : 'false');
   });
@@ -1517,13 +1595,22 @@ function renderYear(){
   const yearBooks = db.books.filter(b => parseISO(b.date).getFullYear() === y);
   const scoped = yearBooks.filter(matchChild);
   const shown = scoped.filter(b => view.filter === 'all' || b.lang === view.filter);
+  const shownPages = shown.reduce((n, b) => n + pagesOf(b), 0);
+  const byPages = view.yunit === 'pages';
+  syncYearUnit();
 
-  $('#yearBadge').textContent = '총 ' + shown.length + '권';
+  $('#yearBadge').textContent = '총 ' + shown.length + '권' + (shownPages ? ' · ' + fmtNum(shownPages) + '쪽' : '');
 
   const koN = scoped.filter(b => b.lang === 'ko').length;
   const enN = scoped.filter(b => b.lang === 'en').length;
+  const sumP = list => list.reduce((n, b) => n + pagesOf(b), 0);
+  const koP = sumP(scoped.filter(b => b.lang === 'ko'));
+  const enP = sumP(scoped.filter(b => b.lang === 'en'));
   const sub = [];
   sub.push('한글 ' + koN + '권 <span class="dot">·</span> 영어 ' + enN + '권');
+  if(koP || enP){
+    sub.push('쪽수 한글 <b style="color:#2563EB">' + fmtNum(koP) + '쪽</b> <span class="dot">·</span> 영어 <b style="color:#E11D48">' + fmtNum(enP) + '쪽</b>');
+  }
   if(view.child === 'all' && db.children.length > 1){
     const per = db.children.map(c => {
       const n = yearBooks.filter(b => (b.childIds || []).indexOf(c.id) >= 0).length;
@@ -1535,14 +1622,17 @@ function renderYear(){
   $('#yearSub').innerHTML = sub.join(' <span class="dot">·</span> ');
 
   const counts = new Array(12).fill(0);
+  const nBooks = new Array(12).fill(0);
   const koC = new Array(12).fill(0);
   const enC = new Array(12).fill(0);
   const daySet = {};
   const perDay = {};
   shown.forEach(b => {
     const m = parseISO(b.date).getMonth();
-    counts[m]++;
-    if(b.lang === 'ko') koC[m]++; else enC[m]++;
+    const w = byPages ? pagesOf(b) : 1;
+    counts[m] += w;
+    nBooks[m]++;
+    if(b.lang === 'ko') koC[m] += w; else enC[m] += w;
     daySet[b.date] = 1;
     perDay[b.date] = (perDay[b.date] || 0) + 1;
   });
@@ -1556,9 +1646,10 @@ function renderYear(){
     const n = counts[m];
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'ym' + (n ? '' : ' zero') + ((now.getFullYear() === y && now.getMonth() === m) ? ' now' : '');
+    b.className = 'ym' + (n ? '' : (byPages && nBooks[m] ? '' : ' zero')) + ((now.getFullYear() === y && now.getMonth() === m) ? ' now' : '');
     b.dataset.month = String(m);
-    b.setAttribute('aria-label', (m + 1) + '월 ' + n + '권, 월간 달력 열기');
+    b.setAttribute('aria-label', (m + 1) + '월 ' + (n ? (byPages ? fmtNum(n) + '쪽' : n + '권')
+      : (nBooks[m] ? nBooks[m] + '권, 쪽수 미입력' : '기록 없음')) + ', 월간 달력 열기');
     const top = document.createElement('span');
     top.className = 'ym-top';
     const lab = document.createElement('span');
@@ -1567,9 +1658,9 @@ function renderYear(){
     const num = document.createElement('span');
     num.className = 'ym-n';
     if(n){
-      num.textContent = String(n);
+      num.textContent = String(byPages ? fmtNum(n) : n);
       const sm = document.createElement('small');
-      sm.textContent = '권';
+      sm.textContent = byPages ? '쪽' : '권';
       num.appendChild(sm);
     }else{
       num.textContent = '–';
@@ -1598,6 +1689,8 @@ function renderYear(){
   const showChart = yearBooks.length > 0;
   grid.classList.toggle('hidden', !showChart);
   $('.year-foot').classList.toggle('hidden', !showChart);
+  const uEl = $('#yearUnit');
+  if(uEl) uEl.classList.toggle('hidden', !showChart);
 
   const sum = $('#yearSum');
   sum.innerHTML = '';
@@ -1973,6 +2066,7 @@ function openShelfForm(id, preset){
   $('#shelfFormTitle').textContent = cur ? '책장 항목 수정' : '전집/책 등록';
   $('#sfName').value = shelfDraft.name || '';
   $('#sfAuthor').value = shelfDraft.author || '';
+  $('#sfPages').value = toPages(shelfDraft.pages) ? String(toPages(shelfDraft.pages)) : '';
   $('#sfPublisher').value = shelfDraft.publisher || '';
   const del = $('#btnShelfDelete');
   del.classList.toggle('hidden', !cur);
@@ -1996,6 +2090,7 @@ function saveShelf(){
     id: shelfDraft.id || uidS(),
     name: name,
     author: author,
+    pages: $('#sfPages').value,
     lang: shelfDraft.lang,
     publisher: publisher,
     cover: shelfDraft.cover,
@@ -2171,6 +2266,7 @@ function saveQuick(){
     date: date,
     title: title,
     author: s.author || '',
+    pages: toPages(s.pages),
     lang: s.lang,
     isbn: '',
     cover: s.cover || shelfCoverFallback(s.name),
@@ -3059,6 +3155,14 @@ $('#yearGrid').addEventListener('click', e => {
   if(!b) return;
   openMonth(Number(b.dataset.month));
 });
+$('#yearUnit').addEventListener('click', e => {
+  const b = e.target.closest('button[data-unit]');
+  if(!b) return;
+  const next = b.dataset.unit === 'pages' ? 'pages' : 'count';
+  if(view.yunit === next) return;
+  view.yunit = next;
+  render();
+});
 
 function gotoMonth(delta){
   const d = new Date(view.year, view.month + delta, 1);
@@ -3165,6 +3269,8 @@ function openForm(dateStr, book){
   $('#fDate').value = draft.date;
   $('#fTitle').value = draft.title || '';
   $('#fAuthor').value = draft.author || '';
+  $('#fPages').value = toPages(draft.pages) ? String(toPages(draft.pages)) : '';
+  setPagesNote('');
   draft.isbn = draft.isbn || '';
   draft.publisher = draft.publisher || '';
   showScanNotice('');
@@ -3205,6 +3311,7 @@ $('#btnSave').onclick = () => {
     date: date,
     title: title,
     author: $('#fAuthor').value.trim(),
+    pages: $('#fPages').value,
     lang: draft.lang,
     isbn: draft.isbn || '',
     cover: draft.cover,
@@ -3225,6 +3332,7 @@ $('#btnSave').onclick = () => {
     if(!db.shelf.some(s => s.name === rec.title && s.lang === rec.lang)){
       const item = sanitizeShelf({
         id: uidS(), name: rec.title, author: rec.author, lang: rec.lang, publisher: draft.publisher || '',
+        pages: rec.pages,
         cover: rec.cover, coverData: rec.coverData, createdAt: Date.now()
       });
       if(item){ db.shelf.push(item); shelfAdded = true; }
@@ -3244,6 +3352,13 @@ $('#btnSave').onclick = () => {
   closeSheet($('#formSheet'));
   toast((i >= 0 ? '수정했어요' : '기록했어요 · ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일') + (shelfAdded ? ' · 책장에도 담았어요' : ''));
 };
+
+$('#fPages').addEventListener('input', e => {
+  const v = String(e.target.value || '').replace(/[^\d]/g, '').slice(0, 5);
+  if(v !== e.target.value) e.target.value = v;
+  if(draft) draft.pages = toPages(v);
+  setPagesNote('');
+});
 
 $('#btnCoverUpload').onclick = () => $('#coverInput').click();
 $('#btnCoverClear').onclick = () => {
@@ -3321,6 +3436,7 @@ function fromGB(item){
   return {
     title: v.title + (v.subtitle ? ' : ' + v.subtitle : ''),
     author: (v.authors || []).join(', '),
+    pages: toPages(v.pageCount),
     lang: v.language === 'ko' ? 'ko' : (v.language === 'en' ? 'en' : ''),
     cover: cover,
     isbn: String(isbn).replace(/[^0-9Xx]/g, ''),
@@ -3339,6 +3455,7 @@ function fromOL(doc){
   return {
     title: title,
     author: (doc.author_name || []).slice(0, 2).join(', '),
+    pages: toPages(doc.number_of_pages_median) || toPages(doc.number_of_pages),
     lang: lang,
     cover: cover,
     isbn: isbn,
@@ -3378,10 +3495,12 @@ async function googleSearch(q, lang){
   return out;
 }
 async function openLibrarySearch(q){
+  /* v2.4: 쪽수(number_of_pages_median)를 함께 받으려면 fields를 지정해야 한다 */
+  const FIELDS = 'fields=title,author_name,language,isbn,cover_i,edition_count,number_of_pages_median,number_of_pages';
   // title= 파라미터를 먼저 — 무관한 책을 걸러내는 가장 확실한 방법
   const urls = [
-    'https://openlibrary.org/search.json?title=' + encodeURIComponent(q) + '&limit=20',
-    'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=20'
+    'https://openlibrary.org/search.json?title=' + encodeURIComponent(q) + '&limit=20&' + FIELDS,
+    'https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=20&' + FIELDS
   ];
   let lastErr = null;
   for(let i = 0; i < urls.length; i++){
@@ -3538,9 +3657,14 @@ function fromGData(entry){
   const self = (entry.id && entry.id.$t) || '';
   const m = /[?&]id=([A-Za-z0-9_-]+)/.exec(self);
   const cover = gdataCoverUrl(m ? m[1] : '') || coverByIsbn(isbn);
+  /* GData는 쪽수를 dc:format(예: "25 pages")에 넣어 준다 */
+  const fmts = arr(entry['dc$format']).concat(arr(entry['dc$extent'])).map(f => String((f && f.$t) || ''));
+  let pages = null;
+  for(const f of fmts){ const n = toPages(f); if(n){ pages = n; break; } }
   return {
     title: title,
     author: authors.slice(0, 2).join(', '),
+    pages: pages,
     lang: lang,
     cover: cover,
     isbn: isbn || '',
@@ -3630,6 +3754,7 @@ function dedupeRank(list, q, lang){
     if(!cur){
       const copy = {};
       FIELDS.forEach(f => { copy[f] = r[f] || ''; });
+      copy.pages = toPages(r.pages);
       copy.src = r.src; copy.srcKey = r.srcKey;
       groups.set(key, copy);
       order.push(key);
@@ -3637,9 +3762,11 @@ function dedupeRank(list, q, lang){
     }
     if(prioOf(r) > prioOf(cur)){
       FIELDS.forEach(f => { cur[f] = r[f] || cur[f]; });   // 우선 출처의 값으로 채우고 빈 칸은 남은 정보로 보완
+      cur.pages = toPages(r.pages) || cur.pages;
       cur.src = r.src; cur.srcKey = r.srcKey;
     }else{
       FIELDS.forEach(f => { if(!cur[f] && r[f]) cur[f] = r[f]; });
+      if(!cur.pages && toPages(r.pages)) cur.pages = toPages(r.pages);
     }
   });
   const scored = [];
@@ -3686,7 +3813,7 @@ function localSearch(q){
     if(!sc) return;
     out.shelf.push({
       kind: 'shelf', id: s.id, title: s.name, author: s.author || '', lang: s.lang,
-      cover: shelfCoverSrc(s) || shelfCoverFallback(s.name), publisher: s.publisher || '', score: sc
+      cover: shelfCoverSrc(s) || shelfCoverFallback(s.name), publisher: s.publisher || '', pages: toPages(s.pages), score: sc
     });
   });
   out.shelf.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'ko'));
@@ -3702,7 +3829,7 @@ function localSearch(q){
       seen.add(key);
       out.past.push({
         kind: 'past', id: b.id, title: b.title, author: b.author || '', lang: b.lang,
-        cover: coverSrcOf(b), date: b.date, score: sc
+        cover: coverSrcOf(b), date: b.date, pages: toPages(b.pages), score: sc
       });
     });
   out.past.sort((a, b) => b.score - a.score || String(b.date).localeCompare(String(a.date)));
@@ -3762,6 +3889,13 @@ function makeResRow(r){
   }
   rt.appendChild(t); rt.appendChild(au);
   row.appendChild(rt);
+  const pg = toPages(r.pages);
+  if(pg){
+    const pb = document.createElement('span');
+    pb.className = 'rbadge pages';
+    pb.textContent = fmtNum(pg) + '쪽';
+    row.appendChild(pb);
+  }
   if(r.kind === 'shelf' || r.kind === 'past'){
     const badge = document.createElement('span');
     badge.className = 'rbadge ' + r.kind;
@@ -3790,6 +3924,7 @@ function applyLocalResult(r){
   $('#fAuthor').value = r.author || '';
   draft.isbn = '';
   draft.publisher = '';
+  let pg = null;
   if(r.kind === 'shelf'){
     const s = shelfById(r.id);
     if(s){
@@ -3797,6 +3932,7 @@ function applyLocalResult(r){
       draft.lang = s.lang;
       draft.cover = s.cover || shelfCoverFallback(s.name);
       draft.coverData = s.coverData || '';
+      pg = toPages(s.pages);
     }
   }else{
     const b = db.books.find(x => x.id === r.id);
@@ -3805,8 +3941,13 @@ function applyLocalResult(r){
       draft.cover = b.cover || '';
       draft.coverData = b.coverData || '';
       draft.isbn = b.isbn || '';
+      pg = toPages(b.pages);
     }
   }
+  $('#fPages').value = pg ? String(pg) : '';
+  draft.pages = pg || null;
+  setPagesNote('');
+  if(!pg && draft.isbn) autoPagesForDraft();
   $$('#langToggle .lang-btn').forEach(x => x.classList.toggle('on', !!draft.lang && x.dataset.lang === draft.lang));
   updateCoverPreview();
   syncShelfSaveToggle();
@@ -4006,6 +4147,11 @@ async function doSearch(){
       draft.isbn = r.isbn || '';
       if(r.cover){ draft.cover = r.cover; draft.coverData = ''; }
       if(r.lang) setLang(r.lang);
+      const pg = toPages(r.pages);
+      $('#fPages').value = pg ? String(pg) : '';
+      draft.pages = pg || null;
+      setPagesNote('');
+      if(!pg) autoPagesForDraft();
       updateCoverPreview();
       box.innerHTML = '';
       box.classList.add('hidden');
@@ -4121,7 +4267,8 @@ async function gdataIsbnSearch(cands){
 async function openLibraryIsbn(cands){
   for(const isbn of cands){
     try{
-      const data = await fetchJson('https://openlibrary.org/search.json?q=isbn:' + isbn + '&limit=5', 9000);
+      const data = await fetchJson('https://openlibrary.org/search.json?q=isbn:' + isbn +
+        '&limit=5&fields=title,author_name,language,isbn,cover_i,number_of_pages_median,number_of_pages', 9000);
       const list = [];
       (data.docs || []).forEach(doc => {
         const r = fromOL(doc);
@@ -4142,6 +4289,7 @@ async function openLibraryIsbn(cands){
           title: ed.title,
           author: '',
           publisher: (ed.publishers || [])[0] || '',
+          pages: toPages(ed.number_of_pages),
           lang: '',
           cover: coverId ? 'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg' : coverByIsbn(isbn),
           isbn: isbn,
@@ -4154,6 +4302,108 @@ async function openLibraryIsbn(cands){
 }
 
 const ISBN_SRC_PRIO = { kakao: 3, google: 2, openlibrary: 1 };
+
+/* ---------- 쪽수 자동 조회 (v2.4) ----------
+   국립중앙도서관 서지정보(ISBN)와 Open Library에서 쪽수를 찾아 기록 시트를 채운다.
+   nl.go.kr은 응답에 Access-Control-Allow-Origin: * 를 주므로 브라우저에서 바로 부를 수 있다(2026-11-20 확인).
+   막히는 네트워크를 위해 설정의 중계 주소(nlProxy)를 선택으로 둔다. */
+const NL_API = 'https://www.nl.go.kr/seoji/SearchApi.do';
+function nlKey(){ return String((db.settings && db.settings.nlKey) || '').trim(); }
+function nlProxy(){ return String((db.settings && db.settings.nlProxy) || '').trim(); }
+function isKoreanIsbn(isbn){ return /^(97889|97911|97910|97912)/.test(cleanIsbn(isbn)); }
+function nlIsbnUrl(isbn){
+  const c = cleanIsbn(isbn);
+  const qs = new URLSearchParams({
+    cert_key: nlKey(), result_style: 'json', page_no: '1', page_size: '5', isbn: c
+  }).toString();
+  const proxy = nlProxy();
+  if(!proxy) return NL_API + '?' + qs;
+  if(/\{(isbn|key)\}/.test(proxy)){
+    return proxy.replace(/\{isbn\}/g, encodeURIComponent(c)).replace(/\{key\}/g, encodeURIComponent(nlKey()));
+  }
+  return proxy + (proxy.indexOf('?') >= 0 ? '&' : '?') + qs;
+}
+/* {"docs":[{"PAGE":"44 p."}...]} → 44  (RESULT:ERROR·빈 목록은 null) */
+function nlPagesOf(data){
+  if(!data) return null;
+  if(data.RESULT === 'ERROR' || data.ERR_CODE) return null;
+  const docs = Array.isArray(data.docs) ? data.docs : (Array.isArray(data.DOCS) ? data.DOCS : []);
+  for(const d of docs){
+    const n = toPages(d && (d.PAGE || d.page));
+    if(n) return n;
+  }
+  return null;
+}
+async function nlPages(isbn){
+  if(!nlKey()) return null;
+  if(!cleanIsbn(isbn)) return null;
+  try{
+    const data = await fetchJson(nlIsbnUrl(isbn), 7000);
+    return nlPagesOf(data);
+  }catch(e){ return null; }
+}
+async function openLibraryPagesByIsbn(isbn){
+  const c = cleanIsbn(isbn);
+  if(!c) return null;
+  try{
+    const data = await fetchJson('https://openlibrary.org/search.json?q=isbn:' + c +
+      '&limit=3&fields=title,number_of_pages_median,number_of_pages', 8000);
+    const docs = (data && data.docs) || [];
+    for(const d of docs){
+      const n = toPages(d.number_of_pages_median) || toPages(d.number_of_pages);
+      if(n) return n;
+    }
+  }catch(e){ /* 다음 경로 */ }
+  try{
+    const ed = await fetchJson('https://openlibrary.org/isbn/' + c + '.json', 8000);
+    if(ed) return toPages(ed.number_of_pages);
+  }catch(e){ /* 쪽수 없음 */ }
+  return null;
+}
+/* 국내 ISBN은 국립중앙도서관을 먼저, 그 밖에는 Open Library를 먼저 본다 */
+async function lookupPagesByIsbn(isbn){
+  const c = cleanIsbn(isbn);
+  if(!c) return null;
+  const nlFirst = !!(nlKey() && isKoreanIsbn(c));
+  if(nlFirst){
+    const n = await nlPages(c);
+    if(n) return { pages: n, from: 'nl' };
+  }
+  const o = await openLibraryPagesByIsbn(c);
+  if(o) return { pages: o, from: 'ol' };
+  if(nlKey() && !nlFirst){
+    const n2 = await nlPages(c);
+    if(n2) return { pages: n2, from: 'nl' };
+  }
+  return null;
+}
+let pagesSeq = 0;
+function setPagesNote(msg){
+  const el = $('#pagesNote');
+  if(!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+}
+/* 지금 입력 중인 책의 ISBN으로 쪽수를 찾아 빈 칸만 채운다 (사용자가 적은 값은 덮지 않는다) */
+async function autoPagesForDraft(){
+  if(!draft) return null;
+  const f = $('#fPages');
+  if(!f || String(f.value).trim()) return null;
+  const isbn = cleanIsbn(draft.isbn || '');
+  if(!isbn) return null;
+  const seq = ++pagesSeq;
+  let found = null;
+  try{ found = await lookupPagesByIsbn(isbn); }catch(e){ found = null; }
+  if(seq !== pagesSeq || !draft) return null;
+  const f2 = $('#fPages');
+  if(!f2 || String(f2.value).trim()) return null;
+  if(cleanIsbn(draft.isbn || '') !== isbn) return null;
+  if(!found || !found.pages) return null;
+  f2.value = String(found.pages);
+  draft.pages = found.pages;
+  setPagesNote((found.from === 'nl' ? '국립중앙도서관' : 'Open Library') + '에서 ' + fmtNum(found.pages) + '쪽을 찾았어요');
+  return found.pages;
+}
 /* 여러 서점 결과를 합치고 같은 책(같은 ISBN)은 하나로 묶는다 */
 function rankIsbnResults(parts){
   const seen = new Map();
@@ -4172,10 +4422,10 @@ function rankIsbnResults(parts){
       return;
     }
     if((ISBN_SRC_PRIO[r.srcKey] || 0) > (ISBN_SRC_PRIO[cur.srcKey] || 0)){
-      ['title', 'author', 'publisher', 'cover', 'isbn', 'lang'].forEach(f => { if(r[f]) cur[f] = r[f]; });
+      ['title', 'author', 'publisher', 'cover', 'isbn', 'lang', 'pages'].forEach(f => { if(r[f]) cur[f] = r[f]; });
       cur.src = r.src; cur.srcKey = r.srcKey;
     }else{
-      ['author', 'publisher', 'cover', 'isbn', 'lang'].forEach(f => { if(!cur[f] && r[f]) cur[f] = r[f]; });
+      ['author', 'publisher', 'cover', 'isbn', 'lang', 'pages'].forEach(f => { if(!cur[f] && r[f]) cur[f] = r[f]; });
     }
   });
   return order.map(k => seen.get(k)).slice(0, 10);
@@ -4209,6 +4459,11 @@ function fillFormFromBook(r, isbn){
   draft.publisher = r.publisher || '';
   draft.cover = r.cover || '';
   draft.coverData = '';
+  const pg = toPages(r.pages);
+  $('#fPages').value = pg ? String(pg) : '';
+  draft.pages = pg || null;
+  setPagesNote('');
+  if(!pg) autoPagesForDraft();
   const lang = isbnLangOf(r, isbn);
   if(lang) setLang(lang);
   updateCoverPreview();
@@ -5067,6 +5322,12 @@ function openDetail(id){
     t3.textContent = 'ISBN ' + b.isbn;
     tags.appendChild(t3);
   }
+  if(toPages(b.pages)){
+    const t4 = document.createElement('span');
+    t4.className = 'chip';
+    t4.textContent = fmtNum(toPages(b.pages)) + '쪽';
+    tags.appendChild(t4);
+  }
   meta.appendChild(h); meta.appendChild(au); meta.appendChild(tags);
   head.appendChild(covBox); head.appendChild(meta);
   body.appendChild(head);
@@ -5669,8 +5930,34 @@ function openMenu(){
     '<div class="stat"><b>' + (bytes > 1048576 ? (bytes / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(bytes / 1024)) + 'KB') + '</b><span>용량</span></div>';
   $('#fGbKey').value = db.settings.gbKey || '';
   $('#fKakaoKey').value = db.settings.kakaoKey || '';
+  $('#fNlKey').value = db.settings.nlKey || '';
+  $('#fNlProxy').value = db.settings.nlProxy || '';
   syncKakaoKeyState();
+  syncNlKeyState();
   openSheet('menuSheet');
+}
+function syncNlKeyState(){
+  const el = $('#nlKeyState');
+  if(!el) return;
+  const key = nlKey();
+  el.className = 'key-state' + (key ? ' ok' : '');
+  el.textContent = key ? '등록됨' : '등록되지 않음';
+}
+function saveNlKey(){
+  const el = $('#fNlKey');
+  const v = el ? String(el.value || '').trim() : '';
+  db.settings.nlKey = v;
+  save();
+  syncNlKeyState();
+  toast(v ? '국립중앙도서관 인증키를 저장했어요' : '국립중앙도서관 인증키를 지웠어요');
+}
+function clearNlKey(){
+  const el = $('#fNlKey');
+  if(el) el.value = '';
+  db.settings.nlKey = '';
+  save();
+  syncNlKeyState();
+  toast('국립중앙도서관 인증키를 지웠어요');
 }
 function openKeySettings(){
   /* 기록 입력 시트는 그대로 두고 그 위에 설정 시트를 연다 — 입력하던 내용이 날아가지 않는다 */
@@ -5712,6 +5999,16 @@ $('#fGbKey').addEventListener('change', e => {
 });
 $('#btnKakaoSave').onclick = saveKakaoKey;
 $('#btnKakaoClear').onclick = clearKakaoKey;
+$('#btnNlSave').onclick = saveNlKey;
+$('#btnNlClear').onclick = clearNlKey;
+$('#fNlKey').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); saveNlKey(); }
+});
+$('#fNlProxy').addEventListener('change', e => {
+  db.settings.nlProxy = String(e.target.value || '').trim();
+  save();
+  toast(db.settings.nlProxy ? '서지 중계 주소를 저장했어요' : '서지 중계 주소를 지웠어요');
+});
 $('#fKakaoKey').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); saveKakaoKey(); }
 });
@@ -5744,7 +6041,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.3',
+  version: '2.4',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -5754,10 +6051,11 @@ window.__rc = {
     filter: view.filter,
     child: view.child,
     ymode: view.ymode,
+    yunit: view.yunit,
     rec: JSON.parse(JSON.stringify(view.rec))
   }),
   kids: () => db.children.map(c => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color, books: kidBookCount(c.id) })),
-  books: () => db.books.map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, childIds: (b.childIds || []).slice() })),
+  books: () => db.books.map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, pages: toPages(b.pages), childIds: (b.childIds || []).slice() })),
   setChild: setChild,
   setView: setViewMode,
   gotoYear: gotoYear,
@@ -5772,12 +6070,12 @@ window.__rc = {
   /* 내 책장 확인용 */
   shelfApi: {
     list: () => db.shelf.map(s => ({
-      id: s.id, name: s.name, author: s.author, lang: s.lang, publisher: s.publisher,
+      id: s.id, name: s.name, author: s.author, lang: s.lang, publisher: s.publisher, pages: toPages(s.pages),
       cover: s.coverData ? 'data' : (s.cover ? 'url' : 'auto'),
       recs: shelfRecs(s.id).length
     })),
-    add: (name, lang, publisher, author) => {
-      const s = sanitizeShelf({ id: uidS(), name: name, author: author || '', lang: lang || 'ko', publisher: publisher || '', createdAt: Date.now() });
+    add: (name, lang, publisher, author, pages) => {
+      const s = sanitizeShelf({ id: uidS(), name: name, author: author || '', lang: lang || 'ko', publisher: publisher || '', pages: pages, createdAt: Date.now() });
       if(!s) return null;
       db.shelf.push(s); save(); render();
       return s.id;
@@ -5828,6 +6126,38 @@ window.__rc = {
       shelf: l.shelf.map(r => ({ id: r.id, title: r.title, author: r.author, lang: r.lang, publisher: r.publisher })),
       past: l.past.map(r => ({ id: r.id, title: r.title, author: r.author, lang: r.lang, date: r.date }))
     };
+  },
+  /* v2.4 쪽수 기록·자동 조회·통계 확인용 */
+  pagesApi: {
+    toPages: toPages,
+    field: () => { const el = $('#fPages'); return el ? el.value : ''; },
+    set: (v) => {
+      const el = $('#fPages');
+      if(!el) return;
+      el.value = v === null || v === undefined ? '' : String(v);
+      if(draft) draft.pages = toPages(el.value);
+    },
+    ofBook: (id) => { const b = db.books.find(x => x.id === id); return b ? toPages(b.pages) : null; },
+    ofShelf: (id) => { const s = shelfById(id); return s ? toPages(s.pages) : null; },
+    total: () => db.books.reduce((n, b) => n + pagesOf(b), 0),
+    lookup: (isbn) => lookupPagesByIsbn(isbn),
+    nlUrl: (isbn) => nlIsbnUrl(isbn),
+    nlParse: nlPagesOf,
+    auto: () => autoPagesForDraft(),
+    note: () => { const el = $('#pagesNote'); return el ? el.textContent : ''; },
+    monthBadge: () => ($('#monthTotal') ? $('#monthTotal').textContent : ''),
+    yearBadge: () => ($('#yearBadge') ? $('#yearBadge').textContent : ''),
+    yearSub: () => ($('#yearSub') ? $('#yearSub').textContent : ''),
+    bars: () => $$('#yearGrid .ym').map(el => ({
+      month: Number(el.dataset.month) + 1,
+      num: el.querySelector('.ym-n') ? el.querySelector('.ym-n').textContent : '',
+      ko: el.querySelector('.ym-track i.ko') ? el.querySelector('.ym-track i.ko').style.width : '',
+      en: el.querySelector('.ym-track i.en') ? el.querySelector('.ym-track i.en').style.width : ''
+    })),
+    setUnit: (u) => {
+      view.yunit = u === 'pages' ? 'pages' : 'count';
+      if(view.ymode === 'year') render();
+    }
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
