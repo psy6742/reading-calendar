@@ -454,6 +454,10 @@ textarea.input{resize:vertical;min-height:60px}
 .sh-rec{font-size:12.5px;font-weight:800;color:#fff;background:var(--ink);border-radius:999px;padding:11px 15px;line-height:1.1;box-shadow:0 2px 7px rgba(30,41,59,.16)}
 .sh-rec:active{transform:translateY(1px)}
 .sh-edit{font-size:12.5px;font-weight:800;color:#7C8291;background:#fff;border:1.4px solid #E8E3D7;border-radius:999px;padding:11px 14px;line-height:1.1}
+/* v2.6.16: 수정 버튼 자리에 들어간 ‘✓ 읽음’ 토글 — 카드 본문을 누르면 수정 창이 열린다 */
+.sh-rd{font-size:12.5px;font-weight:800;color:#5A7A52;background:#fff;border:1.4px solid #CFE0CB;border-radius:999px;padding:11px 14px;line-height:1.1}
+.sh-rd.on{color:#fff;background:#4E8C50;border-color:#4E8C50}
+.sh-rd:active{transform:translateY(1px)}
 .shelf-sug{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center}
 .shelf-sug .pill{padding:8px 12px;font-size:12px;font-weight:700}
 
@@ -537,6 +541,8 @@ textarea.input{resize:vertical;min-height:60px}
 .sv-btn{font-size:10.5px;font-weight:800;border-radius:9px;padding:8px 8px;line-height:1.1;white-space:nowrap}
 .sv-btn.rec{background:var(--ink);color:#fff}
 .sv-btn.ed{background:#fff;border:1.3px solid #E8E3D7;color:#7C8291}
+.sv-btn.rd{background:#fff;border:1.3px solid #CFE0CB;color:#5A7A52}
+.sv-btn.rd.on{background:#4E8C50;border-color:#4E8C50;color:#fff}
 .sv-empty{padding:22px 8px;text-align:center;color:#9A958A;font-size:12.5px;font-weight:700;line-height:1.6}
 /* v2.6.11: 전집 통째로 지우기 — 닫기 위에 조용히 놓는 위험 버튼과 확인 줄 */
 .sv-del-btn{display:block;width:100%;padding:10px 10px;margin-bottom:8px;border-radius:13px;background:#fff;border:1.4px solid #F0D8D2;color:#B4574A;font-size:12px;font-weight:800;line-height:1.2}
@@ -1824,6 +1830,8 @@ function sanitizeShelf(s){
     series: String(s.series || '').replace(/\s+/g, ' ').trim().slice(0, 60),
     /* v2.6.11: 손으로 표지를 지운 항목은 자동으로 다시 채우지 않는다 */
     noCover: s.noCover === true && !String(s.cover || '') && !String(s.coverData || ''),
+    /* v2.6.16: 달력 기록 없이 카드에서 바로 표시한 ‘읽음’ */
+    readDone: s.readDone === true,
     createdAt: Number(s.createdAt) || Date.now()
   };
 }
@@ -2648,7 +2656,38 @@ function seriesKeyOf(v){
 function shelfItemRead(s){
   if(!s) return false;
   if(shelfRecs(s.id).length) return true;
+  /* v2.6.16: 카드에서 ‘✓ 읽음’을 눌러 표시한 책도 읽은 책으로 센다 */
+  if(s.readDone === true) return true;
   return isBookRead(s.name, s.author);
+}
+/* v2.6.16: 달력 기록(또는 제목이 맞는 기록)으로 이미 읽은 책인지 — 표시를 되돌릴 수 있는지 판단에 쓴다 */
+function shelfReadViaBooks(s){
+  if(!s) return false;
+  if(shelfRecs(s.id).length) return true;
+  return isBookRead(s.name, s.author);
+}
+/* v2.6.16: 카드의 ‘✓ 읽음’을 눌렀을 때 — 달력 기록은 건드리지 않고 표시만 바꾼다 */
+function shelfReadToggle(id){
+  const s = db.shelf.find(x => x.id === id);
+  if(!s) return null;
+  const viaBooks = shelfReadViaBooks(s);
+  if(s.readDone === true){
+    s.readDone = false;
+    save();
+    shelfReadRefresh();
+    if(viaBooks) toast('달력 기록으로 읽음 표시는 그대로예요');
+    return false;
+  }
+  if(viaBooks){ toast('달력 기록으로 이미 읽음 표시돼 있어요'); return true; }
+  s.readDone = true;
+  save();
+  shelfReadRefresh();
+  return true;
+}
+/* 표시를 바꾼 뒤 카드(책장 · 전집 낱권 목록)를 다시 그린다 */
+function shelfReadRefresh(){
+  if(view.ymode === 'shelf') renderShelf();
+  if(seriesViewOpen()) renderSeriesView();
 }
 function seriesShelfItems(name){
   const k = seriesKeyOf(name);
@@ -2818,17 +2857,25 @@ function renderShelf(){
     recBtn.className = 'sh-rec';
     recBtn.textContent = '+ 기록하기';
     recBtn.setAttribute('aria-label', s.name + ' 기록하기');
-    recBtn.onclick = () => openQuick(s.id);
-    const edBtn = document.createElement('button');
-    edBtn.type = 'button';
-    edBtn.className = 'sh-edit';
-    edBtn.textContent = '수정';
-    edBtn.onclick = () => openShelfForm(s.id);
+    recBtn.onclick = (e) => { e.stopPropagation(); openQuick(s.id); };
+    /* v2.6.16: 수정 버튼 대신 ‘✓ 읽음’ 토글 — 수정은 카드 본문을 눌러 연다 */
+    const rdBtn = document.createElement('button');
+    rdBtn.type = 'button';
+    rdBtn.className = 'sh-rd' + (isRead ? ' on' : '');
+    rdBtn.textContent = '✓ 읽음';
+    rdBtn.setAttribute('aria-pressed', isRead ? 'true' : 'false');
+    rdBtn.setAttribute('aria-label', s.name + ' 읽음 표시');
+    rdBtn.onclick = (e) => { e.stopPropagation(); shelfReadToggle(s.id); };
     acts.appendChild(recBtn);
-    acts.appendChild(edBtn);
+    acts.appendChild(rdBtn);
 
     body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(acts);
     item.appendChild(cov); item.appendChild(body);
+    /* v2.6.16: 카드 본문 빈 곳을 누르면 수정 창이 열린다 (안쪽 버튼은 따로 동작) */
+    item.addEventListener('click', e => {
+      if(e.target.closest('button')) return;
+      openShelfForm(s.id);
+    });
     /* v2.6.10: 진짜 표지가 없으면 화면에 들어올 때 표지를 찾아 채운다 */
     if(!shelfCoverSrc(s)) shelfCovWatch(cov, s);
     if(s.lang === 'en') arWatchCard(item, s.name, s.author);
@@ -3063,7 +3110,9 @@ function seriesViewRow(s, no){
   ttl.type = 'button';
   ttl.className = 'sv-ttl';
   ttl.textContent = s.name;
-  ttl.onclick = () => openQuick(s.id);
+  /* v2.6.16: 제목을 눌러도 카드와 같이 수정 창이 열린다 (기록은 [+ 기록] 버튼) */
+  ttl.setAttribute('aria-label', s.name + ' 수정');
+  ttl.onclick = () => openShelfForm(s.id);
   tx.appendChild(ttl);
 
   const meta = document.createElement('div');
@@ -3106,16 +3155,24 @@ function seriesViewRow(s, no){
   rec.className = 'sv-btn rec';
   rec.textContent = '+ 기록';
   rec.setAttribute('aria-label', s.name + ' 기록하기');
-  rec.onclick = () => openQuick(s.id);
-  const ed = document.createElement('button');
-  ed.type = 'button';
-  ed.className = 'sv-btn ed';
-  ed.textContent = '수정';
-  ed.setAttribute('aria-label', s.name + ' 수정');
-  ed.onclick = () => openShelfForm(s.id);
+  rec.onclick = (e) => { e.stopPropagation(); openQuick(s.id); };
+  /* v2.6.16: 수정 버튼 자리를 ‘✓ 읽음’ 토글로 바꿨다 */
+  const rd = document.createElement('button');
+  rd.type = 'button';
+  rd.className = 'sv-btn rd' + (read ? ' on' : '');
+  rd.textContent = '✓ 읽음';
+  rd.setAttribute('aria-pressed', read ? 'true' : 'false');
+  rd.setAttribute('aria-label', s.name + ' 읽음 표시');
+  rd.onclick = (e) => { e.stopPropagation(); shelfReadToggle(s.id); };
   acts.appendChild(rec);
-  acts.appendChild(ed);
+  acts.appendChild(rd);
   row.appendChild(acts);
+
+  /* v2.6.16: 줄의 빈 곳을 누르면 수정 창이 열린다 */
+  row.addEventListener('click', e => {
+    if(e.target.closest('button')) return;
+    openShelfForm(s.id);
+  });
 
   if(s.lang === 'en') arWatchCard(row, s.name, s.author);
   return row;
@@ -3350,6 +3407,7 @@ function saveShelf(){
     coverData: shelfDraft.coverData,
     noCover: shelfDraft.noCover === true,   /* v2.6.11: 지운 표지를 자동으로 다시 채우지 않는다 */
     isbn: shelfDraft.isbn || '',   /* v2.6.9: 전집에서 담은 ISBN은 손으로 고쳐도 남긴다 */
+    readDone: shelfDraft.readDone === true,   /* v2.6.16: 카드에서 표시한 읽음은 수정해도 남긴다 */
     createdAt: shelfDraft.createdAt || Date.now()
   });
   if(!item){ toast('저장하지 못했어요'); return; }
@@ -10683,7 +10741,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.15',
+  version: '2.6.16',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -10718,8 +10776,12 @@ window.__rc = {
       id: s.id, name: s.name, author: s.author, lang: s.lang, publisher: s.publisher, pages: toPages(s.pages),
       series: s.series || '',
       cover: s.coverData ? 'data' : (s.cover ? 'url' : 'auto'),
+      readDone: s.readDone === true,
       recs: shelfRecs(s.id).length
     })),
+    /* v2.6.16: 카드의 ‘✓ 읽음’ 토글 확인용 */
+    toggleRead: id => shelfReadToggle(id),
+    isRead: id => { const s = db.shelf.find(x => x.id === id); return s ? shelfItemRead(s) : false; },
     add: (name, lang, publisher, author, pages) => {
       const s = sanitizeShelf({ id: uidS(), name: name, author: author || '', lang: lang || 'ko', publisher: publisher || '', pages: pages, createdAt: Date.now() });
       if(!s) return null;
