@@ -640,7 +640,7 @@ textarea.input{resize:vertical;min-height:60px}
 /* v2.6.4: 추천·잠수네가 같은 책 카드를 쓴다 */
 .rec-item,.jam-item,.wish-item{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:16px;background:#FBFAF6;border:1px solid #EEEAE0}
 /* v2.6.9: 읽은 책은 한눈에 보이게 — 진한 원색 대신 부드러운 세이지 민트 */
-.rec-item.read,.jam-item.read{background:#E9F3E9;border-color:#C2DBC2}
+.rec-item.read,.jam-item.read,.wish-item.read{background:#E9F3E9;border-color:#C2DBC2}
 .rec-cov{position:relative;width:54px;flex:0 0 auto;aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--lav-soft);box-shadow:0 2px 7px rgba(30,41,59,.13)}
 .rec-cov img{width:100%;height:100%;object-fit:cover}
 .rec-cov .ph{width:100%;height:100%;display:grid;place-items:center;font-size:18px;color:#B9B4D2}
@@ -694,6 +694,8 @@ textarea.input{resize:vertical;min-height:60px}
 .card-acts button.rd{border-color:#D9E8CB;background:#F4F9EE;color:#4F6B3B}
 .card-acts button.ws.on{border-color:#F0D9CF;background:#FBF0EC;color:#A8563F}
 .card-acts button.lib{border-color:#E4DFD2;background:#F4F1E8;color:#4B5262}
+/* v2.6.15: 읽을 목록 카드의 삭제 — 같은 3단 줄 안의 부드러운 위험 색 */
+.card-acts button.del{border-color:#F3D9D3;background:#FBEAE7;color:#B4574A}
 .card-acts button:active{transform:translateY(1px)}
 /* 아주 좁은 화면(≤370px)에서는 버튼 글자가 잘리지 않게 조금 접는다 */
 @media (max-width:374px){
@@ -5241,6 +5243,32 @@ function buildRecItem(r){
   return item;
 }
 
+/* v2.6.15: 읽을 목록 카드에 담아 온 곳을 적는다 */
+let wishJamSet = null, wishJamKey = '';
+function wishJamTitles(){
+  const ko = (jam && jam.ko && jam.ko.items) ? jam.ko.items.length : 0;
+  const en = (jam && jam.en && jam.en.items) ? jam.en.items.length : 0;
+  const key = ko + '/' + en;
+  if(wishJamSet && wishJamKey === key) return wishJamSet;
+  const s = new Set();
+  ['ko', 'en'].forEach(kind => {
+    const cat = kind === 'ko' ? jam.ko : jam.en;
+    if(!cat || !cat.items) return;
+    for(let i = 0; i < cat.items.length; i++){
+      const t = cat.items[i][kind === 'ko' ? KO_T : EN_T];
+      if(t) s.add((kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(String(t)));
+    }
+  });
+  wishJamSet = s; wishJamKey = key;
+  return s;
+}
+function wishSrcLabel(w, jamSet){   /* v2.6.15 */
+  if(w.recId) return '연령별 추천에서 담음';
+  if(jamSet && jamSet.has((w.lang === 'en' ? 'en' : 'ko') + '|' + jamNorm(w.title))) return '잠수네에서 담음';
+  if(w.reason) return String(w.reason).slice(0, 120);
+  return '직접 추가';
+}
+
 function renderWishList(){
   const list = $('#wishList');
   if(!list) return;
@@ -5263,17 +5291,19 @@ function renderWishList(){
     return;
   }
   const frag = document.createDocumentFragment();
+  const jamSet = wishJamTitles();
   db.wishlist.forEach(w => {
+    /* v2.6.15: 읽을 목록 카드도 추천·잠수네 카드와 같은 모양으로 그린다
+       표지 · [한글/영어][연령][AR][✓ 읽음] · 제목 · 지은이 · 담은 곳 · 3단 버튼 */
+    const rd = isBookRead(w.title, w.author);
     const item = document.createElement('div');
-    item.className = 'wish-item';
+    item.className = 'wish-item' + (rd ? ' read' : '');
     item.dataset.wid = w.id;
     item.appendChild(buildRecCover(w));
 
     const body = document.createElement('div');
     body.className = 'rec-body';
-    const nm = document.createElement('div');
-    nm.className = 'rec-nm';
-    nm.textContent = w.title;
+    /* 배지 줄 — AR 지수는 arWatchCard가 [data-ar-slot] 자리에 넣는다 */
     const meta = document.createElement('div');
     meta.className = 'rec-meta';
     const tg = document.createElement('span');
@@ -5286,35 +5316,52 @@ function renderWishList(){
       ag.textContent = ageLabel(w.age);
       meta.appendChild(ag);
     }
-    const lgb = document.createElement('button');
-    lgb.type = 'button';
-    lgb.className = 'rec-lib';
-    lgb.dataset.act = 'lib';
-    lgb.title = libName(w.lang) + '에서 찾기';
-    lgb.setAttribute('aria-label', w.title + ' — ' + libName(w.lang) + '에서 청구기호 찾기');
-    lgb.textContent = '🏛️ 도서관';
-    meta.appendChild(lgb);
+    const arSlot = document.createElement('span');
+    arSlot.className = 'ar-slot';
+    arSlot.setAttribute('data-ar-slot', '');
+    meta.appendChild(arSlot);
+    if(rd){
+      const rdb = document.createElement('span');
+      rdb.className = 'rec-rd';
+      rdb.textContent = '✓ 읽음';
+      meta.appendChild(rdb);
+    }
+    const nm = document.createElement('div');
+    nm.className = 'rec-nm';
+    nm.textContent = w.title;
     const au = document.createElement('div');
     au.className = 'rec-auth';
     au.textContent = w.author || '지은이 정보 없음';
     const src = document.createElement('div');
     src.className = 'wish-src';
-    src.textContent = w.recId ? '연령별 추천에서 담음' : '직접 추가';
+    src.textContent = wishSrcLabel(w, jamSet);
+
+    /* 추천·잠수네와 같은 3단 버튼 줄 (+ 읽었어요 | 🗑️ 삭제 | 🏛️ 도서관) */
     const acts = document.createElement('div');
-    acts.className = 'rec-acts';
+    acts.className = 'card-acts';
     const done = document.createElement('button');
     done.type = 'button';
-    done.className = 'rec-btn dark';
-    done.dataset.act = 'record';
-    done.textContent = '읽었어요';
+    done.className = 'rec-btn rd';
+    done.dataset.act = 'read';
+    done.textContent = '+ 읽었어요';
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'rec-btn del';
     del.dataset.act = 'del';
-    del.textContent = '삭제';
-    acts.appendChild(done); acts.appendChild(del);
-    body.appendChild(nm); body.appendChild(meta); body.appendChild(au); body.appendChild(src); body.appendChild(acts);
+    del.setAttribute('aria-label', w.title + ' — 읽을 목록에서 지우기');
+    del.textContent = '🗑️ 삭제';
+    const lgb = document.createElement('button');
+    lgb.type = 'button';
+    lgb.className = 'rec-btn lib';
+    lgb.dataset.act = 'lib';
+    lgb.title = libName(w.lang) + '에서 찾기';
+    lgb.setAttribute('aria-label', w.title + ' — ' + libName(w.lang) + '에서 청구기호 찾기');
+    lgb.textContent = '🏛️ 도서관';
+    acts.appendChild(done); acts.appendChild(del); acts.appendChild(lgb);
+
+    body.appendChild(meta); body.appendChild(nm); body.appendChild(au); body.appendChild(src); body.appendChild(acts);
     item.appendChild(body);
+    if(w.lang === 'en') arWatchCard(item, w.title, w.author);
     frag.appendChild(item);
   });
   list.appendChild(frag);
@@ -5470,22 +5517,18 @@ $('#recList').addEventListener('click', e => {
   else if(act === 'lib') openLibrary(r.lang, r.title);
 });
 $('#wishList').addEventListener('click', e => {
-  const lgb = e.target.closest('.rec-lib');
-  if(lgb){
-    const li = e.target.closest('.wish-item');
-    const wb = li ? db.wishlist.find(x => x.id === li.dataset.wid) : null;
-    if(wb) openLibrary(wb.lang, wb.title);
-    return;
-  }
-  const btn = e.target.closest('.rec-btn');
+  /* v2.6.15: 버튼 줄(+ 읽었어요 · 🗑️ 삭제 · 🏛️ 도서관)의 버튼 하나로 처리한다 */
+  const btn = e.target.closest('.wish-item .rec-btn');
   if(!btn) return;
   const item = e.target.closest('.wish-item');
   if(!item) return;
   const wid = item.dataset.wid;
   const w = db.wishlist.find(x => x.id === wid);
   if(!w) return;
-  if(btn.dataset.act === 'record') openBookRecord({ wishId: wid });
-  else if(btn.dataset.act === 'del'){
+  const act = btn.dataset.act;
+  if(act === 'read' || act === 'record') openBookRecord({ wishId: wid });
+  else if(act === 'lib') openLibrary(w.lang, w.title);
+  else if(act === 'del'){
     const back = removeFromWish(wid);
     render();
     if(!back) return;
@@ -10640,7 +10683,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.14',
+  version: '2.6.15',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -10997,7 +11040,7 @@ window.__rc = {
     open: (lang, t) => openLibrary(lang, t),
     buttons: () => ({
       rec: $$('#recList .rec-item .rec-btn[data-act="lib"]').length,
-      wish: $$('#wishList .wish-item .rec-lib').length,
+      wish: $$('#wishList .wish-item .card-acts button[data-act="lib"]').length,
       jam: $$('#jamCard .card-acts button[data-act="lib"]').length
     })
   },
