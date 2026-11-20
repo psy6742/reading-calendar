@@ -4720,8 +4720,9 @@ async function scanStep(video){
   const hits = [];
   const nat = await scanDetectNative(src);
   if(nat.length) hits.push.apply(hits, nat);
-  /* zxing-wasm: BarcodeDetector가 없으면(사파리) 매 프레임, 있으면 격 프레임에 한 번 더 */
-  const useZX = !scanState.detector || (scanState.tick % 2 === 0);
+  /* zxing-wasm: 크롬 내장이 이미 읽었으면 그 프레임은 건너뛰고(발열·배터리),
+     내장이 놓쳤을 때만 정밀 엔진을 돌린다. 내장이 없는 사파리에서는 매 프레임 zxing. */
+  const useZX = !hits.length || !scanState.detector;
   if(useZX){
     if(!scanState.zx && !scanState.zxLoading) loadScanZXing();
     if(scanState.zx){
