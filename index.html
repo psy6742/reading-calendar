@@ -1782,6 +1782,8 @@ function sanitize(b){
     isbn: String(b.isbn || '').replace(/[^0-9Xx]/g, ''),
     cover: typeof b.cover === 'string' ? b.cover : '',
     coverData: typeof b.coverData === 'string' ? b.coverData : '',
+    /* v2.6.13: 표지를 손으로 지운 기록은 자동으로 다시 채우지 않는다(책장과 같은 규칙) */
+    noCover: b.noCover === true && !String(b.cover || '') && !String(b.coverData || ''),
     childIds: Array.isArray(b.childIds) ? b.childIds.map(String).filter(Boolean) : [],
     shelfId: b.shelfId ? String(b.shelfId) : '',
     imp: b.imp ? String(b.imp).slice(0, 80) : '',
@@ -2438,6 +2440,7 @@ function renderDay(){
   const empty = $('#dayEmpty');
   grid.innerHTML = '';
   empty.innerHTML = '';
+  bkCovWatchReset();   /* v2.6.13: 사라진 카드는 표지 관찰에서 뺀다 */
 
   if(shown.length){
     const frag = document.createDocumentFragment();
@@ -2502,6 +2505,8 @@ function renderDay(){
       frag.appendChild(btn);
     });
     grid.appendChild(frag);
+    /* v2.6.13: 표지가 없는 기록은 카드가 화면에 들어올 때만 찾아 채운다(책장과 같은 방식) */
+    $$('#dayBooks .book').forEach(el => bkCovWatch(el, bookById(el.dataset.id || '')));
     grid.classList.remove('hidden');
     return;
   }
@@ -5812,6 +5817,7 @@ $('#btnSave').onclick = () => {
     : draftKids.slice();
   if(!kids.length){ toast('누가 읽었는지 골라 주세요'); return; }
 
+  const prevRec = draft.id ? db.books.find(x => x.id === draft.id) : null;
   const rec = sanitize({
     id: draft.id || uid(),
     date: date,
@@ -5820,8 +5826,11 @@ $('#btnSave').onclick = () => {
     pages: $('#fPages').value,
     lang: draft.lang,
     isbn: draft.isbn || '',
-    cover: draft.cover,
+    /* v2.6.13: 수정 창이 열려 있는 동안 자동으로 찾아 둔 표지를 지우지 않는다 */
+    cover: draft.noCover ? '' : (draft.cover || (prevRec && !prevRec.noCover ? prevRec.cover : '')),
     coverData: draft.coverData,
+    /* v2.6.13: 표지를 지운 상태(noCover)도 함께 저장한다 */
+    noCover: draft.noCover === true,
     childIds: kids,
     shelfId: draft.shelfId || '',
     /* v2.6.13: 수정 저장 때도 출판사·메모·가져온 기록 표시를 잃지 않는다 */
@@ -5874,6 +5883,9 @@ $('#btnCoverUpload').onclick = () => $('#coverInput').click();
 $('#btnCoverClear').onclick = () => {
   if(!draft) return;
   draft.cover = ''; draft.coverData = '';
+  /* v2.6.13: 지운 표지는 다시 자동으로 채우지 않는다(책장과 같은 규칙) */
+  draft.noCover = true;
+  jamCovForget(jamCovKey(draft.lang === 'en' ? 'en' : 'ko', draft.title || '', draft.author || ''));
   updateCoverPreview();
 };
 $('#coverInput').addEventListener('change', async e => {
@@ -5884,6 +5896,7 @@ $('#coverInput').addEventListener('change', async e => {
     const data = await compressImage(f, 520, 0.8);
     draft.coverData = data;
     draft.cover = '';
+    draft.noCover = false;   /* v2.6.13: 손으로 올린 표지라 자동 찾기 대상이 아니다 */
     updateCoverPreview();
   }catch(err){
     console.warn(err);
@@ -6971,6 +6984,7 @@ function fillFormFromBook(r, isbn){
   draft.publisher = r.publisher || '';
   draft.cover = r.cover || '';
   draft.coverData = '';
+  if(r.cover) draft.noCover = false;   /* v2.6.13: 찾아서 고른 표지는 자동 찾기를 막지 않는다 */
   const pg = toPages(r.pages);
   $('#fPages').value = pg ? String(pg) : '';
   draft.pages = pg || null;
@@ -7860,6 +7874,8 @@ function openDetail(id){
   meta.appendChild(h); meta.appendChild(au); meta.appendChild(tags);
   head.appendChild(covBox); head.appendChild(meta);
   body.appendChild(head);
+  /* v2.6.13: 표지가 없는 기록(잠수네에서 가져온 옛 기록 등)은 상세를 열 때 표지를 찾아 채운다 */
+  bkCovWatch(covBox, b);
   /* 잠수네에서 가져온 기록은 출판사·시리즈·급수 메모를 함께 보여 준다 */
   if(b.publisher || b.note){
     const dn = document.createElement('p');
@@ -9948,6 +9964,164 @@ function jamCovWatchReset(){
   jamCovObs = null;
 }
 
+/* ---------- 기록한 책 표지 자동 찾기 (v2.6.13) ----------
+   잠수네에서 가져온 옛 기록처럼 표지가 없는 기록도 달력 카드·상세 창에서 표지를 보이게 한다.
+   책장과 같은 규칙: 카드가 화면에 들어올 때만(IntersectionObserver) 제목·지은이·출판사로 묻고,
+   받은 주소는 기기 표지 캐시에 넣고 그 기록(b.cover)에도 남겨 다시 묻지 않는다(주소 문자열만).
+   표지를 손으로 지운 기록(noCover)은 다시 묻지 않고, 직접 올린 사진(coverData)은 건드리지 않는다. */
+const BK_COV_MAX_REQ = 2;
+const BK_COV_GAP = 140;
+let bkCovObs = null, bkCovQ = [], bkCovBusy = 0, bkCovNextAt = 0, bkCovTimer = 0, bkCovSaveT = 0;
+let bkCovByKey = new Map();
+
+function bookById(id){ return db.books.find(x => x.id === id) || null; }
+/* 진짜 표지(주소)가 이미 있는가 — data: 미니 표지는 진짜 표지로 치지 않는다 */
+function bkCovReal(b){
+  const s = String((b && (b.coverData || b.cover)) || '');
+  return !!s && s.indexOf('data:') !== 0;
+}
+function bkCovNeed(b){ return !!b && !b.noCover && !bkCovReal(b); }
+function bkCovStore(id, url){
+  if(!id || !url) return;
+  const b = bookById(id);
+  if(!bkCovNeed(b)) return;
+  b.cover = String(url);
+  if(bkCovSaveT) return;
+  bkCovSaveT = setTimeout(() => { bkCovSaveT = 0; save(); }, 800);
+}
+function bkCovBox(el){
+  if(!el) return null;
+  if(el.classList && (el.classList.contains('cov') || el.classList.contains('detail-cover'))) return el;
+  return el.querySelector('.cov') || el.querySelector('.detail-cover');
+}
+/* 찾은 표지를 카드에 넣는다. 표지 칸(.cov·.detail-cover)은 크기가 이미 잡혀 있어 넣어도 화면이 밀리지 않는다. */
+function bkCovApply(el, url, key, title){
+  if(!el || !el.isConnected) return;
+  const box = bkCovBox(el);
+  if(!box) return;
+  const t = String(title || el.dataset.cvTitle || '');
+  const ph = coverFromTitle(t, shelfSeed(t));
+  let img = box.querySelector('img');
+  if(!img){
+    const phEl = box.querySelector('.ph');
+    if(phEl && phEl.parentNode) phEl.parentNode.removeChild(phEl);
+    img = document.createElement('img');
+    img.alt = '';
+    img.loading = 'lazy';
+    box.appendChild(img);
+  }
+  const cur = String(img.getAttribute('src') || '');
+  if(cur && cur.indexOf('data:') !== 0) return;   /* 이미 진짜 표지가 있다 */
+  const fallback = cur || ph;
+  img.onload = () => { img.onload = null; img.onerror = null; el.dataset.covReal = '1'; };
+  img.onerror = () => {
+    img.onerror = null; img.onload = null;
+    delete el.dataset.covReal;
+    img.src = fallback;
+    if(key){ jamCovForget(key); jamCovMissAdd(key); }   /* 죽은 주소는 지우고 이번 방문에는 다시 묻지 않는다 */
+  };
+  img.src = url;
+}
+function bkCovPump(){
+  if(bkCovBusy >= BK_COV_MAX_REQ || !bkCovQ.length) return;
+  const wait = bkCovNextAt - Date.now();
+  if(wait > 0){
+    if(!bkCovTimer) bkCovTimer = setTimeout(() => { bkCovTimer = 0; bkCovPump(); }, wait);
+    return;
+  }
+  const job = bkCovQ.shift();
+  bkCovNextAt = Date.now() + BK_COV_GAP;
+  bkCovBusy++;
+  Promise.resolve()
+    .then(() => shMetaLookup(job.kind, job.title, job.author, job.publisher, job.isbn, true, false))
+    .then(meta => {
+      const url = (meta && meta.cover) ? String(meta.cover) : '';
+      if(url){
+        jamCovPut(job.key, url);
+        (job.els || []).forEach(el => bkCovApply(el, url, job.key, job.title));
+        (job.ids || []).forEach(id => bkCovStore(id, url));
+      }else{
+        jamCovMissAdd(job.key);   /* 이번 방문에는 다시 묻지 않는다 */
+      }
+    })
+    .catch(() => {})
+    .then(() => {
+      bkCovByKey.delete(job.key);
+      (job.els || []).forEach(el => { if(el && el.dataset) el.dataset.covBusy = ''; });
+      bkCovBusy = Math.max(0, bkCovBusy - 1);
+      bkCovPump();
+    });
+}
+function bkCovQueue(el, b, key){
+  if(!el || !el.dataset || el.dataset.covBusy === '1') return;
+  el.dataset.covBusy = '1';
+  const job = bkCovByKey.get(key);
+  if(job){
+    job.els.push(el);
+    if(job.ids.indexOf(b.id) < 0) job.ids.push(b.id);
+    return;
+  }
+  const nj = {
+    key: key,
+    kind: b.lang === 'en' ? 'en' : 'ko',
+    title: String(b.title || ''),
+    author: String(b.author || ''),
+    publisher: String(b.publisher || ''),
+    isbn: String(b.isbn || ''),
+    ids: [b.id],
+    els: [el]
+  };
+  bkCovByKey.set(key, nj);
+  bkCovQ.push(nj);
+  bkCovPump();
+}
+function bkCovObserver(){
+  if(bkCovObs) return bkCovObs;
+  if(typeof IntersectionObserver !== 'function') return null;
+  bkCovObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      try{ bkCovObs.unobserve(el); }catch(e){}
+      if(el.dataset.covBusy === '1') return;
+      const b = bookById(el.dataset.cvId || '');
+      if(!bkCovNeed(b)) return;
+      const kind = b.lang === 'en' ? 'en' : 'ko';
+      const key = jamCovKey(kind, b.title, b.author);
+      const hit = jamCovGet(key);
+      if(hit){ bkCovApply(el, hit, key, b.title); bkCovStore(b.id, hit); return; }
+      if(jamCovMissed(key)) return;
+      bkCovQueue(el, b, key);
+    });
+  }, { rootMargin: '240px 0px' });
+  return bkCovObs;
+}
+/* 카드를 다시 그릴 때: 사라진 카드는 관찰에서 뺀다(대기 중인 조회는 그대로 두고 결과만 저장) */
+function bkCovWatchReset(){
+  if(bkCovObs){ try{ bkCovObs.disconnect(); }catch(e){} }
+  bkCovObs = null;
+}
+/* 카드 하나를 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 */
+function bkCovWatch(el, b){
+  if(!el || !el.dataset || !b) return;
+  const title = String(b.title == null ? '' : b.title).trim();
+  if(!title) return;
+  if(!bkCovBox(el)) return;
+  if(!bkCovNeed(b)) return;   /* 직접 올린 표지·진짜 표지·손으로 지운 기록은 그대로 둔다 */
+  const kind = b.lang === 'en' ? 'en' : 'ko';
+  el.dataset.cvTitle = title;
+  el.dataset.cvAuth = String(b.author || '');
+  el.dataset.cvKind = kind;
+  el.dataset.cvId = String(b.id || '');
+  const key = jamCovKey(kind, title, b.author);
+  const hit = jamCovGet(key);
+  if(hit){ bkCovApply(el, hit, key, title); bkCovStore(b.id, hit); return; }
+  if(jamCovMissed(key)) return;
+  const ob = bkCovObserver();
+  if(ob) ob.observe(el);
+  else bkCovQueue(el, b, key);   /* IntersectionObserver가 없으면 바로 시도 */
+}
+
 /* v2.6.4: 잠수네 카드도 추천 카드와 같은 모양(표지 · 태그 · 제목 · 지은이 · 3단 버튼)으로 그린다 */
 function jamItemHtml(kind, it, rd, wish){
   const title = it[kind === 'ko' ? KO_T : EN_T];
@@ -10703,6 +10877,14 @@ window.__rc = {
       try{ localStorage.removeItem(JAM_COV_KEY); }catch(e){}
       jamCovWatchReset();
     }
+  },
+  /* v2.6.13 기록한 책(달력 카드·상세) 표지 자동 찾기 확인용 */
+  bookCovApi: {
+    pending: () => ({ queue: bkCovQ.length, busy: bkCovBusy }),
+    real: (id) => bkCovReal(bookById(id)),
+    need: (id) => bkCovNeed(bookById(id)),
+    cover: (id) => { const b = bookById(id); return b ? String(b.cover || '') : ''; },
+    forget: (kind, t, a) => jamCovForget(jamCovKey(kind === 'en' ? 'en' : 'ko', t, a))
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
