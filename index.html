@@ -158,6 +158,13 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .day.today:not(.sel) .dnum{box-shadow:inset 0 0 0 1.5px #C9C3E4}
 .day .cnt{font-size:10.5px;font-weight:700;color:transparent;height:13px;letter-spacing:-.2px}
 .day.has .cnt{color:#7C8298}
+/* v2.6.7: 월간 달력 날짜 원을 선택한 언어 필터에 맞춰 물들인다 (연간 통계 색과 통일) */
+#monthCard[data-lf="ko"] .day.has:not(.sel) .dnum{background:#DBEAFE;color:#1D4ED8}
+#monthCard[data-lf="en"] .day.has:not(.sel) .dnum{background:#FFE1E6;color:#BE123C}
+#monthCard[data-lf="ko"] .day.today:not(.sel) .dnum{box-shadow:inset 0 0 0 1.5px #93C5FD}
+#monthCard[data-lf="en"] .day.today:not(.sel) .dnum{box-shadow:inset 0 0 0 1.5px #FDA4AF}
+#monthCard[data-lf="ko"] .day.has .cnt{color:#5A7FA8}
+#monthCard[data-lf="en"] .day.has .cnt{color:#A8656F}
 .day .cnt.none{visibility:hidden}
 .day.empty{visibility:hidden;pointer-events:none}
 
@@ -536,6 +543,12 @@ textarea.input{resize:vertical;min-height:60px}
 .ar-rd:active{background:#D9E8F4}
 /* 읽은 책 찾기 안의 AR */
 .ar-slot{display:inline-flex;align-items:center}
+/* v2.6.7: 기록한 영어책 — 달력 날짜 카드·내 책장에도 AR 지수 */
+.book-ar{display:flex;margin-top:4px}
+.sh-ar{display:inline-flex;flex:0 0 auto}
+.book-ar:empty,.sh-ar:empty{display:none}
+.book .ar-rd{font-size:9.5px;padding:1px 6px}
+.detail-meta .tags .ar-rd{font-size:11px;padding:2px 8px}
 .find-ar{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px}
 .find-ar.hidden{display:none}
 .find-ar-lb{font-size:11px;font-weight:800;color:#8E897C;letter-spacing:-.2px}
@@ -2095,6 +2108,14 @@ function renderDay(){
       tag.textContent = b.lang === 'ko' ? '한글' : '영어';
 
       btn.appendChild(cov); btn.appendChild(t); btn.appendChild(tag);
+      /* v2.6.7: 기록한 영어책은 카드 아래에 AR 지수를 붙인다(캐시가 있으면 바로, 없으면 화면에 들어올 때 조회) */
+      if(b.lang === 'en'){
+        const arSlot = document.createElement('span');
+        arSlot.className = 'ar-slot book-ar';
+        arSlot.setAttribute('data-ar-slot', '1');
+        btn.appendChild(arSlot);
+        arWatchCard(btn, b.title, b.author);
+      }
 
       // 전체 보기에서는 어느 아이가 읽었는지 작은 배지로 표시
       if(view.child === 'all' && db.children.length > 1){
@@ -2297,6 +2318,13 @@ function renderShelf(){
       pb.textContent = s.publisher;
       meta.appendChild(pb);
     }
+    /* v2.6.7: 영어 책장 항목에 AR 지수 (지수는 카드를 다 조립한 뒤에 붙인다) */
+    if(s.lang === 'en'){
+      const arSlot = document.createElement('span');
+      arSlot.className = 'ar-slot sh-ar';
+      arSlot.setAttribute('data-ar-slot', '1');
+      meta.appendChild(arSlot);
+    }
     const cnt = document.createElement('div');
     cnt.className = 'sh-cnt';
     if(recs.length){
@@ -2322,6 +2350,7 @@ function renderShelf(){
 
     body.appendChild(nm); body.appendChild(meta); body.appendChild(cnt); body.appendChild(acts);
     item.appendChild(cov); item.appendChild(body);
+    if(s.lang === 'en') arWatchCard(item, s.name, s.author);
     frag.appendChild(item);
   });
   list.appendChild(frag);
@@ -3633,6 +3662,9 @@ $('#btnWishAdd').onclick = () => {
 /* ---------- 이벤트: 필터·월 이동·날짜 ---------- */
 function applyFilter(f){
   view.filter = f;
+  /* v2.6.7: 달력 날짜 원 색을 필터에 맞춘다(전체=연보라 · 한글=하늘 · 영어=핑크) */
+  const mc = $('#monthCard');
+  if(mc && mc.dataset) mc.dataset.lf = (f === 'ko' || f === 'en') ? f : 'all';
   $$('#filterSeg button, #recLang button').forEach(b => {
     const on = b.dataset.filter === f;
     b.classList.toggle('on', on);
@@ -5838,6 +5870,14 @@ function openDetail(id){
     t4.textContent = fmtNum(toPages(b.pages)) + '쪽';
     tags.appendChild(t4);
   }
+  /* v2.6.7: 상세 시트에도 영어책 AR 지수 */
+  if(b.lang === 'en'){
+    const arSlot = document.createElement('span');
+    arSlot.className = 'ar-slot';
+    arSlot.setAttribute('data-ar-slot', '1');
+    tags.appendChild(arSlot);
+    arWatchCard(tags, b.title, b.author);
+  }
   meta.appendChild(h); meta.appendChild(au); meta.appendChild(tags);
   head.appendChild(covBox); head.appendChild(meta);
   body.appendChild(head);
@@ -7001,11 +7041,12 @@ function arPaint(el, v){
 }
 /* 카드가 영어책이면 관찰 목록에 올린다 */
 function arWatchCard(el, title, author){
-  if(!arEnabled() || !el || !el.dataset) return;
+  if(!el || !el.dataset) return;
   el.dataset.arTitle = String(title || '');
   el.dataset.arAuth = String(author || '');
   const hit = arHas(title, author);
-  if(hit){ arPaint(el, hit); return; }
+  if(hit){ arPaint(el, hit); return; }   /* v2.6.7: 중계 주소가 없어도 이미 받아 둔 지수는 보여 준다 */
+  if(!arEnabled()) return;
   const ob = arObserve();
   if(ob) ob.observe(el);
   else arApply(el);   // IntersectionObserver가 없으면 바로 시도
@@ -7894,7 +7935,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.6',
+  version: '2.6.7',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -7910,6 +7951,7 @@ window.__rc = {
   kids: () => db.children.map(c => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color, books: kidBookCount(c.id) })),
   books: () => db.books.map(b => ({ id: b.id, date: b.date, title: b.title, lang: b.lang, pages: toPages(b.pages), childIds: (b.childIds || []).slice() })),
   setChild: setChild,
+  setFilter: setFilter,
   setView: setViewMode,
   gotoYear: gotoYear,
   openMonth: openMonth,
