@@ -393,7 +393,8 @@ textarea.input{resize:vertical;min-height:60px}
 .seg.mode button{padding:10px 2px;font-size:12.5px;color:#7B7567;letter-spacing:-.35px}
 .seg.mode button.on{background:var(--ink);color:#fff;box-shadow:0 2px 9px rgba(30,41,59,.22)}
 .vw-short{display:none}
-@media(max-width:400px){
+/* v2.5: 탭이 다섯 개라 좁은 화면에서는 짧은 이름을 쓴다 */
+@media(max-width:540px){
   .seg.mode button{font-size:12px;padding:9px 1px;letter-spacing:-.4px}
   .vw-full{display:none}
   .vw-short{display:inline}
@@ -543,6 +544,77 @@ textarea.input{resize:vertical;min-height:60px}
 .wish-toggle{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:#5B6270;background:#FBFAF6;border:1px solid #EEEAE0;border-radius:14px;padding:11px 13px;margin-bottom:12px}
 .wish-toggle input{width:19px;height:19px;accent-color:#1E293B;margin:0;flex:0 0 auto}
 
+/* ---------- 잠수네 (v2.5) ---------- */
+.jam-card{margin-top:16px;padding-bottom:16px}
+.jam-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.jam-title{display:flex;align-items:center;gap:8px;min-width:0}
+.jam-title h2{font-size:18px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+#jamSeg{margin-top:12px}
+.jam-imp{margin-top:12px;border:1px solid #EEEAE0;background:#FBFAF6;border-radius:16px;overflow:hidden}
+.jam-imp-top{display:flex;align-items:center;gap:8px;width:100%;padding:11px 12px;text-align:left}
+.jam-imp-top b{font-size:12.5px;font-weight:800;color:#4B5262;flex:0 0 auto}
+.jam-imp-top .st{flex:1 1 auto;min-width:0;font-size:11.5px;font-weight:700;color:#9A958A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jam-imp-top .chev{flex:0 0 auto;font-size:11px;color:#A9A395;transition:transform .15s}
+.jam-imp.open .jam-imp-top .chev{transform:rotate(180deg)}
+.jam-imp-body{padding:0 12px 12px}
+.jam-imp-btns{display:flex;flex-wrap:wrap;gap:6px}
+.jam-ib{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #E4DFD2;background:#fff;border-radius:11px;padding:8px 11px;font-size:12px;font-weight:800;color:#5F6673}
+.jam-ib em{font-style:normal;font-size:10.5px;font-weight:800;color:#A9A395}
+.jam-ib.done{border-color:#D3E2C7;background:#F3F8EC;color:#4F6B3B}
+.jam-ib.done em{color:#6E8A57}
+.jam-ib:active{transform:scale(.985)}
+.jam-priv{margin-top:9px;font-size:11px;font-weight:700;line-height:1.55;color:#A9A395}
+.jam-f{margin-top:12px}
+.jam-fbar{display:flex;align-items:center;gap:6px;margin-top:12px}
+.jam-ftog{display:inline-flex;align-items:center;gap:5px;min-width:0;border:1.5px solid #E8E3D7;background:#fff;border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;color:#5F6673}
+.jam-ftog b{font-weight:800;color:#9A958A;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jam-ftog .chev{font-size:10px;color:#A9A395;transition:transform .15s;display:inline-block}
+.jam-fbar.collapsed .jam-ftog .chev{transform:rotate(-90deg)}
+.jam-filters.hide{display:none}
+.jam-f-lb{display:block;font-size:10.5px;font-weight:800;color:#A9A395;letter-spacing:-.2px;margin:0 0 5px 3px}
+.jam-chips{display:flex;gap:5px;overflow-x:auto;padding:0 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.jam-chips::-webkit-scrollbar{display:none}
+.jam-chip{flex:0 0 auto;border:1.5px solid #E8E3D7;background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800;color:#78736A;white-space:nowrap}
+.jam-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.jam-chip.read.on{background:#B4574A;border-color:#B4574A}
+.jam-chip:active{transform:scale(.97)}
+.jam-search{display:flex;gap:6px;margin-top:12px}
+.jam-search .input{flex:1 1 auto;min-width:0;font-size:14px;padding:10px 12px;border-radius:12px}
+.jam-search button{flex:0 0 auto;width:44px;border-radius:12px;background:#F1EEE4;color:#78736A;font-size:14px;font-weight:800}
+.jam-sum{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-top:12px;font-size:12px;font-weight:700;color:#9A958A}
+.jam-sum b{color:var(--ink);font-weight:800}
+.jam-sum .rd{color:#B4271D;font-weight:800}
+.jam-sum .sep{opacity:.5}
+.jam-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.jam-item{padding:11px 12px;border-radius:15px;background:#FBFAF6;border:1px solid #EEEAE0}
+.jam-item.read{background:#FDF8F6;border-color:#F2DED8}
+.jam-row1{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+.jam-lv{font-size:10.5px;font-weight:800;color:#3A3F58;background:var(--lav);border-radius:6px;padding:2px 6px}
+.jam-cat{font-size:10.5px;font-weight:800;color:#8E897C;background:#F1EEE4;border-radius:6px;padding:2px 6px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jam-readb{margin-left:auto;flex:0 0 auto;font-size:10.5px;font-weight:800;color:#B4271D;background:#FBE3DE;border-radius:999px;padding:2px 7px;white-space:nowrap}
+.jam-audio{flex:0 0 auto;font-size:10.5px;font-weight:800;color:#48627F;background:#E9EFF7;border-radius:999px;padding:2px 7px;white-space:nowrap}
+.jam-ti{font-size:14px;font-weight:800;letter-spacing:-.25px;line-height:1.35;word-break:keep-all}
+.jam-au{font-size:11.5px;font-weight:700;color:#9A958A;margin-top:2px}
+.jam-au i{font-style:normal;color:#B6B0A2}
+.jam-mt{font-size:10.5px;font-weight:700;color:#B0AA9C;margin-top:3px}
+.jam-acts{display:flex;gap:6px;margin-top:9px}
+.jam-acts button{flex:1 1 0;min-width:0;border-radius:10px;padding:7px 6px;font-size:11.5px;font-weight:800;border:1.5px solid #E4DFD2;background:#fff;color:#5F6673}
+.jam-acts button.rd{border-color:#D9E8CB;background:#F4F9EE;color:#4F6B3B}
+.jam-acts button.ws.on{border-color:#F0D9CF;background:#FBF0EC;color:#A8563F}
+.jam-more{width:100%;margin-top:10px;border-radius:12px;padding:11px;font-size:12.5px;font-weight:800;color:#5F6673;background:#F4F1E8;border:1px solid #EAE5D8}
+.jam-empty{padding:20px 6px;text-align:center;font-size:12.5px;font-weight:700;line-height:1.6;color:#9A958A}
+.jam-onb h3{font-size:14px;font-weight:800;letter-spacing:-.25px;word-break:keep-all}
+.jam-onb p{margin-top:7px;font-size:12.5px;font-weight:700;line-height:1.6;color:#8E897C}
+.jam-menu{margin-top:16px;padding-top:14px;border-top:1px solid #F1EDE2}
+.jam-menu h3{font-size:13px;font-weight:800;color:#4B5262;letter-spacing:-.2px}
+.jam-menu p{margin-top:5px;font-size:11.5px;font-weight:700;line-height:1.55;color:#9A958A}
+.jam-reset{display:block;width:100%;margin-top:10px;border-radius:11px;padding:9px;font-size:12px;font-weight:800;color:#A8563F;background:#FBF0EC;border:1px solid #F0D9CF}
+.jam-dsum{display:flex;gap:8px;margin:2px 0 12px}
+.jam-dsum div{flex:1 1 0;text-align:center;padding:10px 6px;border-radius:14px;background:#FBFAF6;border:1px solid #EEEAE0}
+.jam-dsum b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px}
+.jam-dsum span{display:block;margin-top:2px;font-size:10.5px;font-weight:800;color:#9A958A}
+.detail-note{margin:10px 0 0;font-size:11.5px;font-weight:700;color:#9A958A;line-height:1.5;word-break:keep-all}
+
 #toast{
   position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
   bottom:104px;background:var(--ink);color:#fff;padding:11px 16px;border-radius:999px;
@@ -582,6 +654,7 @@ textarea.input{resize:vertical;min-height:60px}
       <button data-view="year" role="tab" aria-selected="false" aria-label="연간 통계"><span class="vw-full">연간 통계</span><span class="vw-short">연간</span></button>
       <button data-view="shelf" role="tab" aria-selected="false" aria-label="내 책장">내 책장</button>
       <button data-view="rec" role="tab" aria-selected="false" aria-label="책 추천"><span class="vw-full">책 추천</span><span class="vw-short">추천</span></button>
+      <button data-view="jam" role="tab" aria-selected="false" aria-label="잠수네">잠수네</button>
     </div>
     <div class="kids-row" id="kidBar" role="tablist" aria-label="아이 선택"></div>
     <div class="seg" id="filterSeg" role="tablist" aria-label="언어 필터">
@@ -689,6 +762,40 @@ textarea.input{resize:vertical;min-height:60px}
         </div>
         <div class="wish-list" id="wishList"></div>
       </div>
+    </section>
+
+    <!-- ===== 잠수네 (v2.5 · 기기에만 저장) ===== -->
+    <section class="card jam-card hidden" id="jamCard" aria-label="잠수네">
+      <div class="jam-head">
+        <div class="jam-title">
+          <h2>잠수네</h2>
+          <span class="badge" id="jamBadge">–</span>
+        </div>
+      </div>
+
+      <div class="jam-imp" id="jamImp">
+        <button class="jam-imp-top" id="jamImpToggle" type="button" aria-expanded="false" aria-controls="jamImpBody">
+          <b>잠수네 자료</b>
+          <span class="st" id="jamImpSt">아직 불러오지 않았어요</span>
+          <span class="chev">▾</span>
+        </button>
+        <div class="jam-imp-body hidden" id="jamImpBody">
+          <div class="jam-imp-btns">
+            <button class="jam-ib" id="jamPickKo" type="button" data-imp="ko">한글책 플랜 <em id="jamStKo">없음</em></button>
+            <button class="jam-ib" id="jamPickEn" type="button" data-imp="en">영어 베스트 <em id="jamStEn">없음</em></button>
+            <button class="jam-ib" id="jamPickWorm" type="button" data-imp="worm">책벌레 기록</button>
+          </div>
+          <p class="jam-priv">불러온 파일은 <b>이 기기에만</b> 저장되고 어디로도 보내지 않아요. 브라우저 데이터를 지우면 함께 사라져요.</p>
+        </div>
+      </div>
+
+      <div class="seg sub" id="jamSeg" role="tablist" aria-label="잠수네 보기">
+        <button data-jam="ko" class="on" role="tab" aria-selected="true">한글 위클리 플랜</button>
+        <button data-jam="en" role="tab" aria-selected="false">영어 베스트</button>
+      </div>
+
+      <div id="jamKoPane"></div>
+      <div id="jamEnPane" class="hidden"></div>
     </section>
   </main>
 </div>
@@ -1060,6 +1167,16 @@ textarea.input{resize:vertical;min-height:60px}
         <span class="mt"><b id="resetLabel">모든 기록 지우기</b><span>되돌릴 수 없으니 먼저 백업해 주세요</span></span>
       </button>
     </div>
+    <div class="jam-menu">
+      <h3>잠수네 자료</h3>
+      <p id="menuJamSt">아직 불러오지 않았어요</p>
+      <div class="jam-imp-btns" style="margin-top:9px">
+        <button class="jam-ib" id="menuJamKo" type="button" data-imp="ko">한글책 플랜</button>
+        <button class="jam-ib" id="menuJamEn" type="button" data-imp="en">영어 베스트</button>
+        <button class="jam-ib" id="menuJamWorm" type="button" data-imp="worm">책벌레 기록</button>
+      </div>
+      <button class="jam-reset" id="menuJamReset" type="button">잠수네 데이터 초기화</button>
+    </div>
     <div class="field" style="margin-top:16px">
       <label for="fGbKey">Google Books API 키 (선택)</label>
       <input class="input" id="fGbKey" placeholder="검색이 안 될 때만 입력하면 돼요" autocomplete="off">
@@ -1094,11 +1211,30 @@ textarea.input{resize:vertical;min-height:60px}
   </div>
 </div>
 
+<!-- ===== 책벌레 기록 가져오기 확인 시트 ===== -->
+<div class="sheet-wrap" id="jamWormSheet" role="dialog" aria-modal="true" aria-labelledby="jamWormTitle">
+  <div class="backdrop" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="jamWormTitle">책벌레 기록 가져오기</h2>
+      <button class="x" data-close aria-label="닫기">✕</button>
+    </div>
+    <div id="jamWormBody"></div>
+    <div class="save-bar">
+      <button class="btn dark" id="btnJamWormSave" type="button" style="width:100%;padding:15px;border-radius:16px">가져오기</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <input type="file" id="coverInput" accept="image/*" class="hidden">
 <input type="file" id="shelfCoverInput" accept="image/*" class="hidden">
 <input type="file" id="importInput" accept="application/json,.json" class="hidden">
+<input type="file" id="jamFileKo" accept=".txt,.json,application/json,text/plain" class="hidden">
+<input type="file" id="jamFileEn" accept=".txt,.json,application/json,text/plain" class="hidden">
+<input type="file" id="jamFileWorm" accept=".txt,.json,application/json,text/plain" class="hidden">
 
 <script>
 /* =========================================================
@@ -1125,6 +1261,21 @@ let view = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: 
 let draft = null;           // 입력 중인 책
 let draftKids = [];         // 입력 중인 책의 아이들
 let lastDeleted = null;     // 되돌리기용
+
+/* ---------- 잠수네 (v2.5) ----------
+   자료 파일은 이 기기(IndexedDB)에만 저장한다. 저장소에 올리지 않는다. */
+const JAM_DB_NAME = 'readingCalendarJamsune';
+const JAM_DB_STORE = 'catalogs';
+const JAM_PAGE = 50;
+const JAM_STAGES = ['1-4세', '5-7세', '초1', '초2', '초3', '초4', '초5', '초6', '중등', '중3이상'];
+const JAM_PLANS = [1, 2, 3];
+const JAM_EN_CATS = ['그림책', '리더스북', '그림책 같은 리더스북', '챕터북', '소설', '지식책'];
+/* 7,200권을 가볍게 다루려고 항목을 배열로 압축한다.
+   한글: [단계, 플랜, 월, 주차, 급수, 분류, 제목, 지은이, 원제, 검색용, 제목맞춤키] */
+const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A = 7, KO_O = 8, KO_Q = 9, KO_K = 10;
+/* 영어: [분류, 급수, 제목, 지은이, 한글제목, 음원, 검색용, 제목맞춤키] */
+const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
+let jamIdx = null;          // 읽은 책 제목 색인 (db.books가 바뀌면 다시 만든다)
 const KID_COLORS = ['#5C7044', '#48627F', '#B4574A', '#7A5AA0', '#A0742B', '#3E7C74'];
 const KID_EMOJI = ['🧒', '👦', '👧', '👶', '🐣', '🐰', '🐻', '🦊', '🐼', '🐧', '🌱', '⭐'];
 const DEFAULT_KID_NAME = '우리 아이';
@@ -1169,6 +1320,7 @@ function load(){
   }catch(e){ console.warn('저장된 기록을 읽지 못했어요', e); }
 }
 function save(){
+  jamIdx = null;
   try{
     localStorage.setItem(STORE_KEY, JSON.stringify(db));
   }catch(e){
@@ -1197,6 +1349,9 @@ function sanitize(b){
     coverData: typeof b.coverData === 'string' ? b.coverData : '',
     childIds: Array.isArray(b.childIds) ? b.childIds.map(String).filter(Boolean) : [],
     shelfId: b.shelfId ? String(b.shelfId) : '',
+    imp: b.imp ? String(b.imp).slice(0, 80) : '',
+    publisher: b.publisher ? String(b.publisher).slice(0, 60) : '',
+    note: b.note ? String(b.note).slice(0, 160) : '',
     createdAt: Number(b.createdAt) || Date.now()
   };
 }
@@ -1366,20 +1521,23 @@ function render(){
   const isYear = view.ymode === 'year';
   const isShelf = view.ymode === 'shelf';
   const isRec = view.ymode === 'rec';
+  const isJam = view.ymode === 'jam';
   // 첫 실행(기록 0권)에는 빈 상태 안내의 버튼을 가리지 않도록 하단 고정 버튼을 숨긴다
   const cta = document.querySelector('.cta-wrap');
-  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear || isShelf || isRec);
-  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard'), sc = $('#shelfCard'), rc = $('#recCard');
-  if(mc) mc.classList.toggle('hidden', isYear || isShelf || isRec);
-  if(dc) dc.classList.toggle('hidden', isYear || isShelf || isRec);
+  if(cta) cta.classList.toggle('hidden', db.books.length === 0 || isYear || isShelf || isRec || isJam);
+  const mc = $('#monthCard'), dc = $('#dayCard'), yc = $('#yearCard'), sc = $('#shelfCard'), rc = $('#recCard'), jc = $('#jamCard');
+  if(mc) mc.classList.toggle('hidden', isYear || isShelf || isRec || isJam);
+  if(dc) dc.classList.toggle('hidden', isYear || isShelf || isRec || isJam);
   if(yc) yc.classList.toggle('hidden', !isYear);
   if(sc) sc.classList.toggle('hidden', !isShelf);
   if(rc) rc.classList.toggle('hidden', !isRec);
+  if(jc) jc.classList.toggle('hidden', !isJam);
   const fs = $('#filterSeg'), kb = $('#kidBar');
-  if(fs) fs.classList.toggle('hidden', isShelf || isRec);
+  if(fs) fs.classList.toggle('hidden', isShelf || isRec || isJam);
   if(kb) kb.classList.toggle('hidden', isShelf || isRec);
   applyViewSeg();
   renderKidBar();
+  if(isJam){ renderJam(); return; }
   if(isRec){ renderRec(); return; }
   if(isShelf){ renderShelf(); return; }
   if(isYear){ renderYear(); return; }
@@ -1517,7 +1675,8 @@ function renderMonth(){
 function applyViewSeg(){
   const mode = view.ymode === 'year' ? 'year'
     : (view.ymode === 'shelf' ? 'shelf'
-    : (view.ymode === 'rec' ? 'rec' : 'month'));
+    : (view.ymode === 'rec' ? 'rec'
+    : (view.ymode === 'jam' ? 'jam' : 'month')));
   $$('#viewSeg button').forEach(b => {
     const on = b.dataset.view === mode;
     b.classList.toggle('on', on);
@@ -1534,7 +1693,8 @@ function syncYearUnit(){
 function setViewMode(mode){
   const next = mode === 'year' ? 'year'
     : (mode === 'shelf' ? 'shelf'
-    : (mode === 'rec' ? 'rec' : 'month'));
+    : (mode === 'rec' ? 'rec'
+    : (mode === 'jam' ? 'jam' : 'month')));
   if(view.ymode === next) return;
   view.ymode = next;
   if(next === 'month' && String(view.sel).slice(0, 7) !== view.year + '-' + pad(view.month + 1)){
@@ -5331,6 +5491,13 @@ function openDetail(id){
   meta.appendChild(h); meta.appendChild(au); meta.appendChild(tags);
   head.appendChild(covBox); head.appendChild(meta);
   body.appendChild(head);
+  /* 잠수네에서 가져온 기록은 출판사·시리즈·급수 메모를 함께 보여 준다 */
+  if(b.publisher || b.note){
+    const dn = document.createElement('p');
+    dn.className = 'detail-note';
+    dn.textContent = [b.publisher, b.note].filter(Boolean).join(' · ');
+    body.appendChild(dn);
+  }
 
   const actions = document.createElement('div');
   actions.className = 'detail-actions';
@@ -5934,6 +6101,8 @@ function openMenu(){
   $('#fNlProxy').value = db.settings.nlProxy || '';
   syncKakaoKeyState();
   syncNlKeyState();
+  jamSyncImp();
+  if(!jam.ready) jamInit();
   openSheet('menuSheet');
 }
 function syncNlKeyState(){
@@ -6013,6 +6182,928 @@ $('#fKakaoKey').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); saveKakaoKey(); }
 });
 
+/* =========================================================
+   잠수네 (v2.5)
+   · 한글책 위클리 플랜·영어책 베스트·책벌레 기록을 이 기기에서만 읽는다
+   · 가져온 읽은 기록은 달력(readingCalendar.v1)에 들어가고,
+     제목이 같은 책에는 자동으로 ‘읽음’ 표시가 붙는다
+   ========================================================= */
+const jam = {
+  ready: false, loadingP: null, sub: 'ko', impOpen: false,
+  ko: null, en: null,
+  f: {
+    ko: { stage: '', plan: '', month: '', week: '', read: '', q: '' },
+    en: { cat: '', jlevel: '', audio: '', read: '', q: '' }
+  },
+  list: {
+    ko: { items: [], read: 0, rendered: 0 },
+    en: { items: [], read: 0, rendered: 0 }
+  },
+  built: { ko: false, en: false },
+  collapsed: { ko: false, en: false },
+  key: { ko: 0, en: 0 }
+};
+let jamMem = {}, jamIdbOff = false, jamDbP = null;
+let jamWormRows = null, jamWormKid = '', jamResetArm = false;
+
+/* ---------- 제목 맞추기 ---------- */
+function jamNorm(s){
+  let t = String(s == null ? '' : s);
+  try{ t = t.normalize('NFKC'); }catch(e){}
+  t = t.toLowerCase();
+  t = t.replace(/[\[\]\{\}\(\)（）〈〉《》「」『』【】]/g, ' ');
+  t = t.replace(/[·:;,\!\?\.'"`~\-–—_\/\\|&+#@*※…]/g, ' ');
+  t = t.replace(/\s+/g, ' ').trim();
+  return t;
+}
+function jamBase(s){
+  return String(s == null ? '' : s).replace(/\s*[\(\[\{（〈《「『【][^\)\]\}）〉》」』】]*[\)\]\}）〉》」』】]\s*$/, '');
+}
+/* 제목 하나에서 맞춤 키를 만든다.
+   제목 그대로 · 띄어쓰기 다른 경우 · 끝의 (시리즈명)을 뺀 것 · 끝의 , 지은이를 뺀 것 */
+function jamKeysFor(t){
+  const out = [];
+  const push = v => {
+    const n = jamNorm(v);
+    if(!n) return;
+    if(out.indexOf(n) < 0) out.push(n);
+    const s = n.replace(/ /g, '');
+    if(out.indexOf(s) < 0) out.push(s);
+  };
+  const raw = String(t == null ? '' : t);
+  push(raw);
+  push(jamBase(raw));
+  push(raw.replace(/\s*,\s*[^,]*$/, ''));
+  return out;
+}
+function jamItemKeys(kind, it){
+  const k = it[kind === 'ko' ? KO_K : EN_K2];
+  return Array.isArray(k) ? k : [];
+}
+function jamReadIdx(){
+  if(jamIdx) return jamIdx;
+  const s = new Set();
+  db.books.forEach(b => {
+    const t = b && b.title;
+    if(!t) return;
+    jamKeysFor(t).forEach(k => s.add(k));
+  });
+  jamIdx = s;
+  return s;
+}
+function jamIsRead(kind, it){
+  const s = jamReadIdx();
+  const keys = jamItemKeys(kind, it);
+  for(let i = 0; i < keys.length; i++){ if(s.has(keys[i])) return true; }
+  return false;
+}
+function jamWishSet(){
+  const s = new Set();
+  (db.wishlist || []).forEach(w => {
+    const k = (w.lang === 'en' ? 'en' : 'ko') + '|' + jamNorm(w.title);
+    s.add(k);
+  });
+  return s;
+}
+function jamLvNum(v){ return parseInt(String(v || '').replace(/\D/g, ''), 10) || 0; }
+function jamDateOf(v){
+  const m = String(v == null ? '' : v).trim().match(/^(\d{2}|\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})$/);
+  if(!m) return '';
+  const y = m[1].length === 4 ? Number(m[1]) : 2000 + Number(m[1]);
+  const mo = Number(m[2]), d = Number(m[3]);
+  if(!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return '';
+  return y + '-' + pad(mo) + '-' + pad(d);
+}
+
+/* ---------- 기기 저장소 (IndexedDB) ---------- */
+function jamDb(){
+  if(jamDbP) return jamDbP;
+  jamDbP = new Promise((res, rej) => {
+    let req;
+    try{ req = indexedDB.open(JAM_DB_NAME, 1); }catch(e){ rej(e); return; }
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      if(!d.objectStoreNames.contains(JAM_DB_STORE)) d.createObjectStore(JAM_DB_STORE);
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error || new Error('idb'));
+    req.onblocked = () => rej(new Error('idb-blocked'));
+  }).catch(e => { jamIdbOff = true; console.warn('잠수네 저장소를 열지 못했어요', e); return null; });
+  return jamDbP;
+}
+function jamGet(key){
+  return jamDb().then(d => {
+    if(!d) return jamMem[key] || null;
+    return new Promise((res, rej) => {
+      const r = d.transaction(JAM_DB_STORE, 'readonly').objectStore(JAM_DB_STORE).get(key);
+      r.onsuccess = () => res(r.result || null);
+      r.onerror = () => rej(r.error);
+    }).catch(() => jamMem[key] || null);
+  });
+}
+function jamPut(key, val){
+  jamMem[key] = val;
+  return jamDb().then(d => {
+    if(!d) return false;
+    return new Promise((res, rej) => {
+      const tx = d.transaction(JAM_DB_STORE, 'readwrite');
+      tx.objectStore(JAM_DB_STORE).put(val, key);
+      tx.oncomplete = () => res(true);
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error);
+    }).catch(e => { console.warn('잠수네 자료를 저장하지 못했어요', e); return false; });
+  });
+}
+function jamDel(key){
+  delete jamMem[key];
+  return jamDb().then(d => {
+    if(!d) return;
+    return new Promise(res => {
+      try{
+        const tx = d.transaction(JAM_DB_STORE, 'readwrite');
+        tx.objectStore(JAM_DB_STORE).delete(key);
+        tx.oncomplete = () => res();
+        tx.onerror = () => res();
+        tx.onabort = () => res();
+      }catch(e){ res(); }
+    });
+  });
+}
+function jamInit(){
+  if(jam.ready) return Promise.resolve();
+  if(jam.loadingP) return jam.loadingP;
+  jam.loadingP = Promise.all([jamGet('ko'), jamGet('en')]).then(arr => {
+    jam.ko = (arr[0] && Array.isArray(arr[0].items)) ? arr[0] : null;
+    jam.en = (arr[1] && Array.isArray(arr[1].items)) ? arr[1] : null;
+    jam.ready = true;
+    jam.built.ko = false; jam.built.en = false;
+    jamAfterLoad();
+  }).catch(e => {
+    console.warn('잠수네 자료를 읽지 못했어요', e);
+    jam.ready = true;
+    jamAfterLoad();
+  });
+  return jam.loadingP;
+}
+function jamAfterLoad(){
+  jamSyncImp();
+  if(view.ymode === 'jam') renderJam();
+}
+
+/* ---------- 파일 읽기·모양 맞추기 ---------- */
+function jamReadFile(file){
+  if(file && typeof file.text === 'function') return file.text();
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result || ''));
+    r.onerror = () => rej(r.error);
+    r.readAsText(file);
+  });
+}
+function jamParse(text){
+  let t = String(text == null ? '' : text);
+  if(t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
+  t = t.trim();
+  try{ return JSON.parse(t); }catch(e){}
+  const i = t.search(/[\[{]/);
+  if(i > 0){
+    try{ return JSON.parse(t.slice(i)); }catch(e){}
+  }
+  throw new Error('json');
+}
+function jamCoerceKo(json){
+  if(!Array.isArray(json)) throw new Error('shape');
+  const out = [];
+  for(let i = 0; i < json.length; i++){
+    const o = json[i];
+    if(!o || typeof o !== 'object') continue;
+    const t = String(o.title == null ? '' : o.title).trim();
+    if(!t) continue;
+    out.push([
+      String(o.stage == null ? '' : o.stage).trim(),
+      Number(o.plan) || 0, Number(o.month) || 0, Number(o.week) || 0,
+      String(o.jlevel == null ? '' : o.jlevel).trim(),
+      String(o.cat == null ? '' : o.cat).trim(),
+      t,
+      String(o.author == null ? '' : o.author).trim(),
+      String(o.orig == null ? '' : o.orig).trim(),
+      (t + ' ' + (o.author || '') + ' ' + (o.orig || '')).toLowerCase(),
+      jamKeysFor(t)
+    ]);
+  }
+  return out;
+}
+function jamCoerceEn(json){
+  if(!Array.isArray(json)) throw new Error('shape');
+  const out = [];
+  for(let i = 0; i < json.length; i++){
+    const o = json[i];
+    if(!o || typeof o !== 'object') continue;
+    const t = String(o.title == null ? '' : o.title).trim();
+    if(!t) continue;
+    const ko = String(o.ko == null ? '' : o.ko).trim();
+    out.push([
+      String(o.cat == null ? '' : o.cat).trim(),
+      String(o.jlevel == null ? '' : o.jlevel).trim(),
+      t,
+      String(o.author == null ? '' : o.author).trim(),
+      ko,
+      o.audio === true,
+      (t + ' ' + (o.author || '') + ' ' + ko).toLowerCase(),
+      jamKeysFor(t)
+    ]);
+  }
+  return out;
+}
+function jamCoerceWorm(json){
+  if(!json || typeof json !== 'object') throw new Error('shape');
+  const rows = [];
+  const take = (arr, lang) => {
+    if(!Array.isArray(arr)) return;
+    for(let i = 0; i < arr.length; i++){
+      const o = arr[i];
+      if(!o || typeof o !== 'object') continue;
+      const title = String(o.title == null ? '' : o.title).trim();
+      if(!title) continue;
+      const no = String(o.no == null ? '' : o.no).trim();
+      rows.push({
+        lang: lang,
+        title: title,
+        author: String(o.author == null ? '' : o.author).trim(),
+        date: jamDateOf(o.date),
+        pages: toPages(o.pages),
+        publisher: String(o.pub == null ? '' : o.pub).trim(),
+        note: [String(o.series || '').trim(), String(o.level || '').trim()].filter(Boolean).join(' · '),
+        imp: 'jamsune_' + lang + '_' + (no || title)
+      });
+    }
+  };
+  take(json.k, 'ko');
+  take(json.e, 'en');
+  return rows;
+}
+
+/* ---------- 파일 고르기·가져오기 ---------- */
+function jamPickFile(kind){
+  const el = $(kind === 'ko' ? '#jamFileKo' : (kind === 'en' ? '#jamFileEn' : '#jamFileWorm'));
+  if(!el) return;
+  el.value = '';
+  el.click();
+}
+function jamImportCatalog(kind, file){
+  toast(kind === 'ko' ? '한글책 플랜을 읽는 중이에요…' : '영어 베스트를 읽는 중이에요…');
+  return jamReadFile(file).then(text => {
+    const json = jamParse(text);
+    const items = kind === 'ko' ? jamCoerceKo(json) : jamCoerceEn(json);
+    if(!items.length) throw new Error('empty');
+    const val = { v: 1, name: String(file && file.name ? file.name : '').slice(0, 80), at: Date.now(), count: items.length, items: items };
+    return jamPut(kind, val).then(ok => {
+      if(kind === 'ko') jam.ko = val; else jam.en = val;
+      jam.built[kind] = false;
+      jam.key[kind] = 0;
+      const f = jam.f[kind];
+      Object.keys(f).forEach(k => { f[k] = ''; });
+      jam.sub = kind;
+      jamSyncImp();
+      if(view.ymode === 'jam') renderJam();
+      toast((kind === 'ko' ? '한글책 플랜 ' : '영어 베스트 ') + fmtNum(items.length) + '권을 불러왔어요' + (ok ? '' : ' · 이번에만 남아요'));
+      return items.length;
+    });
+  }).catch(e => {
+    console.warn(e);
+    toast('파일을 읽지 못했어요. 잠수네에서 받은 .txt 파일인지 확인해 주세요.');
+    return 0;
+  });
+}
+function jamReadWormFile(file){
+  return jamReadFile(file).then(text => {
+    const json = jamParse(text);
+    if(!json || (!Array.isArray(json.k) && !Array.isArray(json.e))) throw new Error('shape');
+    const rows = jamCoerceWorm(json);
+    if(!rows.length) throw new Error('empty');
+    jamWormRows = rows;
+    jamOpenWormSheet(rows);
+    return rows.length;
+  }).catch(e => {
+    console.warn(e);
+    toast('책벌레 기록 파일을 읽지 못했어요. 잠수네에서 받은 .txt 파일인지 확인해 주세요.');
+    return 0;
+  });
+}
+function jamWormKey(b){
+  return b.date + '|' + jamNorm(b.title) + '|' + jamNorm(b.author) + '|' + b.lang;
+}
+function jamWormRowKey(r){
+  return r.date + '|' + jamNorm(r.title) + '|' + jamNorm(r.author) + '|' + r.lang;
+}
+function jamWormPreview(rows){
+  const have = new Set();
+  db.books.forEach(b => { if(b.imp) have.add(b.imp); });
+  const keys = new Set(db.books.map(b => jamWormKey(b)));
+  let add = 0, dup = 0;
+  rows.forEach(r => {
+    const k = jamWormRowKey(r);
+    if(have.has(r.imp) || keys.has(k)){ dup++; return; }
+    add++;
+    have.add(r.imp);
+    keys.add(k);
+  });
+  return { add: add, dup: dup };
+}
+function jamOpenWormSheet(rows){
+  const valid = rows.filter(r => r.date);
+  const skipped = rows.length - valid.length;
+  const pv = jamWormPreview(valid);
+  const koN = valid.filter(r => r.lang === 'ko').length;
+  const enN = valid.filter(r => r.lang === 'en').length;
+  const multi = db.children.length > 1;
+  if(!jamWormKid || !kidById(jamWormKid)){
+    jamWormKid = (view.child !== 'all' && kidById(view.child)) ? view.child : (db.children[0] ? db.children[0].id : '');
+  }
+  const body = $('#jamWormBody');
+  if(!body) return;
+  body.innerHTML =
+    '<div class="jam-dsum">' +
+      '<div><b>' + fmtNum(koN) + '</b><span>한글</span></div>' +
+      '<div><b>' + fmtNum(enN) + '</b><span>영어</span></div>' +
+      '<div><b>' + fmtNum(pv.add) + '</b><span>새로 추가</span></div>' +
+    '</div>' +
+    (pv.dup ? '<p class="sheet-note" style="margin:0 0 12px">이미 들어 있는 ' + fmtNum(pv.dup) + '권은 건너뛰어요.</p>' : '') +
+    (skipped ? '<p class="sheet-note" style="margin:0 0 12px">날짜가 없는 ' + skipped + '권(읽는중·중지)은 넣지 않아요.</p>' : '') +
+    (multi
+      ? '<div class="field"><label>누구 기록으로 넣을까요?</label><div class="kid-pick" id="jamWormKidPick"></div></div>'
+      : '<p class="sheet-note" style="margin:0 0 12px">‘' + escXML(db.children[0] ? db.children[0].name : '우리 아이') + '’ 기록으로 달력에 남아요.</p>') +
+    '<p class="jam-priv">가져온 기록은 이 기기의 달력에만 저장돼요. 되돌리려면 ⋮ → 잠수네 데이터 초기화를 눌러 주세요.</p>';
+  if(multi) jamRenderWormKidPick();
+  const btn = $('#btnJamWormSave');
+  if(btn){
+    btn.textContent = pv.add ? fmtNum(pv.add) + '권 가져오기' : '가져올 기록이 없어요';
+    btn.classList.toggle('hidden', !pv.add);
+  }
+  openSheet('jamWormSheet');
+}
+function jamRenderWormKidPick(){
+  const box = $('#jamWormKidPick');
+  if(!box) return;
+  box.innerHTML = '';
+  db.children.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kp' + (c.id === jamWormKid ? ' on' : '');
+    b.dataset.kid = c.id;
+    if(c.id === jamWormKid){ b.style.background = c.color; b.style.borderColor = c.color; b.style.color = '#fff'; }
+    b.textContent = c.emoji + ' ' + c.name;
+    box.appendChild(b);
+  });
+}
+function jamApplyWorm(rows, kidIds){
+  const have = new Set();
+  db.books.forEach(b => { if(b.imp) have.add(b.imp); });
+  const keyOf = b => jamWormKey(b);
+  const keys = new Set(db.books.map(keyOf));
+  let added = 0, dup = 0;
+  rows.forEach(r => {
+    const k = jamWormRowKey(r);
+    if(have.has(r.imp) || keys.has(k)){ dup++; return; }
+    const rec = sanitize({
+      id: uid(), date: r.date, title: r.title, author: r.author, lang: r.lang,
+      pages: r.pages, cover: '', coverData: '', childIds: kidIds.slice(),
+      publisher: r.publisher, note: r.note, imp: r.imp, createdAt: Date.now()
+    });
+    if(!rec) return;
+    db.books.push(rec);
+    have.add(r.imp);
+    keys.add(keyOf(rec));
+    added++;
+  });
+  save();
+  return { added: added, dup: dup };
+}
+function jamClearAll(){
+  const before = db.books.length;
+  db.books = db.books.filter(b => !(b.imp && b.imp.indexOf('jamsune_') === 0));
+  const removed = before - db.books.length;
+  jam.ko = null; jam.en = null;
+  jam.built.ko = false; jam.built.en = false;
+  jam.key.ko = 0; jam.key.en = 0;
+  jam.f.ko = { stage: '', plan: '', month: '', week: '', read: '', q: '' };
+  jam.f.en = { cat: '', jlevel: '', audio: '', read: '', q: '' };
+  jam.list.ko = { items: [], read: 0, rendered: 0 };
+  jam.list.en = { items: [], read: 0, rendered: 0 };
+  jam.impOpen = true;
+  jamMem = {};
+  jamWormRows = null;
+  closeSheet($('#menuSheet'));
+  save();
+  render();
+  Promise.all([jamDel('ko'), jamDel('en')]).then(() => jamSyncImp());
+  jamSyncImp();
+  toast('잠수네 자료를 지웠어요' + (removed ? ' · 가져온 기록 ' + fmtNum(removed) + '권도 함께' : ''));
+  return removed;
+}
+
+/* ---------- 화면 ---------- */
+function jamPaneOf(kind){ return $(kind === 'ko' ? '#jamKoPane' : '#jamEnPane'); }
+function jamRowHtml(row, label){
+  return '<div class="jam-f"><span class="jam-f-lb">' + label + '</span><div class="jam-chips" data-row="' + row + '"></div></div>';
+}
+function jamBuildPane(kind){
+  const host = jamPaneOf(kind);
+  if(!host) return;
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  const nm = kind === 'ko' ? '한글책 위클리 플랜' : '영어책 베스트';
+  if(!cat){
+    host.innerHTML = '<div class="jam-onb">' +
+      '<h3>' + nm + ' 파일을 한 번만 불러오면 돼요</h3>' +
+      '<p>잠수네에서 받은 파일(.txt)을 고르면 ' + (kind === 'ko' ? '단계·플랜·월·주차' : '분류·단계·음원') + '로 골라 볼 수 있어요.</p>' +
+      '<div class="jam-imp-btns" style="margin-top:12px">' +
+        '<button class="jam-ib" type="button" data-imp="ko">한글책 플랜</button>' +
+        '<button class="jam-ib" type="button" data-imp="en">영어 베스트</button>' +
+        '<button class="jam-ib" type="button" data-imp="worm">책벌레 기록</button>' +
+      '</div>' +
+      '<p class="jam-priv">불러온 파일은 이 기기에만 저장되고 어디로도 보내지 않아요.</p>' +
+      '</div>';
+    jam.built[kind] = false;
+    jam.key[kind] = 0;
+    return;
+  }
+  const rows = kind === 'ko'
+    ? (jamRowHtml('stage', '단계') + jamRowHtml('plan', '플랜') + jamRowHtml('month', '월') + jamRowHtml('week', '주차') + jamRowHtml('read', '읽음 상태'))
+    : (jamRowHtml('cat', '분류') + jamRowHtml('jlevel', '단계') + jamRowHtml('audio', '음원') + jamRowHtml('read', '읽음 상태'));
+  const ph = kind === 'ko' ? '제목·지은이로 찾기' : '제목·지은이·한글제목으로 찾기';
+  host.innerHTML =
+    '<div class="jam-fbar' + (jam.collapsed[kind] ? ' collapsed' : '') + '" id="jamFbar-' + kind + '">' +
+      '<button type="button" class="jam-ftog" id="jamFTog-' + kind + '" aria-expanded="' + (jam.collapsed[kind] ? 'false' : 'true') + '">' +
+        '필터 <b id="jamFSum-' + kind + '">전체</b><span class="chev">▾</span>' +
+      '</button>' +
+    '</div>' +
+    '<div class="jam-filters' + (jam.collapsed[kind] ? ' hide' : '') + '" id="jamFilters-' + kind + '">' + rows + '</div>' +
+    '<div class="jam-search"><input class="input" id="jamQ-' + kind + '" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + ph + '">' +
+    '<button type="button" id="jamQc-' + kind + '" aria-label="검색어 지우기">✕</button></div>' +
+    '<div class="jam-sum" id="jamSum-' + kind + '"></div>' +
+    '<div class="jam-list" id="jamList-' + kind + '"></div>' +
+    '<button class="jam-more hidden" id="jamMore-' + kind + '" type="button"></button>';
+  jam.built[kind] = true;
+  jam.key[kind] = cat.at || 0;
+  const q = $('#jamQ-' + kind);
+  if(q) q.value = jam.f[kind].q || '';
+  jamSyncChips(kind);
+  jamSyncFbar(kind);
+}
+/* 접힌 필터 줄에 지금 고른 조건을 짧게 보여 준다 */
+function jamSyncFbar(kind){
+  const bar = $('#jamFbar-' + kind), sum = $('#jamFSum-' + kind), box = $('#jamFilters-' + kind), tog = $('#jamFTog-' + kind);
+  const f = jam.f[kind];
+  const parts = [];
+  if(kind === 'ko'){
+    if(f.stage) parts.push(f.stage);
+    if(f.plan) parts.push('플랜 ' + f.plan);
+    if(f.month) parts.push(f.month + '월');
+    if(f.week) parts.push(f.week + '주');
+  }else{
+    if(f.cat) parts.push(f.cat);
+    if(f.jlevel) parts.push(f.jlevel);
+    if(f.audio === 'yes') parts.push('음원');
+  }
+  if(f.read === 'yes') parts.push('읽음');
+  else if(f.read === 'no') parts.push('안 읽음');
+  if(f.q) parts.push('‘' + f.q + '’');
+  if(sum) sum.textContent = parts.length ? parts.join(' · ') : '전체';
+  if(bar) bar.classList.toggle('collapsed', !!jam.collapsed[kind]);
+  if(box) box.classList.toggle('hide', !!jam.collapsed[kind]);
+  if(tog) tog.setAttribute('aria-expanded', jam.collapsed[kind] ? 'false' : 'true');
+}
+function jamOpts(kind, row){
+  const out = [{ v: '', t: '전체' }];
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  if(!cat) return out;
+  const items = cat.items;
+  const seen = {};
+  const add = (v, t) => {
+    const k = String(v);
+    if(!k || seen[k]) return;
+    seen[k] = 1;
+    out.push({ v: k, t: t == null ? k : t });
+  };
+  if(kind === 'ko'){
+    if(row === 'stage'){
+      const has = {};
+      items.forEach(it => { has[it[KO_S]] = 1; });
+      JAM_STAGES.forEach(s => { if(has[s]) add(s); });
+    }else if(row === 'plan'){
+      const has = {};
+      items.forEach(it => { has[String(it[KO_P])] = 1; });
+      JAM_PLANS.forEach(p => { if(has[String(p)]) add(String(p), '플랜 ' + p); });
+    }else if(row === 'month'){
+      const has = {};
+      items.forEach(it => { has[String(it[KO_M])] = 1; });
+      for(let m = 1; m <= 12; m++){ if(has[String(m)]) add(String(m), m + '월'); }
+    }else if(row === 'week'){
+      const has = {};
+      items.forEach(it => { has[String(it[KO_W])] = 1; });
+      for(let w = 1; w <= 4; w++){ if(has[String(w)]) add(String(w), w + '주'); }
+    }else if(row === 'read'){
+      add('no', '안 읽음');
+      add('yes', '읽음');
+    }
+  }else{
+    if(row === 'cat'){
+      const has = {};
+      items.forEach(it => { has[it[EN_C]] = 1; });
+      JAM_EN_CATS.forEach(c => { if(has[c]) add(c); });
+    }else if(row === 'jlevel'){
+      const has = {};
+      items.forEach(it => { has[it[EN_L]] = 1; });
+      Object.keys(has).sort((a, b) => jamLvNum(a) - jamLvNum(b)).forEach(l => add(l));
+    }else if(row === 'audio'){
+      add('yes', '음원 있음');
+    }else if(row === 'read'){
+      add('no', '안 읽음');
+      add('yes', '읽음');
+    }
+  }
+  return out;
+}
+function jamSyncChips(kind){
+  const host = jamPaneOf(kind);
+  if(!host) return;
+  const f = jam.f[kind];
+  $$('.jam-chips[data-row]', host).forEach(box => {
+    const row = box.dataset.row;
+    const sl = box.scrollLeft;
+    const cur = String(f[row] == null ? '' : f[row]);
+    let h = '';
+    jamOpts(kind, row).forEach(o => {
+      h += '<button type="button" class="jam-chip' + (row === 'read' ? ' read' : '') + (String(o.v) === cur ? ' on' : '') +
+        '" data-row="' + row + '" data-v="' + escXML(o.v) + '">' + escXML(o.t) + '</button>';
+    });
+    box.innerHTML = h;
+    box.scrollLeft = sl;
+  });
+  jamSyncFbar(kind);
+}
+function jamFilter(kind){
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  const out = { items: [], read: 0, rendered: 0 };
+  if(!cat) return out;
+  const f = jam.f[kind];
+  const q = String(f.q || '').trim().toLowerCase();
+  const idx = jamReadIdx();
+  const items = cat.items;
+  for(let i = 0; i < items.length; i++){
+    const it = items[i];
+    if(kind === 'ko'){
+      if(f.stage && it[KO_S] !== f.stage) continue;
+      if(f.plan && String(it[KO_P]) !== f.plan) continue;
+      if(f.month && String(it[KO_M]) !== f.month) continue;
+      if(f.week && String(it[KO_W]) !== f.week) continue;
+      if(q && String(it[KO_Q]).indexOf(q) < 0) continue;
+    }else{
+      if(f.cat && it[EN_C] !== f.cat) continue;
+      if(f.jlevel && it[EN_L] !== f.jlevel) continue;
+      if(f.audio === 'yes' && it[EN_AU] !== true) continue;
+      if(q && String(it[EN_Q]).indexOf(q) < 0) continue;
+    }
+    const a = jamItemKeys(kind, it);
+    let rd = false;
+    for(let k = 0; k < a.length; k++){ if(idx.has(a[k])){ rd = true; break; } }
+    if(f.read === 'yes' && !rd) continue;
+    if(f.read === 'no' && rd) continue;
+    if(rd) out.read++;
+    out.items.push(it);
+  }
+  return out;
+}
+function jamItemHtml(kind, it, rd, wish){
+  const title = it[kind === 'ko' ? KO_T : EN_T];
+  const author = it[kind === 'ko' ? KO_A : EN_A];
+  const lv = it[kind === 'ko' ? KO_L : EN_L];
+  const cg = it[kind === 'ko' ? KO_C : EN_C];
+  let h = '<div class="jam-row1"><span class="jam-lv">' + escXML(lv) + '</span>' +
+    '<span class="jam-cat">' + escXML(cg) + '</span>';
+  if(kind === 'en' && it[EN_AU] === true) h += '<span class="jam-audio">🔊 음원</span>';
+  if(rd) h += '<span class="jam-readb">✅ 읽음</span>';
+  h += '</div>';
+  h += '<p class="jam-ti">' + escXML(title) + '</p>';
+  if(kind === 'ko'){
+    const orig = it[KO_O];
+    h += '<p class="jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (orig ? ' <i>· 원제 ' + escXML(orig) + '</i>' : '') + '</p>';
+    h += '<p class="jam-mt">' + escXML(it[KO_S]) + ' · 플랜 ' + it[KO_P] + ' · ' + it[KO_M] + '월 ' + it[KO_W] + '주</p>';
+  }else{
+    const ko = it[EN_K];
+    h += '<p class="jam-au">' + (author ? escXML(author) : '지은이 정보 없음') + (ko ? ' <i>· ' + escXML(ko) + '</i>' : '') + '</p>';
+  }
+  h += '<div class="jam-acts">' +
+    '<button type="button" class="rd" data-act="read">+ 읽었어요</button>' +
+    '<button type="button" class="ws' + (wish ? ' on' : '') + '" data-act="wish">' + (wish ? '♥ 읽을 목록' : '♡ 읽을 목록') + '</button>' +
+    '</div>';
+  return h;
+}
+function jamSyncSum(kind){
+  const st = jam.list[kind];
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  const sumEl = $('#jamSum-' + kind);
+  const badge = $('#jamBadge');
+  if(badge && jam.sub === kind) badge.textContent = fmtNum(st.items.length) + '권';
+  if(!sumEl || !cat) return;
+  const total = cat.count || cat.items.length;
+  let h = '보이는 책 <b>' + fmtNum(st.items.length) + '</b>권' +
+    ' <span class="sep">·</span> 이 중 <span class="rd">읽음 ' + fmtNum(st.read) + '권</span>';
+  if(st.items.length !== total) h += ' <span class="sep">·</span> 전체 ' + fmtNum(total) + '권';
+  sumEl.innerHTML = h;
+}
+function jamRenderList(kind, reset){
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  const listEl = $('#jamList-' + kind), moreEl = $('#jamMore-' + kind);
+  if(!cat || !listEl) return;
+  const st = jam.list[kind];
+  if(reset){
+    const next = jamFilter(kind);
+    st.items = next.items;
+    st.read = next.read;
+    st.rendered = 0;
+    listEl.innerHTML = '';
+  }
+  const end = Math.min(st.items.length, st.rendered + JAM_PAGE);
+  if(end > st.rendered){
+    const frag = document.createDocumentFragment();
+    const wish = jamWishSet();
+    for(let i = st.rendered; i < end; i++){
+      const it = st.items[i];
+      const rd = jamIsRead(kind, it);
+      const el = document.createElement('div');
+      el.className = 'jam-item' + (rd ? ' read' : '');
+      el.dataset.i = String(i);
+      el.innerHTML = jamItemHtml(kind, it, rd, wish.has((kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(it[kind === 'ko' ? KO_T : EN_T])));
+      frag.appendChild(el);
+    }
+    listEl.appendChild(frag);
+    st.rendered = end;
+  }
+  if(!st.items.length && !listEl.querySelector('.jam-empty')){
+    listEl.innerHTML = '<p class="jam-empty">조건에 맞는 책이 없어요.<br>위의 조건을 하나씩 풀어 보세요.</p>';
+  }
+  if(moreEl){
+    const remain = st.items.length - st.rendered;
+    moreEl.classList.toggle('hidden', remain <= 0);
+    moreEl.textContent = '더 보기 · 남은 ' + fmtNum(remain) + '권';
+  }
+  jamSyncSum(kind);
+}
+function jamCountRead(kind){
+  const st = jam.list[kind];
+  const idx = jamReadIdx();
+  let n = 0;
+  for(let i = 0; i < st.items.length; i++){
+    const it = st.items[i];
+    const keys = jamItemKeys(kind, it);
+    for(let k = 0; k < keys.length; k++){
+      if(idx.has(keys[k])){ n++; break; }
+    }
+  }
+  st.read = n;
+}
+function jamSetWishDom(el, on){
+  if(!el) return;
+  const b = el.querySelector('button[data-act="wish"]');
+  if(!b) return;
+  b.classList.toggle('on', !!on);
+  b.textContent = on ? '♥ 읽을 목록' : '♡ 읽을 목록';
+}
+function jamToggleWish(kind, it, el){
+  const title = it[kind === 'ko' ? KO_T : EN_T];
+  const author = it[kind === 'ko' ? KO_A : EN_A];
+  const lang = kind === 'en' ? 'en' : 'ko';
+  const o = { title: title, author: author, lang: lang };
+  const hit = wishFind(o);
+  if(hit){
+    const back = removeFromWish(hit.id);
+    jamSetWishDom(el, false);
+    toast('읽을 목록에서 뺐어요', '되돌리기', () => {
+      if(back) db.wishlist.splice(Math.min(back.index, db.wishlist.length), 0, back.item);
+      save();
+      jamSetWishDom(el, true);
+    });
+  }else{
+    const w = addToWish(o);
+    if(!w) return;
+    jamSetWishDom(el, true);
+    toast('읽을 목록에 담았어요', '되돌리기', () => {
+      removeFromWish(w.id);
+      jamSetWishDom(el, false);
+    });
+  }
+}
+function jamLogRead(kind, it, el){
+  const title = String(it[kind === 'ko' ? KO_T : EN_T] || '').trim();
+  if(!title) return;
+  const author = String(it[kind === 'ko' ? KO_A : EN_A] || '').trim();
+  const lang = kind === 'en' ? 'en' : 'ko';
+  const kids = (view.child !== 'all' && kidById(view.child)) ? [view.child] : (db.children[0] ? [db.children[0].id] : []);
+  if(!kids.length){ toast('아이를 먼저 등록해 주세요'); return; }
+  const rec = sanitize({
+    id: uid(), date: todayISO, title: title, author: author, lang: lang,
+    pages: null, cover: '', coverData: '', childIds: kids, createdAt: Date.now()
+  });
+  if(!rec){ toast('기록하지 못했어요'); return; }
+  db.books.push(rec);
+  save();
+  if(jam.f[kind].read === ''){
+    if(el){
+      el.classList.add('read');
+      const r1 = el.querySelector('.jam-row1');
+      if(r1 && !r1.querySelector('.jam-readb')){
+        const b = document.createElement('span');
+        b.className = 'jam-readb';
+        b.textContent = '✅ 읽음';
+        r1.appendChild(b);
+      }
+    }
+    jamCountRead(kind);
+    jamSyncSum(kind);
+  }else{
+    jamRenderList(kind, true);
+  }
+  const md = todayISO.slice(5, 7).replace(/^0/, '') + '월 ' + todayISO.slice(8, 10).replace(/^0/, '') + '일';
+  toast('오늘(' + md + ') 기록에 담았어요', '되돌리기', () => {
+    const i = db.books.findIndex(b => b.id === rec.id);
+    if(i >= 0) db.books.splice(i, 1);
+    save();
+    render();
+  });
+}
+function jamSyncImp(){
+  const ko = jam.ko, en = jam.en;
+  const sk = $('#jamStKo'), se = $('#jamStEn');
+  if(sk){
+    sk.textContent = ko ? fmtNum(ko.count) + '권' : '없음';
+    sk.parentElement.classList.toggle('done', !!ko);
+  }
+  if(se){
+    se.textContent = en ? fmtNum(en.count) + '권' : '없음';
+    se.parentElement.classList.toggle('done', !!en);
+  }
+  const txt = (ko ? '한글 ' + fmtNum(ko.count) + '권' : '한글 없음') + ' · ' + (en ? '영어 ' + fmtNum(en.count) + '권' : '영어 없음');
+  const st = $('#jamImpSt');
+  if(st) st.textContent = txt;
+  const ms = $('#menuJamSt');
+  if(ms){
+    let w = 0;
+    db.books.forEach(b => { if(b.imp && b.imp.indexOf('jamsune_') === 0) w++; });
+    ms.textContent = txt + ' · 책벌레 기록 ' + fmtNum(w) + '권';
+  }
+  if(!ko && !en) jam.impOpen = true;
+  /* 아직 아무것도 없을 때는 탭 안 안내 카드가 불러오기 버튼을 대신한다 */
+  const box = $('#jamImp');
+  if(box) box.classList.toggle('hidden', !ko && !en);
+  jamSyncImpOpen();
+}
+function jamSyncImpOpen(){
+  const box = $('#jamImp'), body = $('#jamImpBody'), btn = $('#jamImpToggle');
+  if(box) box.classList.toggle('open', jam.impOpen);
+  if(body) body.classList.toggle('hidden', !jam.impOpen);
+  if(btn) btn.setAttribute('aria-expanded', jam.impOpen ? 'true' : 'false');
+}
+function renderJam(){
+  $$('#jamSeg button').forEach(b => {
+    const on = b.dataset.jam === jam.sub;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const kind = jam.sub === 'en' ? 'en' : 'ko';
+  const kp = $('#jamKoPane'), ep = $('#jamEnPane');
+  if(kp) kp.classList.toggle('hidden', kind !== 'ko');
+  if(ep) ep.classList.toggle('hidden', kind !== 'en');
+  jamSyncImp();
+  if(!jam.ready){
+    const host = jamPaneOf(kind);
+    if(host) host.innerHTML = '<p class="jam-empty">자료를 준비하고 있어요…</p>';
+    jamInit();
+    return;
+  }
+  const cat = kind === 'ko' ? jam.ko : jam.en;
+  if(!cat || !jam.built[kind] || jam.key[kind] !== (cat.at || 0)) jamBuildPane(kind);
+  if(!cat){
+    const bd = $('#jamBadge');
+    if(bd) bd.textContent = '–';
+    return;
+  }
+  jamSyncChips(kind);
+  jamRenderList(kind, true);
+}
+
+/* ---------- 잠수네 이벤트 ---------- */
+$('#jamImpToggle').onclick = () => {
+  jam.impOpen = !jam.impOpen;
+  jamSyncImpOpen();
+};
+$('#jamSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-jam]');
+  if(!b) return;
+  jam.sub = b.dataset.jam === 'en' ? 'en' : 'ko';
+  renderJam();
+});
+$('#jamCard').addEventListener('input', e => {
+  const el = e.target;
+  if(!el || !el.id || el.id.indexOf('jamQ-') !== 0) return;
+  const kind = el.id === 'jamQ-en' ? 'en' : 'ko';
+  jam.f[kind].q = String(el.value || '');
+  jamSyncFbar(kind);
+  jamRenderList(kind, true);
+});
+$('#jamCard').addEventListener('click', e => {
+  const imp = e.target.closest('[data-imp]');
+  if(imp){ jamPickFile(imp.dataset.imp); return; }
+  const clr = e.target.closest('.jam-search button');
+  if(clr){
+    const kind = clr.id === 'jamQc-en' ? 'en' : 'ko';
+    const q = $('#jamQ-' + kind);
+    if(q) q.value = '';
+    jam.f[kind].q = '';
+    jamSyncFbar(kind);
+    jamRenderList(kind, true);
+    return;
+  }
+  const ftog = e.target.closest('.jam-ftog');
+  if(ftog){
+    const kind = ftog.id === 'jamFTog-en' ? 'en' : 'ko';
+    jam.collapsed[kind] = !jam.collapsed[kind];
+    jamSyncFbar(kind);
+    return;
+  }
+  const more = e.target.closest('.jam-more');
+  if(more){
+    const kind = more.id === 'jamMore-en' ? 'en' : 'ko';
+    jamRenderList(kind, false);
+    return;
+  }
+  const chip = e.target.closest('.jam-chip[data-row]');
+  if(chip){
+    const kind = chip.closest('#jamEnPane') ? 'en' : 'ko';
+    jam.f[kind][chip.dataset.row] = String(chip.dataset.v || '');
+    jamSyncChips(kind);
+    jamRenderList(kind, true);
+    return;
+  }
+  const act = e.target.closest('button[data-act]');
+  if(act){
+    const kind = act.closest('#jamEnPane') ? 'en' : 'ko';
+    const itemEl = act.closest('.jam-item');
+    if(!itemEl) return;
+    const it = jam.list[kind].items[Number(itemEl.dataset.i)];
+    if(!it) return;
+    if(act.dataset.act === 'read') jamLogRead(kind, it, itemEl);
+    else if(act.dataset.act === 'wish') jamToggleWish(kind, it, itemEl);
+  }
+});
+$('#jamFileKo').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(f) jamImportCatalog('ko', f);
+});
+$('#jamFileEn').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(f) jamImportCatalog('en', f);
+});
+$('#jamFileWorm').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(f) jamReadWormFile(f);
+});
+$('#menuJamKo').onclick = () => jamPickFile('ko');
+$('#menuJamEn').onclick = () => jamPickFile('en');
+$('#menuJamWorm').onclick = () => jamPickFile('worm');
+$('#menuJamReset').onclick = () => {
+  const el = $('#menuJamReset');
+  if(!jamResetArm){
+    jamResetArm = true;
+    if(el) el.textContent = '정말 지울까요? 한 번 더 눌러 주세요';
+    setTimeout(() => { jamResetArm = false; const n = $('#menuJamReset'); if(n) n.textContent = '잠수네 데이터 초기화'; }, 5000);
+    return;
+  }
+  jamResetArm = false;
+  if(el) el.textContent = '잠수네 데이터 초기화';
+  jamClearAll();
+};
+$('#jamWormBody').addEventListener('click', e => {
+  const b = e.target.closest('.kp[data-kid]');
+  if(!b) return;
+  jamWormKid = b.dataset.kid;
+  jamRenderWormKidPick();
+});
+$('#btnJamWormSave').onclick = () => {
+  if(!jamWormRows) return;
+  const rows = jamWormRows.filter(r => r.date);
+  const kids = (jamWormKid && kidById(jamWormKid)) ? [jamWormKid] : (db.children[0] ? [db.children[0].id] : []);
+  if(!kids.length){ toast('아이를 먼저 등록해 주세요'); return; }
+  const r = jamApplyWorm(rows, kids);
+  jamWormRows = null;
+  closeSheet($('#jamWormSheet'));
+  render();
+  toast(fmtNum(r.added) + '권을 달력에 담았어요' + (r.dup ? ' · 이미 있던 ' + fmtNum(r.dup) + '권은 건너뜀' : ''));
+};
+
 /* ---------- 시작 ---------- */
 load();
 const migrated = ensureChildren();
@@ -6041,7 +7132,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.4',
+  version: '2.5',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -6158,6 +7249,58 @@ window.__rc = {
       view.yunit = u === 'pages' ? 'pages' : 'count';
       if(view.ymode === 'year') render();
     }
+  },
+  /* v2.5 잠수네 탭·기기 저장 확인용 */
+  jamApi: {
+    state: () => ({
+      ready: jam.ready, sub: jam.sub, idbOff: jamIdbOff,
+      ko: jam.ko ? jam.ko.count : 0, en: jam.en ? jam.en.count : 0,
+      koShown: jam.list.ko.items.length, enShown: jam.list.en.items.length,
+      koRead: jam.list.ko.read, enRead: jam.list.en.read,
+      koRendered: jam.list.ko.rendered, enRendered: jam.list.en.rendered,
+      f: JSON.parse(JSON.stringify(jam.f))
+    }),
+    init: () => jamInit(),
+    setSub: (s) => { jam.sub = s === 'en' ? 'en' : 'ko'; if(view.ymode === 'jam') renderJam(); },
+    setF: (kind, k, v) => {
+      jam.f[kind][k] = (v == null ? '' : String(v));
+      jamSyncChips(kind); jamRenderList(kind, true);
+      return jam.list[kind].items.length;
+    },
+    setQ: (kind, q) => {
+      jam.f[kind].q = String(q || '');
+      const el = $('#jamQ-' + kind);
+      if(el) el.value = jam.f[kind].q;
+      jamSyncFbar(kind);
+      jamRenderList(kind, true);
+      return jam.list[kind].items.length;
+    },
+    collapse: (kind, on) => { jam.collapsed[kind] = !!on; jamSyncFbar(kind); },
+    more: (kind) => { jamRenderList(kind, false); return jam.list[kind].rendered; },
+    titles: (kind) => jam.list[kind].items.slice(0, jam.list[kind].rendered).map(it => it[kind === 'ko' ? KO_T : EN_T]),
+    readOf: (kind, title) => {
+      const it = jam.list[kind].items.find(x => x[kind === 'ko' ? KO_T : EN_T] === title);
+      return it ? jamIsRead(kind, it) : null;
+    },
+    importCatalog: (kind, file) => jamImportCatalog(kind, file),
+    openWorm: (file) => jamReadWormFile(file),
+    saveWorm: () => { const el = $('#btnJamWormSave'); if(el) el.click(); },
+    pickFile: (kind) => jamPickFile(kind),
+    clear: () => jamClearAll(),
+    norm: (s) => jamNorm(s),
+    dbg: (kind, i) => {
+      const it = jam.list[kind].items[i || 0];
+      const idx = jamReadIdx();
+      return {
+        item: it ? it.slice(0, -1).concat([it[it.length - 1]]) : null,
+        size: idx.size,
+        keys: it ? jamItemKeys(kind, it) : null,
+        read: it ? jamIsRead(kind, it) : null,
+        title: it ? it[kind === 'ko' ? KO_T : EN_T] : null
+      };
+    },
+    domCount: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item').length,
+    domReadTitles: (kind) => $$('#jamList-' + (kind === 'en' ? 'en' : 'ko') + ' .jam-item.read .jam-ti').map(e => e.textContent)
   },
   /* v2.0 국내 도서 검색 키(카카오) 확인용 */
   keyApi: {
