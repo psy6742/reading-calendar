@@ -273,8 +273,11 @@ textarea.input{resize:vertical;min-height:60px}
 .scan-head{display:flex;align-items:center;gap:8px;padding:1px 2px 10px}
 .scan-head b{flex:1;font-size:13.5px;font-weight:800;letter-spacing:-.2px}
 .scan-x{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
-.scan-stage{position:relative;border-radius:16px;overflow:hidden;background:#0A0E14;aspect-ratio:4/3}
-.scan-stage video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-stage{position:relative;border-radius:16px;overflow:hidden;background:#0A0E14;aspect-ratio:4/3;touch-action:manipulation}
+.scan-stage video{width:100%;height:100%;object-fit:cover;display:block;transform-origin:50% 50%;transition:transform .18s ease}
+.scan-stage.tapped{animation:scanpulse .34s ease}
+@keyframes scanpulse{0%{box-shadow:0 0 0 0 rgba(140,220,255,0)}45%{box-shadow:0 0 0 4px rgba(140,220,255,.45)}100%{box-shadow:0 0 0 0 rgba(140,220,255,0)}}
+.scan-detect{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
 .scan-frame{position:absolute;left:7%;right:7%;top:33%;height:34%;border-radius:10px;border:2px solid rgba(255,255,255,.92);box-shadow:0 0 0 300px rgba(8,12,18,.42)}
 .scan-frame::after{content:'';position:absolute;inset:0;border-radius:8px;box-shadow:0 0 12px rgba(140,220,255,.35) inset}
 .scan-laser{position:absolute;left:9%;right:9%;top:50%;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(255,120,120,0),#FF7A7A,rgba(255,120,120,0));animation:scanmove 1.9s ease-in-out infinite}
@@ -284,6 +287,11 @@ textarea.input{resize:vertical;min-height:60px}
 .scan-status.err{color:#FFB6A8}
 .scan-torch{background:rgba(255,255,255,.13);color:#fff;border-radius:11px;padding:8px 11px;font-size:11.5px;font-weight:800;white-space:nowrap}
 .scan-torch.on{background:#FFE9B5;color:#4A3A10}
+.scan-zoom{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 2px 0}
+.scan-zoom-btns{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.scan-zbtn{min-width:38px;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.13);color:#fff;font-size:11.5px;font-weight:800;letter-spacing:-.2px;line-height:1.2}
+.scan-zbtn.active{background:#FFE9B5;color:#4A3A10}
+.scan-zoom-tag{margin-left:auto;font-size:10px;font-weight:700;color:#8C97A8;white-space:nowrap;min-width:0}
 .btn{
   border-radius:14px;padding:12px 16px;font-size:14px;font-weight:800;
   background:#F4F1E8;color:var(--ink);white-space:nowrap;
@@ -754,8 +762,18 @@ textarea.input{resize:vertical;min-height:60px}
     </div>
     <div class="scan-stage" id="scanStage">
       <video id="scanVideo" playsinline muted autoplay></video>
+      <canvas class="scan-detect" id="scanDetect" aria-hidden="true"></canvas>
       <div class="scan-frame"></div>
       <div class="scan-laser"></div>
+    </div>
+    <div class="scan-zoom">
+      <div class="scan-zoom-btns" id="scanZoom" role="group" aria-label="확대 배율">
+        <button class="scan-zbtn" data-zoom="1" type="button" aria-pressed="false">1x</button>
+        <button class="scan-zbtn" data-zoom="2" type="button" aria-pressed="false">2x</button>
+        <button class="scan-zbtn active" data-zoom="3" type="button" aria-pressed="true">3x</button>
+        <button class="scan-zbtn" data-zoom="5" type="button" aria-pressed="false">5x</button>
+      </div>
+      <span class="scan-zoom-tag" id="scanZoomTag"></span>
     </div>
     <div class="scan-foot">
       <div class="scan-status" id="scanStatus">카메라를 준비하는 중…</div>
@@ -4275,7 +4293,134 @@ async function runIsbnLookup(raw){
 const SCAN_UNSUPPORTED = '이 브라우저(아이폰 사파리 등)에서는 카메라 바코드 인식을 지원하지 않아 안드로이드 크롬에서 이용해 주세요. 책 제목으로 검색하거나 ISBN 숫자를 입력해 주세요.';
 const SCAN_NO_CAMERA = '카메라를 켜지 못했어요. 주소창의 카메라 권한을 허용한 뒤 다시 시도해 주세요.';
 const SCAN_NO_DETECTOR = '이 브라우저에서는 카메라 바코드 인식을 쓸 수 없어요. 책 제목이나 ISBN 숫자로 찾아 주세요.';
-const scanState = { stream: null, detector: null, running: false, timer: 0, busy: false, torch: false, torchSupported: false, otherHint: 0 };
+const scanState = { stream: null, detector: null, running: false, timer: 0, busy: false, torch: false, torchSupported: false, otherHint: 0,
+  zoom: 3, hwZoom: 1, digitalZoom: 1, zoomRange: null, focusSupported: false, canvas: null, tick: 0, flashTimer: 0 };
+const SCAN_ZOOM_DEFAULT = 3;
+const SCAN_ZOOM_MAX = 5;
+const SCAN_TIP = '바코드를 조금 떨어뜨려 네모 안에 꽉 차게 맞춰 보세요';
+
+function scanNum(n){ return (Math.round(Number(n) * 10) / 10).toString(); }
+function scanClampNum(n, a, b){ return Math.min(Math.max(n, a), b); }
+/* 확대 배율 버튼과 미리보기(화면 확대)를 현재 상태에 맞춘다 */
+function updateScanZoomUI(){
+  $$('#scanZoom .scan-zbtn').forEach(b => {
+    const on = Number(b.dataset.zoom) === scanState.zoom;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const dz = scanState.digitalZoom > 1.001 ? scanState.digitalZoom : 1;
+  const video = $('#scanVideo');
+  if(video) video.style.transform = dz > 1.001 ? 'scale(' + dz + ')' : '';
+  const tag = $('#scanZoomTag');
+  if(tag){
+    let t = '';
+    if(scanState.zoom > 1){
+      if(scanState.hwZoom > 1.001 && dz > 1.001) t = '기기 ' + scanNum(scanState.hwZoom) + '× + 화면 ' + scanNum(dz) + '×';
+      else if(scanState.hwZoom > 1.001) t = '기기 줌';
+      else t = '화면 확대';
+    }
+    tag.textContent = t;
+  }
+}
+/* 1x·2x·3x·5x: 기기(하드웨어) 줌을 먼저 당기고, 모자라는 만큼만 화면을 당긴다 */
+async function applyScanZoom(level){
+  const want = scanClampNum(Number(level) || 1, 1, SCAN_ZOOM_MAX);
+  scanState.zoom = want;
+  const track = scanTrack();
+  const range = scanState.zoomRange;
+  let hw = 1;
+  if(track && range && range.max > range.min + 0.01){
+    const target = scanClampNum(want, range.min, range.max);
+    const adv = [{ zoom: target }];
+    if(scanState.focusSupported) adv.push({ focusMode: 'continuous' });
+    try{ await track.applyConstraints({ advanced: adv }); hw = target; }
+    catch(e){
+      try{ await track.applyConstraints({ advanced: [{ zoom: target }] }); hw = target; }
+      catch(e2){ hw = 1; }
+    }
+  }
+  scanState.hwZoom = hw;
+  let dz = want / hw;
+  if(!isFinite(dz) || dz < 1) dz = 1;
+  if(dz > SCAN_ZOOM_MAX) dz = SCAN_ZOOM_MAX;
+  scanState.digitalZoom = dz;
+  updateScanZoomUI();
+  return { zoom: want, hw: hw, digital: dz };
+}
+/* 안내 네모(가운데) 안쪽을 카메라 원본 해상도 기준으로 잘라 낸 영역 */
+function scanRoiRect(){
+  const video = $('#scanVideo');
+  if(!video) return null;
+  const vw = video.videoWidth, vh = video.videoHeight, ew = video.clientWidth, eh = video.clientHeight;
+  if(!vw || !vh || !ew || !eh) return null;
+  const z = scanState.digitalZoom > 1 ? scanState.digitalZoom : 1;
+  const scale = Math.max(ew / vw, eh / vh);            /* object-fit: cover */
+  const ox = (ew - vw * scale) / 2, oy = (eh - vh * scale) / 2;
+  const bx = ew * 0.07, bw = ew * 0.86, by = eh * 0.33, bh = eh * 0.34;
+  const x1 = (ew / 2 + (bx - ew / 2) / z - ox) / scale;
+  const x2 = (ew / 2 + (bx + bw - ew / 2) / z - ox) / scale;
+  const y1 = (eh / 2 + (by - eh / 2) / z - oy) / scale;
+  const y2 = (eh / 2 + (by + bh - eh / 2) / z - oy) / scale;
+  const sx = scanClampNum(x1, 0, vw), sy = scanClampNum(y1, 0, vh);
+  const sw = scanClampNum(x2, 0, vw) - sx, sh = scanClampNum(y2, 0, vh) - sy;
+  if(sw < 8 || sh < 8) return null;
+  return { sx: sx, sy: sy, sw: sw, sh: sh, vw: vw, vh: vh };
+}
+/* 크롭한 네모 영역을 감지용 캔버스에 그려 준다(너무 작으면 조금 키워 또렷하게) */
+function scanDrawRoi(){
+  const rect = scanRoiRect();
+  const video = $('#scanVideo');
+  if(!rect || !video) return null;
+  let c = scanState.canvas;
+  if(!c){
+    c = $('#scanDetect') || document.createElement('canvas');
+    c.className = 'scan-detect';
+    if(!c.parentNode){ const stage = $('#scanStage'); if(stage) stage.appendChild(c); }
+    scanState.canvas = c;
+  }
+  let w = rect.sw, h = rect.sh;
+  if(w > 1100){ const k = 1100 / w; w = 1100; h = h * k; }
+  else if(w < 420){ const k = Math.min(420 / w, 2.5); w = w * k; h = h * k; }
+  const cw = Math.max(16, Math.round(w)), ch = Math.max(16, Math.round(h));
+  if(c.width !== cw) c.width = cw;
+  if(c.height !== ch) c.height = ch;
+  try{
+    const ctx = c.getContext('2d');
+    if(!ctx) return null;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, cw, ch);
+  }catch(e){ return null; }
+  return c;
+}
+function flashScanStatus(msg, ms){
+  clearTimeout(scanState.flashTimer);
+  setScanStatus(msg, false);
+  scanState.flashTimer = setTimeout(() => {
+    scanState.flashTimer = 0;
+    if(scanState.running) setScanStatus('바코드를 찾는 중\u2026', false);
+  }, ms || 2200);
+}
+/* 미리보기를 톡 누르면 초점을 다시 잡고, 초점 제어가 없는 기기에는 안내를 띄운다 */
+async function retapScanFocus(){
+  if(!scanState.running) return false;
+  const stage = $('#scanStage');
+  if(stage){
+    stage.classList.remove('tapped');
+    void stage.offsetWidth;
+    stage.classList.add('tapped');
+    setTimeout(() => { if(stage) stage.classList.remove('tapped'); }, 400);
+  }
+  const track = scanTrack();
+  if(track && scanState.focusSupported){
+    try{
+      await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      flashScanStatus('초점을 다시 맞추는 중\u2026', 1400);
+      return true;
+    }catch(e){ /* 아래 안내로 넘어간다 */ }
+  }
+  flashScanStatus(SCAN_TIP, 2600);
+  return false;
+}
 
 function scanSupported(){
   return typeof window.BarcodeDetector === 'function' && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -4354,10 +4499,17 @@ function scanTick(){
   const video = $('#scanVideo');
   const detector = scanState.detector;
   if(!video || !detector){ scheduleScan(); return; }
-  if(video.readyState >= 2 && !scanState.busy){
+  if(video.readyState >= 2 && video.videoWidth && !scanState.busy){
     scanState.busy = true;
+    scanState.tick++;
+    /* 네모 안쪽(크롭)을 우선 보고, 세 번에 한 번은 전체 화면도 함께 본다 */
+    let src = video;
+    if(scanState.tick % 3 !== 0){
+      const roi = scanDrawRoi();
+      if(roi) src = roi;
+    }
     Promise.resolve()
-      .then(() => detector.detect(video))
+      .then(() => detector.detect(src))
       .then(codes => {
         scanState.busy = false;
         if(!scanState.running) return;
@@ -4383,6 +4535,18 @@ function closeScan(){
   scanState.busy = false;
   clearTimeout(scanState.timer);
   scanState.timer = 0;
+  clearTimeout(scanState.flashTimer);
+  scanState.flashTimer = 0;
+  scanState.zoom = SCAN_ZOOM_DEFAULT;
+  scanState.hwZoom = 1;
+  scanState.digitalZoom = 1;
+  scanState.zoomRange = null;
+  scanState.focusSupported = false;
+  scanState.tick = 0;
+  const video0 = $('#scanVideo');
+  if(video0){ try{ video0.style.transform = ''; }catch(e){} }
+  const tag0 = $('#scanZoomTag');
+  if(tag0) tag0.textContent = '';
   const video = $('#scanVideo');
   if(video){
     try{ video.pause(); }catch(e){}
@@ -4422,11 +4586,18 @@ async function openScan(){
   scanState.torch = false;
   scanState.torchSupported = false;
   scanState.otherHint = 0;
+  scanState.zoom = SCAN_ZOOM_DEFAULT;
+  scanState.hwZoom = 1;
+  scanState.digitalZoom = 1;
+  scanState.zoomRange = null;
+  scanState.focusSupported = false;
+  scanState.tick = 0;
+  updateScanZoomUI();
   updateTorchUI();
   let stream = null;
   try{
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
       audio: false
     });
   }catch(err){
@@ -4451,9 +4622,21 @@ async function openScan(){
     const track = (stream.getVideoTracks && stream.getVideoTracks()[0]) || null;
     caps = (track && track.getCapabilities) ? (track.getCapabilities() || {}) : {};
   }catch(e){ caps = {}; }
-  scanState.torchSupported = !!caps.torch;
+  const fmodes = (caps && Array.isArray(caps.focusMode)) ? caps.focusMode : [];
+  scanState.focusSupported = fmodes.indexOf('continuous') >= 0;
+  scanState.torchSupported = !!(caps && caps.torch);
+  const zr = caps && caps.zoom;
+  scanState.zoomRange = (zr && typeof zr.min === 'number' && typeof zr.max === 'number') ? { min: zr.min, max: zr.max } : null;
   updateTorchUI();
+  /* 초점: 고정 초점 기기에서 초점이 링거리지 않도록 연속 자동초점을 요청 */
+  const track0 = scanTrack();
+  if(track0 && scanState.focusSupported){
+    try{ await track0.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); }catch(e){}
+  }
   setScanStatus('바코드를 찾는 중\u2026', false);
+  /* 기본 3배: 기기 줌 + 화면 확대를 합쳐서 당긴다 */
+  await applyScanZoom(SCAN_ZOOM_DEFAULT);
+  if(!scanState.focusSupported) flashScanStatus(SCAN_TIP, 3200);
   scheduleScan();
   return true;
 }
@@ -4467,6 +4650,16 @@ async function onScanIsbn(isbn){
 $('#btnScan').onclick = () => { openScan(); };
 $('#btnScanClose').onclick = () => closeScan();
 $('#btnTorch').onclick = () => { if(scanState.running) setScanTorch(!scanState.torch); };
+/* 1x·2x·3x·5x 확대 배율 */
+$('#scanZoom').addEventListener('click', e => {
+  const btn = e.target && e.target.closest ? e.target.closest('.scan-zbtn') : null;
+  if(!btn || !scanState.running) return;
+  e.preventDefault();
+  e.stopPropagation();
+  applyScanZoom(Number(btn.dataset.zoom));
+});
+/* 미리보기를 톡 누르면 초점을 다시 잡는다 */
+$('#scanStage').addEventListener('click', () => { if(scanState.running) retapScanFocus(); });
 $('#scanWrap').addEventListener('click', e => { if(e.target === $('#scanWrap')) closeScan(); });
 /* Esc: 스캐너가 열려 있으면 스캐너만 닫고, 뒤의 기록 시트는 그대로 둔다 */
 window.addEventListener('keydown', e => {
@@ -5236,7 +5429,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.1',
+  version: '2.2',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -5369,6 +5562,13 @@ window.__rc = {
     pick: pickScanIsbn,
     feed: (code) => onScanIsbn(code),
     notice: () => { const el = $('#scanNotice'); return el ? el.textContent : ''; },
+    /* v2.2 확대·초점 확인용 */
+    zoom: () => ({ level: scanState.zoom, hw: scanState.hwZoom, digital: scanState.digitalZoom, range: scanState.zoomRange }),
+    setZoom: (n) => applyScanZoom(n),
+    focus: () => scanState.focusSupported,
+    retap: () => retapScanFocus(),
+    roi: () => scanRoiRect(),
+    detectSize: () => { const c = $('#scanDetect'); return c ? { w: c.width, h: c.height } : null; },
     supportedFormats: () => (window.BarcodeDetector && window.BarcodeDetector.getSupportedFormats ? window.BarcodeDetector.getSupportedFormats() : [])
   }
 };
