@@ -5203,12 +5203,33 @@ function wishFind(o){
     (w.title.trim().toLowerCase() === t && w.lang === (o.lang === 'en' ? 'en' : 'ko'))
   ) || null;
 }
+/* v2.6.24: 읽을 목록에 담는 순간 이미 받아 둔 표지를 함께 넘긴다.
+   잠수네·잠수네 시리즈 낱권·추천에서 담은 책이 표지 없이 들어가 회색 책 그림만 보이던 문제.
+   표지는 기기 표지 캐시(잠수네·책장이 받아 둔 주소)와 AR 캐시 두 곳에 있으므로 둘 다 본다. */
+function wishCoverLookup(lang, title, author){
+  const kind = lang === 'en' ? 'en' : 'ko';
+  let u = '';
+  try{ u = jamCovGet(jamCovKey(kind, title, author)); }catch(e){ u = ''; }
+  if(!u){
+    try{ const a = arHas(title, author); if(a && a.cover) u = String(a.cover); }catch(e){}
+  }
+  return u ? String(u).slice(0, 500) : '';
+}
+/* 담아 둔 책에 표지가 비어 있으면 캐시에서 한 번 더 찾아 채운다(찾았으면 true) */
+function wishCoverSync(w){
+  if(!w || w.cover) return false;
+  const u = wishCoverLookup(w.lang, w.title, w.author);
+  if(!u) return false;
+  w.cover = u;
+  return true;
+}
 function addToWish(o){
   if(!Array.isArray(db.wishlist)) db.wishlist = [];
   if(wishFind(o)) return null;
   const w = sanitizeWish({
     id: uidW(), title: o.title, author: o.author, lang: o.lang, isbn: o.isbn,
-    cover: o.cover, age: o.age, recId: o.recId || o.id || '', reason: o.reason, createdAt: Date.now()
+    cover: o.cover || wishCoverLookup(o.lang, o.title, o.author), age: o.age,
+    recId: o.recId || o.id || '', reason: o.reason, createdAt: Date.now()
   });
   if(!w) return null;
   db.wishlist.push(w);
@@ -5643,6 +5664,42 @@ function wishSrcLabel(w, jamSet){   /* v2.6.15 */
   return '직접 추가';
 }
 
+/* v2.6.24: 표지가 아직 없는 읽을 목록 카드도 추천·잠수네 카드와 같은 미니 표지 위에 앉힌다.
+   이렇게 img가 있어야 표지 찾기가 같은 방식(jamCovApply)으로 진짜 표지로 바꿔 끼울 수 있다. */
+function wishCoverBox(w){
+  let cov, img;
+  if(w && w.cover){
+    cov = buildRecCover(w);
+    img = cov.querySelector('img');
+    /* 죽은 표지 주소는 지워 두고, 다음에 그릴 때 다시 찾는다 */
+    if(img) img.addEventListener('error', () => {
+      if(!w.cover || db.wishlist.indexOf(w) < 0) return;
+      w.cover = '';
+      save();
+    });
+    return cov;
+  }
+  cov = document.createElement('div');
+  cov.className = 'rec-cov';
+  img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.src = recFallback({ title: jamBase(String((w && w.title) || '')) });
+  cov.appendChild(img);
+  return cov;
+}
+/* 카드가 화면에 들어올 때만 표지를 묻고(IntersectionObserver), 받은 주소는 그 책(w.cover)에도 남긴다 */
+function wishCoverWatch(item, w){
+  if(!item || !w) return;
+  const kind = w.lang === 'en' ? 'en' : 'ko';
+  jamCovWatch(item, kind, w.title, w.author, url => {
+    if(!url) return;
+    if(db.wishlist.indexOf(w) < 0) return;    /* 그새 지운 책이면 저장하지 않는다 */
+    if(w.cover) return;                        /* AR·잠수네 중 먼저 받은 표지를 그대로 둔다 */
+    w.cover = String(url).slice(0, 500);
+    save();
+  });
+}
 function renderWishList(){
   const list = $('#wishList');
   if(!list) return;
@@ -5666,14 +5723,17 @@ function renderWishList(){
   }
   const frag = document.createDocumentFragment();
   const jamSet = wishJamTitles();
+  /* v2.6.24: 담을 때 표지를 놓쳤어도 캐시에 주소가 있으면 그릴 때 바로 채운다 */
+  let covDirty = false;
   db.wishlist.forEach(w => {
     /* v2.6.15: 읽을 목록 카드도 추천·잠수네 카드와 같은 모양으로 그린다
        표지 · [한글/영어][연령][AR][✓ 읽음] · 제목 · 지은이 · 담은 곳 · 3단 버튼 */
+    if(!w.cover && wishCoverSync(w)) covDirty = true;
     const rd = isBookRead(w.title, w.author);
     const item = document.createElement('div');
     item.className = 'wish-item' + (rd ? ' read' : '');
     item.dataset.wid = w.id;
-    item.appendChild(buildRecCover(w));
+    item.appendChild(wishCoverBox(w));
 
     const body = document.createElement('div');
     body.className = 'rec-body';
@@ -5738,9 +5798,12 @@ function renderWishList(){
     body.appendChild(meta); body.appendChild(nm); body.appendChild(au); body.appendChild(src); body.appendChild(acts);
     item.appendChild(body);
     if(w.lang === 'en') arWatchCard(item, w.title, w.author);
+    /* 표지가 여전히 비어 있으면 카드가 보일 때 제목·지은이로 찾아 채운다 */
+    if(!w.cover) wishCoverWatch(item, w);
     frag.appendChild(item);
   });
   list.appendChild(frag);
+  if(covDirty) save();
 }
 
 /* ---------- 읽을 목록 → 기록 시트 ---------- */
@@ -9706,7 +9769,15 @@ function arPaint(el, v){
     const img = el.querySelector('.rec-cov img');
     const src = img ? String(img.getAttribute('src') || '') : '';
     if(img && (!src || src.indexOf('data:') === 0)){
-      img.onerror = () => { img.onerror = null; img.src = recFallback({ title: el.dataset.arTitle || '' }); };
+      /* v2.6.24: 진짜로 떠진 표지만 읽을 목록의 그 책에 남긴다(깨진 주소는 onerror에서 뺀다) */
+      const cb = typeof el._covOnUrl === 'function' ? el._covOnUrl : null;
+      const onLoad = () => { if(cb){ try{ cb(String(v.cover)); }catch(e){} } };
+      img.onerror = () => {
+        img.onerror = null;
+        img.removeEventListener('load', onLoad);
+        img.src = recFallback({ title: el.dataset.arTitle || '' });
+      };
+      if(cb) img.addEventListener('load', onLoad, { once: true });
       img.src = v.cover;
     }
   }
@@ -10588,7 +10659,11 @@ function jamCovApply(el, url, key){
   const cur = String(img.getAttribute('src') || '');
   if(cur && cur.indexOf('data:') !== 0) return;
   const ph = cur || recFallback({ title: jamBase(String(el.dataset.covTitle || '')) });
-  img.onload = () => { img.onload = null; img.onerror = null; el.dataset.covReal = '1'; };
+  img.onload = () => {
+    img.onload = null; img.onerror = null; el.dataset.covReal = '1';
+    /* v2.6.24: 읽을 목록 카드는 받은 표지 주소를 그 책에 남긴다(다음부터는 바로 그린다) */
+    if(typeof el._covOnUrl === 'function'){ try{ el._covOnUrl(String(url)); }catch(e){} }
+  };
   img.onerror = () => {
     img.onerror = null; img.onload = null;
     delete el.dataset.covReal;
@@ -10660,10 +10735,11 @@ function jamCovObserver(){
   return jamCovObs;
 }
 /* 카드 하나를 표지 대상으로 등록: 저장된 주소가 있으면 바로, 없으면 화면에 들어올 때 묻는다 */
-function jamCovWatch(el, kind, title, author){
+function jamCovWatch(el, kind, title, author, onUrl){
   if(!el || !el.dataset) return;
   const t = String(title == null ? '' : title).trim();
   if(!t) return;
+  if(typeof onUrl === 'function') el._covOnUrl = onUrl;
   el.dataset.covTitle = t;
   el.dataset.covAuth = String(author == null ? '' : author);
   el.dataset.covKind = kind === 'en' ? 'en' : 'ko';
@@ -11584,7 +11660,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.23',
+  version: '2.6.24',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11817,7 +11893,8 @@ window.__rc = {
     wishRemove: (id) => removeFromWish(id),
     wishlist: () => db.wishlist.map(w => ({
       id: w.id, title: w.title, author: w.author, lang: w.lang, isbn: w.isbn, age: w.age,
-      recId: w.recId, source: w.recId ? 'rec' : 'manual', cover: !!w.cover
+      recId: w.recId, source: w.recId ? 'rec' : 'manual', cover: !!w.cover,
+      coverUrl: w.cover || '', coverData: w.coverData ? 'data' : ''
     })),
     addManual: (title, author, lang) => addToWish({ title: title, author: author || '', lang: lang || 'ko' }),
     /* v2.6.8 읽을 목록 직접 추가 시트의 검색 확인용 */
@@ -11914,6 +11991,16 @@ window.__rc = {
       const it = jam.list[kind].items.find(x => x[kind === 'ko' ? KO_T : EN_T] === title);
       return it ? jamIsRead(kind, it) : null;
     },
+    /* v2.6.24: 카드의 ♡ 읽을 목록 단추와 같은 함수를 부른다(담을 때 표지가 함께 가는지 확인용) */
+    wish: (kind, t, a) => {
+      const k = kind === 'en' ? 'en' : 'ko';
+      const it = new Array(11).fill('');
+      it[k === 'ko' ? KO_T : EN_T] = String(t || '');
+      it[k === 'ko' ? KO_A : EN_A] = String(a || '');
+      jamToggleWish(k, it, null);
+      return true;
+    },
+    seriesWish: (t, a) => { jamSeriesWish({ title: String(t || ''), author: String(a || '') }, null); return true; },
     importCatalog: (kind, file) => jamImportCatalog(kind, file),
     openWorm: (file) => jamReadWormFile(file),
     saveWorm: () => { const el = $('#btnJamWormSave'); if(el) el.click(); },
