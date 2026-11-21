@@ -1862,9 +1862,9 @@ const EN_S = 8;
    세 목록은 잠수네의 순위대로 늘어놓은 그대로의 차례를 지켜 보여 준다(배열 순서 = 원본 순서). */
 const L_L = 0, L_T = 1, L_A = 2, L_P = 3, L_O = 4, L_Q = 5;
 const JAM_LISTS = [
-  { k: 'kobest', nm: '한글 베스트', file: '잠수네 책나무 1~10' },
-  { k: 'kocl', nm: '우리 고전', file: '우리고전 3~10' },
-  { k: 'encl', nm: '외국 고전', file: '외국 고전 1~13' }
+  { k: 'kobest', nm: '한글 베스트', file: '잠수네 책나무 1~10', txt: 'jamsune-korean-best.txt' },
+  { k: 'kocl', nm: '우리 고전', file: '우리고전 3~10', txt: 'jamsune-korean-classics.txt' },
+  { k: 'encl', nm: '외국 고전', file: '외국 고전 1~13', txt: 'jamsune-foreign-classics.txt' }
 ];
 function jamListMeta(k){ return JAM_LISTS.find(x => x.k === k) || null; }
 /* v2.6.21: 잠수네 영어 급수가 J0(글자 없는 그림책)인지 — 그런 책에는 유튜브 음원 단추를 달지 않는다 */
@@ -11251,6 +11251,7 @@ function jamListBuildPane(k){
     host.innerHTML = '<div class="jam-onb">' +
       '<h3>' + escXML(M.nm) + ' 파일을 한 번만 불러오면 돼요</h3>' +
       '<p>잠수네에서 받은 파일(.txt)을 고르면 급수와 읽음 상태로 골라 볼 수 있어요. 잠수네가 보여 주는 차례 그대로 나와요.</p>' +
+      '<p class="jam-priv">불러올 파일: <b>' + escXML(M.txt) + '</b></p>' +
       '<div class="jam-imp-btns" style="margin-top:12px">' +
         '<button class="jam-ib" type="button" data-imp="' + k + '">' + escXML(M.nm) + ' 불러오기</button>' +
         '<button class="jam-ib" type="button" data-imp="ko">한글책 플랜</button>' +
