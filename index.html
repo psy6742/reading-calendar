@@ -628,6 +628,14 @@ textarea.input{resize:vertical;min-height:60px}
 .seg.unit button{flex:0 0 auto;padding:6px 14px;font-size:12px;letter-spacing:-.2px}
 .seg.sub{background:#EDE9DD;margin:13px 0 0}
 .seg.sub button{padding:9px 4px;font-size:13px}
+/* v2.6.25: 잠수네 다섯 갈래 · 읽을 목록 한글/영어 갈래 — 좌우로 밀어 볼 수 있게 */
+.seg.jam5{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;justify-content:flex-start}
+.seg.jam5::-webkit-scrollbar{display:none}
+.seg.jam5 button{flex:0 0 auto;padding:9px 12px;font-size:12.5px;letter-spacing:-.2px}
+.seg.wish-lang{margin-top:11px}
+.seg.wish-lang button{font-size:12.5px}
+.seg.wish-lang em{font-style:normal;font-size:11px;font-weight:800;color:#A9A395;margin-left:2px}
+.seg.wish-lang button.on em{color:#8A8577}
 .seg.lang{margin-top:10px}
 .rec-ages{display:flex;gap:6px;overflow-x:auto;margin:12px 0 0;padding:1px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .rec-ages::-webkit-scrollbar{display:none}
@@ -1015,6 +1023,11 @@ select.input:focus{background-color:#fff}
         <p>담아 둔 책은 <b>읽었어요</b> 한 번으로 달력에 기록돼요.</p>
         <button class="wish-add" id="btnWishAddNew" type="button">+ 직접 추가</button>
       </div>
+      <div class="seg sub wish-lang" id="wishLangSeg" role="tablist" aria-label="읽을 목록 보기">
+        <button data-wlang="all" class="on" role="tab" aria-selected="true">전체 <em id="wishCntAll">0</em></button>
+        <button data-wlang="ko" role="tab" aria-selected="false">한글책 <em id="wishCntKo">0</em></button>
+        <button data-wlang="en" role="tab" aria-selected="false">영어책 <em id="wishCntEn">0</em></button>
+      </div>
       <div class="wish-list" id="wishList"></div>
     </section>
 
@@ -1036,20 +1049,29 @@ select.input:focus{background-color:#fff}
         <div class="jam-imp-body hidden" id="jamImpBody">
           <div class="jam-imp-btns">
             <button class="jam-ib" id="jamPickKo" type="button" data-imp="ko">한글책 플랜 <em id="jamStKo">없음</em></button>
+            <button class="jam-ib" id="jamPickKb" type="button" data-imp="kobest">한글 베스트 <em id="jamStKb">없음</em></button>
             <button class="jam-ib" id="jamPickEn" type="button" data-imp="en">영어 베스트 <em id="jamStEn">없음</em></button>
+            <button class="jam-ib" id="jamPickKc" type="button" data-imp="kocl">우리 고전 <em id="jamStKc">없음</em></button>
+            <button class="jam-ib" id="jamPickEc" type="button" data-imp="encl">외국 고전 <em id="jamStEc">없음</em></button>
             <button class="jam-ib" id="jamPickWorm" type="button" data-imp="worm">책벌레 기록</button>
           </div>
           <p class="jam-priv">불러온 파일은 <b>이 기기에만</b> 저장되고 어디로도 보내지 않아요. 브라우저 데이터를 지우면 함께 사라져요.</p>
         </div>
       </div>
 
-      <div class="seg sub" id="jamSeg" role="tablist" aria-label="잠수네 보기">
+      <div class="seg sub jam5" id="jamSeg" role="tablist" aria-label="잠수네 보기">
         <button data-jam="ko" class="on" role="tab" aria-selected="true">한글 위클리 플랜</button>
+        <button data-jam="kb" role="tab" aria-selected="false">한글 베스트</button>
         <button data-jam="en" role="tab" aria-selected="false">영어 베스트</button>
+        <button data-jam="kc" role="tab" aria-selected="false">우리 고전</button>
+        <button data-jam="ec" role="tab" aria-selected="false">외국 고전</button>
       </div>
 
       <div id="jamKoPane"></div>
+      <div id="jamKbPane" class="hidden"></div>
       <div id="jamEnPane" class="hidden"></div>
+      <div id="jamKcPane" class="hidden"></div>
+      <div id="jamEcPane" class="hidden"></div>
     </section>
   </main>
 </div>
@@ -1707,7 +1729,10 @@ select.input:focus{background-color:#fff}
       <p id="menuJamSt">아직 불러오지 않았어요</p>
       <div class="jam-imp-btns" style="margin-top:9px">
         <button class="jam-ib" id="menuJamKo" type="button" data-imp="ko">한글책 플랜</button>
+        <button class="jam-ib" id="menuJamKb" type="button" data-imp="kobest">한글 베스트</button>
         <button class="jam-ib" id="menuJamEn" type="button" data-imp="en">영어 베스트</button>
+        <button class="jam-ib" id="menuJamKc" type="button" data-imp="kocl">우리 고전</button>
+        <button class="jam-ib" id="menuJamEc" type="button" data-imp="encl">외국 고전</button>
         <button class="jam-ib" id="menuJamWorm" type="button" data-imp="worm">책벌레 기록</button>
       </div>
       <button class="jam-reset" id="menuJamReset" type="button">잠수네 데이터 초기화</button>
@@ -1783,7 +1808,10 @@ select.input:focus{background-color:#fff}
 <input type="file" id="shelfCoverInput" accept="image/*" class="hidden">
 <input type="file" id="importInput" accept="application/json,.json" class="hidden">
 <input type="file" id="jamFileKo" accept=".txt,.json,application/json,text/plain" class="hidden">
+<input type="file" id="jamFileKb" accept=".txt,.json,application/json,text/plain" class="hidden">
 <input type="file" id="jamFileEn" accept=".txt,.json,application/json,text/plain" class="hidden">
+<input type="file" id="jamFileKc" accept=".txt,.json,application/json,text/plain" class="hidden">
+<input type="file" id="jamFileEc" accept=".txt,.json,application/json,text/plain" class="hidden">
 <input type="file" id="jamFileWorm" accept=".txt,.json,application/json,text/plain" class="hidden">
 
 <script>
@@ -1830,6 +1858,15 @@ const KO_S = 0, KO_P = 1, KO_M = 2, KO_W = 3, KO_L = 4, KO_C = 5, KO_T = 6, KO_A
 const EN_C = 0, EN_L = 1, EN_T = 2, EN_A = 3, EN_K = 4, EN_AU = 5, EN_Q = 6, EN_K2 = 7;
 /* v2.6.18: 전집(시리즈) 항목에 붙는 낱권 목록 [{title, author, publisher}]. 예전에 불러온 자료에는 없어 undefined다. */
 const EN_S = 8;
+/* v2.6.25: 한글 베스트·우리 고전·외국 고전 — [급수, 제목, 지은이, 출판사, 원제, 검색용]
+   세 목록은 잠수네의 순위대로 늘어놓은 그대로의 차례를 지켜 보여 준다(배열 순서 = 원본 순서). */
+const L_L = 0, L_T = 1, L_A = 2, L_P = 3, L_O = 4, L_Q = 5;
+const JAM_LISTS = [
+  { k: 'kobest', nm: '한글 베스트', file: '잠수네 책나무 1~10' },
+  { k: 'kocl', nm: '우리 고전', file: '우리고전 3~10' },
+  { k: 'encl', nm: '외국 고전', file: '외국 고전 1~13' }
+];
+function jamListMeta(k){ return JAM_LISTS.find(x => x.k === k) || null; }
 /* v2.6.21: 잠수네 영어 급수가 J0(글자 없는 그림책)인지 — 그런 책에는 유튜브 음원 단추를 달지 않는다 */
 function jamJ0Level(v){ return String(v == null ? '' : v).trim().toUpperCase() === 'J0'; }
 function jamItemJ0(it){ return !!it && jamJ0Level(it[EN_L]); }
@@ -2159,14 +2196,17 @@ function sanitizeChild(c){
   };
 }
 function kidById(id){ return db.children.find(c => c.id === id) || null; }
-/* v2.6.8: 생년월일 → 한국 나이(세는나이)와 잠수네 한글 단계
-   예: 2021-05-10생 · 2026년 → 6세 → '5-7세' */
+/* 아이 생년월일 → 한국 학년 기준 나이 (v2.6.25)
+   학년은 3월 1일에 하나 올라간다. 그래서 1·2월에는 지난해 학년 나이를 그대로 쓰는다.
+   예: 2021년생 → 2026년 11월 6세 · 2027년 1·2월에도 6세 · 2027년 3월부터 7세(초1 전 단계) */
 function kidKoreanAge(birth){
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(birth || ''));
   if(!m) return 0;
   const y = Number(m[1]);
   if(!y || y < 1900 || y > 2200) return 0;
-  return new Date().getFullYear() - y + 1;
+  const now = new Date();
+  const sy = (now.getMonth() + 1 >= 3) ? now.getFullYear() : now.getFullYear() - 1;
+  return sy - y + 1;
 }
 function kidStageFromBirth(birth){
   const kAge = kidKoreanAge(birth);
@@ -2236,7 +2276,32 @@ function jamAutoFilter(){
   f.stage = stage;
   f.month = String(new Date().getMonth() + 1);
   f.week = '';
+  jamListAutoFilter();
   return true;
+}
+/* v2.6.25: 한글 베스트·우리 고전·외국 고전도 아이의 지금 급수로 저절로 걸러 준다.
+   그 급수에 책이 하나도 없으면(예: 우리 고전은 JK3부터) 빈 화면이 되지 않도록 전체를 보여 준다. */
+function jamLevelOfChild(){
+  const st = autoStageFor();
+  const i = JAM_STAGES.indexOf(st);
+  return i >= 0 ? 'JK' + (i + 1) : '';
+}
+function jamListAutoFilter(resetAll){
+  const lv = jamLevelOfChild();
+  JAM_LISTS.forEach(L => {
+    const f = jam.lf[L.k];
+    if(!f) return;
+    if(resetAll){ f.q = ''; f.read = ''; }
+    const cat = jam.lists[L.k];
+    let want = lv;
+    if(cat && want){
+      let has = false;
+      for(let i = 0; i < cat.items.length; i++){ if(cat.items[i][L_L] === want){ has = true; break; } }
+      if(!has) want = '';
+    }
+    f.jlevel = want || '';
+  });
+  return lv;
 }
 function kidAgeLabel(c){
   const kAge = kidKoreanAge(c && c.birth);
@@ -5270,10 +5335,27 @@ function renderRec(){
   renderRecList();
 }
 /* ---------- 읽을 목록 화면 (v2.6.2 · 추천에서 분리) ---------- */
+/* v2.6.25: 담아 둔 책을 한글책·영어책으로 나눠 본다 */
+let wishLang = 'all';
+function wishLangItems(){
+  const src = Array.isArray(db.wishlist) ? db.wishlist : [];
+  if(wishLang === 'ko' || wishLang === 'en') return src.filter(w => (w.lang === 'en' ? 'en' : 'ko') === wishLang);
+  return src;
+}
 function renderWish(){
   if(!Array.isArray(db.wishlist)) db.wishlist = [];
   const b = $('#wishBadge');
   if(b) b.textContent = db.wishlist.length + '권';
+  const koN = db.wishlist.filter(w => (w.lang === 'en' ? 'en' : 'ko') === 'ko').length;
+  const setN = (id, n) => { const e = $(id); if(e) e.textContent = fmtNum(n); };
+  setN('#wishCntAll', db.wishlist.length);
+  setN('#wishCntKo', koN);
+  setN('#wishCntEn', db.wishlist.length - koN);
+  $$('#wishLangSeg button').forEach(x => {
+    const on = x.dataset.wlang === wishLang;
+    x.classList.toggle('on', on);
+    x.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
   renderWishList();
 }
 
@@ -5643,7 +5725,9 @@ let wishJamSet = null, wishJamKey = '';
 function wishJamTitles(){
   const ko = (jam && jam.ko && jam.ko.items) ? jam.ko.items.length : 0;
   const en = (jam && jam.en && jam.en.items) ? jam.en.items.length : 0;
-  const key = ko + '/' + en;
+  /* v2.6.25: 한글 베스트·우리 고전·외국 고전에서 담은 책도 '잠수네에서 담음'으로 적는다 */
+  const ls = (jam && jam.lists) ? ['kobest', 'kocl', 'encl'].map(k => (jam.lists[k] && jam.lists[k].items) ? jam.lists[k].items.length : 0) : [0, 0, 0];
+  const key = ko + '/' + en + '/' + ls.join(',');
   if(wishJamSet && wishJamKey === key) return wishJamSet;
   const s = new Set();
   ['ko', 'en'].forEach(kind => {
@@ -5652,6 +5736,14 @@ function wishJamTitles(){
     for(let i = 0; i < cat.items.length; i++){
       const t = cat.items[i][kind === 'ko' ? KO_T : EN_T];
       if(t) s.add((kind === 'en' ? 'en' : 'ko') + '|' + jamNorm(String(t)));
+    }
+  });
+  ['kobest', 'kocl', 'encl'].forEach(k => {
+    const cat = jam && jam.lists ? jam.lists[k] : null;
+    if(!cat || !cat.items) return;
+    for(let i = 0; i < cat.items.length; i++){
+      const t = cat.items[i][L_T];
+      if(t) s.add('ko|' + jamNorm(String(t)));
     }
   });
   wishJamSet = s; wishJamKey = key;
@@ -5723,9 +5815,28 @@ function renderWishList(){
   }
   const frag = document.createDocumentFragment();
   const jamSet = wishJamTitles();
+  const rows = wishLangItems();
+  if(!rows.length){
+    /* 갈래를 골라서 비어 있는 경우 — 전체로 돌아가는 길을 알려 준다 */
+    const box = document.createElement('div');
+    box.className = 'rec-empty';
+    box.innerHTML = '<div class="em">🔖</div><p>' + (wishLang === 'en' ? '영어책' : '한글책') + '으로 담아 둔 책이 없어요.</p>' +
+      '<p>다른 갈래를 보거나 <b>전체</b>로 돌아가 보세요.</p>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill dark';
+    b.textContent = '전체 보기';
+    b.onclick = () => { wishLang = 'all'; renderWish(); };
+    row.appendChild(b);
+    box.appendChild(row);
+    list.appendChild(box);
+    return;
+  }
   /* v2.6.24: 담을 때 표지를 놓쳤어도 캐시에 주소가 있으면 그릴 때 바로 채운다 */
   let covDirty = false;
-  db.wishlist.forEach(w => {
+  rows.forEach(w => {
     /* v2.6.15: 읽을 목록 카드도 추천·잠수네 카드와 같은 모양으로 그린다
        표지 · [한글/영어][연령][AR][✓ 읽음] · 제목 · 지은이 · 담은 곳 · 3단 버튼 */
     if(!w.cover && wishCoverSync(w)) covDirty = true;
@@ -5978,6 +6089,14 @@ $('#wishList').addEventListener('click', e => {
   }
 });
 $('#btnWishSave').onclick = saveBookRecord;
+/* v2.6.25: 읽을 목록 전체·한글책·영어책 갈래 */
+$('#wishLangSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-wlang]');
+  if(!b) return;
+  const v = b.dataset.wlang;
+  wishLang = (v === 'ko' || v === 'en') ? v : 'all';
+  renderWish();
+});
 
 /* 직접 추가 */
 let waLang = 'ko';
@@ -9366,6 +9485,20 @@ $('#fLibEnUrl').addEventListener('keydown', e => {
 const jam = {
   ready: false, loadingP: null, sub: 'ko', impOpen: false,
   ko: null, en: null,
+  /* v2.6.25: 한글 베스트·우리 고전·외국 고전도 같은 기기 저장소(IndexedDB)에만 둔다 */
+  lists: { kobest: null, kocl: null, encl: null },
+  lf: {
+    kobest: { jlevel: '', read: '', q: '' },
+    kocl: { jlevel: '', read: '', q: '' },
+    encl: { jlevel: '', read: '', q: '' }
+  },
+  lbuilt: { kobest: false, kocl: false, encl: false },
+  lkey: { kobest: 0, kocl: 0, encl: 0 },
+  llist: {
+    kobest: { items: [], read: 0, rendered: 0 },
+    kocl: { items: [], read: 0, rendered: 0 },
+    encl: { items: [], read: 0, rendered: 0 }
+  },
   f: {
     ko: { stage: '', plan: '', month: '', week: '', read: '', q: '' },
     en: { cat: '', jlevel: '', audio: '', read: '', q: '' }
@@ -9875,9 +10008,16 @@ function jamDel(key){
 function jamInit(){
   if(jam.ready) return Promise.resolve();
   if(jam.loadingP) return jam.loadingP;
-  jam.loadingP = Promise.all([jamGet('ko'), jamGet('en')]).then(arr => {
+  jam.loadingP = Promise.all([jamGet('ko'), jamGet('en'), jamGet('kobest'), jamGet('kocl'), jamGet('encl')]).then(arr => {
     jam.ko = (arr[0] && Array.isArray(arr[0].items)) ? arr[0] : null;
     jam.en = (arr[1] && Array.isArray(arr[1].items)) ? arr[1] : null;
+    /* v2.6.25: 한글 베스트·우리 고전·외국 고전 */
+    JAM_LISTS.forEach((L, i) => {
+      const v = arr[2 + i];
+      jam.lists[L.k] = (v && Array.isArray(v.items)) ? v : null;
+      jam.lbuilt[L.k] = false;
+      jam.lkey[L.k] = 0;
+    });
     jam.ready = true;
     jam.built.ko = false; jam.built.en = false;
     jamAfterLoad();
@@ -9979,6 +10119,28 @@ function jamCoerceItems(arr){
   }
   return out.length ? out : null;
 }
+/* v2.6.25: 한글 베스트·우리 고전·외국 고전 파일 다듬기
+   {jlevel, title, author, publisher, orig, ko:true} → [급수, 제목, 지은이, 출판사, 원제, 검색용]
+   원본의 순서(순위)를 그대로 살리기 위해 정렬하지 않고 받은 차례대로 담는다. */
+function jamCoerceList(json){
+  if(!Array.isArray(json)) throw new Error('shape');
+  const out = [];
+  for(let i = 0; i < json.length; i++){
+    const o = json[i];
+    if(!o || typeof o !== 'object') continue;
+    const t = String(o.title == null ? '' : o.title).trim();
+    if(!t) continue;
+    const a = String(o.author == null ? '' : o.author).trim();
+    const p = String(o.publisher == null ? '' : o.publisher).trim();
+    const org = String(o.orig == null ? '' : o.orig).trim();
+    out.push([
+      String(o.jlevel == null ? '' : o.jlevel).trim(),
+      t, a, p, org,
+      (t + ' ' + a + ' ' + p + ' ' + org).toLowerCase()
+    ]);
+  }
+  return out;
+}
 function jamCoerceWorm(json){
   if(!json || typeof json !== 'object') throw new Error('shape');
   const rows = [];
@@ -10009,7 +10171,8 @@ function jamCoerceWorm(json){
 
 /* ---------- 파일 고르기·가져오기 ---------- */
 function jamPickFile(kind){
-  const el = $(kind === 'ko' ? '#jamFileKo' : (kind === 'en' ? '#jamFileEn' : '#jamFileWorm'));
+  const map = { ko: '#jamFileKo', en: '#jamFileEn', worm: '#jamFileWorm', kobest: '#jamFileKb', kocl: '#jamFileKc', encl: '#jamFileEc' };
+  const el = $(map[kind] || '#jamFileKo');
   if(!el) return;
   el.value = '';
   el.click();
@@ -10031,6 +10194,35 @@ function jamImportCatalog(kind, file){
       jamSyncImp();
       if(view.ymode === 'jam') renderJam();
       toast((kind === 'ko' ? '한글책 플랜 ' : '영어 베스트 ') + fmtNum(items.length) + '권을 불러왔어요' + (ok ? '' : ' · 이번에만 남아요'));
+      return items.length;
+    });
+  }).catch(e => {
+    console.warn(e);
+    toast('파일을 읽지 못했어요. 잠수네에서 받은 .txt 파일인지 확인해 주세요.');
+    return 0;
+  });
+}
+/* v2.6.25: 한글 베스트·우리 고전·외국 고전 파일 가져오기 (기기에만 저장) */
+function jamImportList(key, file){
+  const M = jamListMeta(key);
+  if(!M) return Promise.resolve(0);
+  toast(M.nm + '를 읽는 중이에요…');
+  return jamReadFile(file).then(text => {
+    const json = jamParse(text);
+    const items = jamCoerceList(json);
+    if(!items.length) throw new Error('empty');
+    const val = { v: 1, name: String(file && file.name ? file.name : '').slice(0, 80), at: Date.now(), count: items.length, items: items };
+    return jamPut(key, val).then(ok => {
+      jam.lists[key] = val;
+      jam.lbuilt[key] = false;
+      jam.lkey[key] = 0;
+      const f = jam.lf[key];
+      Object.keys(f).forEach(k => { f[k] = ''; });
+      jam.sub = key === 'kobest' ? 'kb' : (key === 'kocl' ? 'kc' : 'ec');
+      jamSyncImp();
+      jamListAutoFilter(true);   /* 아이의 지금 급수로 저절로 걸러 준다 */
+      if(view.ymode === 'jam') renderJam();
+      toast(M.nm + ' ' + fmtNum(items.length) + '권을 불러왔어요' + (ok ? '' : ' · 이번에만 남아요'));
       return items.length;
     });
   }).catch(e => {
@@ -10160,7 +10352,10 @@ function jamClearAll(){
   closeSheet($('#menuSheet'));
   save();
   render();
-  Promise.all([jamDel('ko'), jamDel('en')]).then(() => jamSyncImp());
+  Promise.all([jamDel('ko'), jamDel('en'), jamDel('kobest'), jamDel('kocl'), jamDel('encl')]).then(() => jamSyncImp());
+  jam.ko = null; jam.en = null;
+  JAM_LISTS.forEach(L => { jam.lists[L.k] = null; jam.lbuilt[L.k] = false; jam.lkey[L.k] = 0; });
+  if(view.ymode === 'jam') renderJam();
   jamSyncImp();
   toast('잠수네 자료를 지웠어요' + (removed ? ' · 가져온 기록 ' + fmtNum(removed) + '권도 함께' : ''));
   return removed;
@@ -10182,7 +10377,10 @@ function jamBuildPane(kind){
       '<p>잠수네에서 받은 파일(.txt)을 고르면 ' + (kind === 'ko' ? '단계·플랜·월·주차' : '분류·단계·음원') + '로 골라 볼 수 있어요.</p>' +
       '<div class="jam-imp-btns" style="margin-top:12px">' +
         '<button class="jam-ib" type="button" data-imp="ko">한글책 플랜</button>' +
+        '<button class="jam-ib" type="button" data-imp="kobest">한글 베스트</button>' +
         '<button class="jam-ib" type="button" data-imp="en">영어 베스트</button>' +
+        '<button class="jam-ib" type="button" data-imp="kocl">우리 고전</button>' +
+        '<button class="jam-ib" type="button" data-imp="encl">외국 고전</button>' +
         '<button class="jam-ib" type="button" data-imp="worm">책벌레 기록</button>' +
       '</div>' +
       '<p class="jam-priv">불러온 파일은 이 기기에만 저장되고 어디로도 보내지 않아요.</p>' +
@@ -11027,6 +11225,295 @@ function jamRenderList(kind, reset){
   }
   jamSyncSum(kind);
 }
+/* ---------- 한글 베스트·우리 고전·외국 고전 (v2.6.25) ----------
+   세 목록은 같은 모양이라 한 벌의 화면 코드로 그린다. 카드 모양·읽음 판정·읽을 목록·도서관은
+   한글책 플랜과 똑같이 쓰고, 거르는 칸만 ‘급수 + 읽음 상태’로 줄였다. 자료의 차례는 절대 정렬하지 않는다. */
+function jamListPaneOf(k){
+  return $('#' + (k === 'kobest' ? 'jamKbPane' : (k === 'kocl' ? 'jamKcPane' : (k === 'encl' ? 'jamEcPane' : ''))));
+}
+function jamListOpts(k, row){
+  const out = [{ v: '', t: '전체' }];
+  if(row === 'read'){ out.push({ v: 'no', t: '안 읽음' }, { v: 'yes', t: '읽음' }); return out; }
+  const cat = jam.lists[k];
+  if(!cat) return out;
+  const has = {};
+  const lv = [];
+  cat.items.forEach(it => { const v = it[L_L]; if(v && !has[v]){ has[v] = 1; lv.push(v); } });
+  lv.sort((a, b) => jamLvNum(a) - jamLvNum(b));
+  lv.forEach(v => out.push({ v: v, t: v }));
+  return out;
+}
+function jamListBuildPane(k){
+  const host = jamListPaneOf(k);
+  if(!host) return;
+  const M = jamListMeta(k), cat = jam.lists[k];
+  if(!cat){
+    host.innerHTML = '<div class="jam-onb">' +
+      '<h3>' + escXML(M.nm) + ' 파일을 한 번만 불러오면 돼요</h3>' +
+      '<p>잠수네에서 받은 파일(.txt)을 고르면 급수와 읽음 상태로 골라 볼 수 있어요. 잠수네가 보여 주는 차례 그대로 나와요.</p>' +
+      '<div class="jam-imp-btns" style="margin-top:12px">' +
+        '<button class="jam-ib" type="button" data-imp="' + k + '">' + escXML(M.nm) + ' 불러오기</button>' +
+        '<button class="jam-ib" type="button" data-imp="ko">한글책 플랜</button>' +
+        '<button class="jam-ib" type="button" data-imp="en">영어 베스트</button>' +
+      '</div>' +
+      '<p class="jam-priv">불러온 파일은 이 기기에만 저장되고 어디로도 보내지 않아요.</p>' +
+      '</div>';
+    jam.lbuilt[k] = false;
+    jam.lkey[k] = 0;
+    return;
+  }
+  const rows = jamRowHtml('jlevel', '단계') + jamRowHtml('read', '읽음 상태');
+  host.innerHTML =
+    '<div class="jam-fbar' + (jam.collapsed[k] ? ' collapsed' : '') + '" id="jamFbar-' + k + '">' +
+      '<button type="button" class="jam-ftog" id="jamFTog-' + k + '" aria-expanded="true">' +
+        '필터 <b id="jamFSum-' + k + '">전체</b><span class="chev">▾</span>' +
+      '</button>' +
+    '</div>' +
+    '<div class="jam-filters" id="jamFilters-' + k + '">' + rows + '</div>' +
+    '<div class="jam-search"><input class="input" id="jamQ-' + k + '" type="search" enterkeyhint="search" autocomplete="off" placeholder="제목·지은이·출판사로 찾기">' +
+    '<button type="button" id="jamQc-' + k + '" aria-label="검색어 지우기">✕</button></div>' +
+    '<div class="jam-sum" id="jamSum-' + k + '"></div>' +
+    '<div class="jam-list" id="jamList-' + k + '"></div>' +
+    '<button class="jam-more hidden" id="jamMore-' + k + '" type="button"></button>';
+  jam.lbuilt[k] = true;
+  jam.lkey[k] = cat.at || 0;
+  const q = $('#jamQ-' + k);
+  if(q) q.value = jam.lf[k].q || '';
+  jamListSyncChips(k);
+}
+function jamListSyncChips(k){
+  const host = jamListPaneOf(k);
+  if(!host) return;
+  const f = jam.lf[k];
+  $$('.jam-chips[data-row]', host).forEach(box => {
+    const row = box.dataset.row;
+    const sl = box.scrollLeft;
+    const cur = String(f[row] == null ? '' : f[row]);
+    let h = '';
+    jamListOpts(k, row).forEach(o => {
+      h += '<button type="button" class="jam-chip' + (row === 'read' ? ' read' : '') + (String(o.v) === cur ? ' on' : '') +
+        '" data-row="' + row + '" data-v="' + escXML(o.v) + '">' + escXML(o.t) + '</button>';
+    });
+    box.innerHTML = h;
+    box.scrollLeft = sl;
+  });
+  const sum = $('#jamFSum-' + k);
+  if(sum){
+    const parts = [];
+    if(f.jlevel) parts.push(f.jlevel);
+    if(f.read === 'yes') parts.push('읽음');
+    else if(f.read === 'no') parts.push('안 읽음');
+    if(f.q) parts.push('‘' + f.q + '’');
+    sum.textContent = parts.length ? parts.join(' · ') : '전체';
+  }
+}
+function jamListFilter(k){
+  const cat = jam.lists[k];
+  const out = { items: [], read: 0, rendered: 0 };
+  if(!cat) return out;
+  const f = jam.lf[k];
+  const q = String(f.q || '').trim().toLowerCase();
+  const items = cat.items;
+  for(let i = 0; i < items.length; i++){
+    const it = items[i];
+    if(f.jlevel && it[L_L] !== f.jlevel) continue;
+    if(q && String(it[L_Q]).indexOf(q) < 0) continue;
+    const rd = isBookRead(it[L_T], it[L_A], it[L_L]);
+    if(f.read === 'yes' && !rd) continue;
+    if(f.read === 'no' && rd) continue;
+    if(rd) out.read++;
+    out.items.push(it);
+  }
+  return out;
+}
+function jamListCardHtml(it, rd, wish){
+  const title = it[L_T], author = it[L_A], pub = it[L_P], orig = it[L_O], lv = it[L_L];
+  let h = '<div class="rec-cov"><img alt="" loading="lazy" src="' + escXML(recFallback({ title: jamBase(String(title)) })) + '"></div>';
+  h += '<div class="rec-body">';
+  h += '<div class="rec-meta"><span class="tg ko">한글</span>' +
+    (lv ? '<span class="tg lv">' + escXML(lv) + '</span>' : '') +
+    (rd ? '<span class="rec-rd">✓ 읽음</span>' : '') +
+    '</div>';
+  h += '<div class="rec-nm jam-ti">' + escXML(title) + '</div>';
+  h += '<div class="rec-auth jam-au">' + (author ? escXML(author) : '지은이 정보 없음') +
+    (orig ? ' <i>· 원제 ' + escXML(orig) + '</i>' : '') + '</div>';
+  if(pub) h += '<div class="rec-reason jam-mt">' + escXML(pub) + '</div>';
+  h += '<div class="card-acts">' +
+    '<button type="button" class="rec-btn rd" data-act="read">+ 읽었어요</button>' +
+    '<button type="button" class="rec-btn ws' + (wish ? ' on' : '') + '" data-act="wish">' + (wish ? '✓ 읽을 목록' : '♡ 읽을 목록') + '</button>' +
+    '<button type="button" class="rec-btn lib" data-act="lib" title="도서관에서 찾기">🏛️ 도서관</button>' +
+    '</div>';
+  h += '</div>';
+  return h;
+}
+function jamListSum(k){
+  const st = jam.llist[k], cat = jam.lists[k];
+  const sumEl = $('#jamSum-' + k), badge = $('#jamBadge');
+  const subOf = k === 'kobest' ? 'kb' : (k === 'kocl' ? 'kc' : 'ec');
+  if(badge && jam.sub === subOf) badge.textContent = fmtNum(st.items.length) + '권';
+  if(!sumEl || !cat) return;
+  const total = cat.count || cat.items.length;
+  let h = '보이는 책 <b>' + fmtNum(st.items.length) + '</b>권' +
+    ' <span class="sep">·</span> 이 중 <span class="rd">읽음 ' + fmtNum(st.read) + '권</span>';
+  if(st.items.length !== total) h += ' <span class="sep">·</span> 전체 ' + fmtNum(total) + '권';
+  sumEl.innerHTML = h;
+}
+function jamListRender(k, reset){
+  const cat = jam.lists[k], listEl = $('#jamList-' + k), moreEl = $('#jamMore-' + k);
+  if(!cat || !listEl) return;
+  const st = jam.llist[k];
+  if(reset){
+    const next = jamListFilter(k);
+    st.items = next.items;
+    st.read = next.read;
+    st.rendered = 0;
+    listEl.innerHTML = '';
+    jamCovWatchReset();
+  }
+  const end = Math.min(st.items.length, st.rendered + JAM_PAGE);
+  if(end > st.rendered){
+    const frag = document.createDocumentFragment();
+    const wish = jamWishSet();
+    const made = [];
+    for(let i = st.rendered; i < end; i++){
+      const it = st.items[i];
+      const rd = isBookRead(it[L_T], it[L_A], it[L_L]);
+      const el = document.createElement('div');
+      el.className = 'jam-item' + (rd ? ' read' : '');
+      el.dataset.i = String(i);
+      el.innerHTML = jamListCardHtml(it, rd, wish.has('ko|' + jamNorm(it[L_T])));
+      made.push([el, it[L_T], it[L_A]]);
+      frag.appendChild(el);
+    }
+    listEl.appendChild(frag);
+    for(let i = 0; i < made.length; i++) jamCovWatch(made[i][0], 'ko', made[i][1], made[i][2]);
+    st.rendered = end;
+  }
+  if(!st.items.length && !listEl.querySelector('.jam-empty')){
+    listEl.innerHTML = '<p class="jam-empty">조건에 맞는 책이 없어요.<br>위의 조건을 하나씩 풀어 보세요.</p>';
+  }
+  if(moreEl){
+    const remain = st.items.length - st.rendered;
+    moreEl.classList.toggle('hidden', remain <= 0);
+    moreEl.textContent = '더 보기 · 남은 ' + fmtNum(remain) + '권';
+  }
+  jamListSum(k);
+}
+function jamListCount(k){
+  const st = jam.llist[k];
+  let n = 0;
+  for(let i = 0; i < st.items.length; i++){
+    if(isBookRead(st.items[i][L_T], st.items[i][L_A], st.items[i][L_L])) n++;
+  }
+  st.read = n;
+}
+function jamListSetWishDom(el, on){
+  if(!el) return;
+  const b = el.querySelector('button[data-act="wish"]');
+  if(!b) return;
+  b.classList.toggle('on', !!on);
+  b.textContent = on ? '✓ 읽을 목록' : '♡ 읽을 목록';
+}
+function jamListToggleWish(k, it, el){
+  const o = { title: it[L_T], author: it[L_A], lang: 'ko' };
+  const hit = wishFind(o);
+  if(hit){
+    const back = removeFromWish(hit.id);
+    jamListSetWishDom(el, false);
+    toast('읽을 목록에서 뺐어요', '되돌리기', () => {
+      if(back) db.wishlist.splice(Math.min(back.index, db.wishlist.length), 0, back.item);
+      save();
+      jamListSetWishDom(el, true);
+    });
+  }else{
+    const w = addToWish(o);
+    if(!w) return;
+    jamListSetWishDom(el, true);
+    toast('읽을 목록에 담았어요', '되돌리기', () => {
+      removeFromWish(w.id);
+      jamListSetWishDom(el, false);
+    });
+  }
+}
+function jamListLogRead(k, it, el){
+  const title = String(it[L_T] || '').trim();
+  if(!title) return;
+  const author = String(it[L_A] || '').trim();
+  const kids = (view.child !== 'all' && kidById(view.child)) ? [view.child] : (db.children[0] ? [db.children[0].id] : []);
+  if(!kids.length){ toast('아이를 먼저 등록해 주세요'); return; }
+  const rec = sanitize({
+    id: uid(), date: todayISO, title: title, author: author, lang: 'ko',
+    pages: null, cover: '', coverData: '', childIds: kids, createdAt: Date.now()
+  });
+  if(!rec){ toast('기록하지 못했어요'); return; }
+  db.books.push(rec);
+  save();
+  if(jam.lf[k].read === ''){
+    if(el){
+      el.classList.add('read');
+      const r1 = el.querySelector('.rec-meta');
+      if(r1 && !r1.querySelector('.rec-rd')){
+        const b = document.createElement('span');
+        b.className = 'rec-rd';
+        b.textContent = '✓ 읽음';
+        r1.appendChild(b);
+      }
+    }
+    jamListCount(k);
+    jamListSum(k);
+  }else{
+    jamListRender(k, true);
+  }
+  const md = todayISO.slice(5, 7).replace(/^0/, '') + '월 ' + todayISO.slice(8, 10).replace(/^0/, '') + '일';
+  toast('오늘(' + md + ') 기록에 담았어요', '되돌리기', () => {
+    const i = db.books.findIndex(b => b.id === rec.id);
+    if(i >= 0) db.books.splice(i, 1);
+    save();
+    render();
+  });
+}
+/* 목록 안의 누름 처리 — 검색·칩·카드 단추 */
+function jamListClick(e, host){
+  const k = host.id === 'jamKbPane' ? 'kobest' : (host.id === 'jamKcPane' ? 'kocl' : 'encl');
+  const imp = e.target.closest('[data-imp]');
+  if(imp){ jamPickFile(imp.dataset.imp); return; }
+  const clr = e.target.closest('.jam-search button');
+  if(clr){
+    const q = $('#jamQ-' + k);
+    if(q) q.value = '';
+    jam.lf[k].q = '';
+    jamListSyncChips(k);
+    jamListRender(k, true);
+    return;
+  }
+  const more = e.target.closest('.jam-more');
+  if(more){ jamListRender(k, false); return; }
+  const ftog = e.target.closest('.jam-ftog');
+  if(ftog){
+    jam.collapsed[k] = !jam.collapsed[k];
+    const bar = $('#jamFbar-' + k), box = $('#jamFilters-' + k);
+    if(bar) bar.classList.toggle('collapsed', !!jam.collapsed[k]);
+    if(box) box.classList.toggle('hide', !!jam.collapsed[k]);
+    ftog.setAttribute('aria-expanded', jam.collapsed[k] ? 'false' : 'true');
+    return;
+  }
+  const chip = e.target.closest('.jam-chip[data-row]');
+  if(chip){
+    jam.lf[k][chip.dataset.row] = String(chip.dataset.v || '');
+    jamListSyncChips(k);
+    jamListRender(k, true);
+    return;
+  }
+  const act = e.target.closest('button[data-act]');
+  if(!act) return;
+  const itemEl = act.closest('.jam-item');
+  if(!itemEl) return;
+  const it = jam.llist[k].items[Number(itemEl.dataset.i)];
+  if(!it) return;
+  if(act.dataset.act === 'read') jamListLogRead(k, it, itemEl);
+  else if(act.dataset.act === 'wish') jamListToggleWish(k, it, itemEl);
+  else if(act.dataset.act === 'lib') openLibrary('ko', it[L_T]);
+}
 function jamCountRead(kind){
   const st = jam.list[kind];
   let n = 0;
@@ -11442,20 +11929,35 @@ function jamSyncImp(){
     se.textContent = en ? fmtNum(en.count) + '권' : '없음';
     se.parentElement.classList.toggle('done', !!en);
   }
+  /* v2.6.25: 한글 베스트·우리 고전·외국 고전 단추의 상태 */
+  const stId = { kobest: '#jamStKb', kocl: '#jamStKc', encl: '#jamStEc' };
+  let anyList = false;
+  JAM_LISTS.forEach(L => {
+    const el = $(stId[L.k]);
+    const cat = jam.lists[L.k];
+    if(cat) anyList = true;
+    if(!el) return;
+    el.textContent = cat ? fmtNum(cat.count) + '권' : '없음';
+    if(el.parentElement) el.parentElement.classList.toggle('done', !!cat);
+  });
+  const listTxt = JAM_LISTS.map(L => {
+    const cat = jam.lists[L.k];
+    return L.nm + ' ' + (cat ? fmtNum(cat.count) + '권' : '없음');
+  }).join(' · ');
   const txt = (ko ? '한글 ' + fmtNum(ko.count) + '권' : '한글 없음') + ' · ' + (en ? '영어 ' + fmtNum(en.count) + '권' : '영어 없음');
   const st = $('#jamImpSt');
-  if(st) st.textContent = txt;
+  if(st) st.textContent = txt + (anyList ? ' · ' + listTxt : '');
   const ms = $('#menuJamSt');
   if(ms){
     let w = 0;
     db.books.forEach(b => { if(b.imp && b.imp.indexOf('jamsune_') === 0) w++; });
-    ms.textContent = txt + ' · 책벌레 기록 ' + fmtNum(w) + '권';
+    ms.textContent = txt + ' · ' + listTxt + ' · 책벌레 기록 ' + fmtNum(w) + '권';
   }
-  if(!ko && !en) jam.impOpen = true;
+  if(!ko && !en && !anyList) jam.impOpen = true;
   /* v2.6.8: 자료가 들어온 뒤에는 탭 위의 불러오기 카드를 감춘다 — 같은 기능은 설정 창에만 남긴다.
      아직 아무것도 없을 때만 탭 안 안내 카드가 불러오기 버튼을 대신한다. */
   const box = $('#jamImp');
-  if(box) box.classList.toggle('hidden', !!ko || !!en);
+  if(box) box.classList.toggle('hidden', !!ko || !!en || anyList);
   jamSyncImpOpen();
 }
 function jamSyncImpOpen(){
@@ -11470,17 +11972,34 @@ function renderJam(){
     b.classList.toggle('on', on);
     b.setAttribute('aria-selected', on ? 'true' : 'false');
   });
-  const kind = jam.sub === 'en' ? 'en' : 'ko';
-  const kp = $('#jamKoPane'), ep = $('#jamEnPane');
-  if(kp) kp.classList.toggle('hidden', kind !== 'ko');
-  if(ep) ep.classList.toggle('hidden', kind !== 'en');
+  /* 다섯 갈래: 한글 위클리 플랜(ko) · 한글 베스트(kb) · 영어 베스트(en) · 우리 고전(kc) · 외국 고전(ec) */
+  const paneId = { ko: 'jamKoPane', en: 'jamEnPane', kb: 'jamKbPane', kc: 'jamKcPane', ec: 'jamEcPane' };
+  const sub = (jam.sub === 'ko' || jam.sub === 'en' || jam.sub === 'kb' || jam.sub === 'kc' || jam.sub === 'ec') ? jam.sub : 'ko';
+  Object.keys(paneId).forEach(s => {
+    const el = $('#' + paneId[s]);
+    if(el) el.classList.toggle('hidden', s !== sub);
+  });
   jamSyncImp();
+  const listKey = sub === 'kb' ? 'kobest' : (sub === 'kc' ? 'kocl' : (sub === 'ec' ? 'encl' : ''));
   if(!jam.ready){
-    const host = jamPaneOf(kind);
+    const host = listKey ? jamListPaneOf(listKey) : jamPaneOf(sub === 'en' ? 'en' : 'ko');
     if(host) host.innerHTML = '<p class="jam-empty">자료를 준비하고 있어요…</p>';
     jamInit();
     return;
   }
+  if(listKey){
+    const cat = jam.lists[listKey];
+    if(!cat || !jam.lbuilt[listKey] || jam.lkey[listKey] !== (cat.at || 0)) jamListBuildPane(listKey);
+    if(!cat){
+      const bd = $('#jamBadge');
+      if(bd) bd.textContent = '–';
+      return;
+    }
+    jamListSyncChips(listKey);
+    jamListRender(listKey, true);
+    return;
+  }
+  const kind = sub === 'en' ? 'en' : 'ko';
   const cat = kind === 'ko' ? jam.ko : jam.en;
   if(!cat || !jam.built[kind] || jam.key[kind] !== (cat.at || 0)) jamBuildPane(kind);
   if(!cat){
@@ -11500,18 +12019,28 @@ $('#jamImpToggle').onclick = () => {
 $('#jamSeg').addEventListener('click', e => {
   const b = e.target.closest('button[data-jam]');
   if(!b) return;
-  jam.sub = b.dataset.jam === 'en' ? 'en' : 'ko';
+  const v = b.dataset.jam;
+  jam.sub = (v === 'en' || v === 'kb' || v === 'kc' || v === 'ec') ? v : 'ko';
   renderJam();
 });
 $('#jamCard').addEventListener('input', e => {
   const el = e.target;
   if(!el || !el.id || el.id.indexOf('jamQ-') !== 0) return;
-  const kind = el.id === 'jamQ-en' ? 'en' : 'ko';
-  jam.f[kind].q = String(el.value || '');
-  jamSyncFbar(kind);
-  jamRenderList(kind, true);
+  const key = el.id.slice(5);          // ko · en · kobest · kocl · encl
+  if(key === 'ko' || key === 'en'){
+    jam.f[key].q = String(el.value || '');
+    jamSyncChips(key);
+    jamRenderList(key, true);
+  }else if(jam.lf[key]){
+    jam.lf[key].q = String(el.value || '');
+    jamListSyncChips(key);
+    jamListRender(key, true);
+  }
 });
 $('#jamCard').addEventListener('click', e => {
+  /* v2.6.25: 한글 베스트·우리 고전·외국 고전 갈래는 자기 처리로 보낸다 */
+  const lhost = e.target.closest('#jamKbPane,#jamKcPane,#jamEcPane');
+  if(lhost){ jamListClick(e, lhost); return; }
   const imp = e.target.closest('[data-imp]');
   if(imp){ jamPickFile(imp.dataset.imp); return; }
   const clr = e.target.closest('.jam-search button');
@@ -11590,6 +12119,14 @@ $('#jamFileEn').addEventListener('change', e => {
   e.target.value = '';
   if(f) jamImportCatalog('en', f);
 });
+[['jamFileKb','kobest'],['jamFileKc','kocl'],['jamFileEc','encl']].forEach(pair => {
+  const el = $('#' + pair[0]);
+  if(el) el.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if(f) jamImportList(pair[1], f);
+  });
+});
 $('#jamFileWorm').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   e.target.value = '';
@@ -11597,6 +12134,10 @@ $('#jamFileWorm').addEventListener('change', e => {
 });
 $('#menuJamKo').onclick = () => jamPickFile('ko');
 $('#menuJamEn').onclick = () => jamPickFile('en');
+[['menuJamKb','kobest'],['menuJamKc','kocl'],['menuJamEc','encl']].forEach(pair => {
+  const el = $('#' + pair[0]);
+  if(el) el.onclick = () => jamPickFile(pair[1]);
+});
 $('#menuJamWorm').onclick = () => jamPickFile('worm');
 $('#menuJamReset').onclick = () => {
   const el = $('#menuJamReset');
@@ -11660,7 +12201,7 @@ if(migrated){
 
 /* 테스트/디버그용 (앱 동작에는 영향 없음) */
 window.__rc = {
-  version: '2.6.24',
+  version: '2.6.25',
   state: () => ({
     books: db.books.length,
     children: db.children.length,
@@ -11967,10 +12508,26 @@ window.__rc = {
       koShown: jam.list.ko.items.length, enShown: jam.list.en.items.length,
       koRead: jam.list.ko.read, enRead: jam.list.en.read,
       koRendered: jam.list.ko.rendered, enRendered: jam.list.en.rendered,
+      /* v2.6.25 */
+      lists: { kobest: jam.lists.kobest ? jam.lists.kobest.count : 0, kocl: jam.lists.kocl ? jam.lists.kocl.count : 0, encl: jam.lists.encl ? jam.lists.encl.count : 0 },
+      lShown: { kobest: jam.llist.kobest.items.length, kocl: jam.llist.kocl.items.length, encl: jam.llist.encl.items.length },
+      lf: JSON.parse(JSON.stringify(jam.lf)),
+      level: jamLevelOfChild(),
       f: JSON.parse(JSON.stringify(jam.f))
     }),
+    /* v2.6.25: 한글 베스트·우리 고전·외국 고전 확인용 */
+    setSub2: (s) => { jam.sub = s; if(view.ymode === 'jam') renderJam(); },
+    setLf: (k, row, v) => {
+      jam.lf[k][row] = (v == null ? '' : String(v));
+      if(view.ymode !== 'jam') setViewMode('jam');
+      jamListSyncChips(k); jamListRender(k, true);
+      return jam.llist[k].items.length;
+    },
+    lTitles: (k, n) => jam.llist[k].items.slice(0, n || 10).map(it => it[L_L] + ' ' + it[L_T] + ' / ' + it[L_A]),
+    lAll: (k) => jam.lists[k] ? jam.lists[k].items.map(it => [it[L_L], it[L_T], it[L_A], it[L_P]]) : [],
+    importList: (k, text, name) => jamImportList(k, { name: name || (k + '.txt'), text: () => Promise.resolve(String(text)) }),
     init: () => jamInit(),
-    setSub: (s) => { jam.sub = s === 'en' ? 'en' : 'ko'; if(view.ymode === 'jam') renderJam(); },
+    setSub: (s) => { jam.sub = (s === 'en' || s === 'kb' || s === 'kc' || s === 'ec') ? s : 'ko'; if(view.ymode === 'jam') renderJam(); },
     setF: (kind, k, v) => {
       jam.f[kind][k] = (v == null ? '' : String(v));
       jamSyncChips(kind); jamRenderList(kind, true);
